@@ -1,7 +1,6 @@
 package me.elmanss.melate.ui
 
 import android.util.Log
-import com.squareup.sqldelight.runtime.rx.asObservable
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -10,9 +9,7 @@ import me.elmanss.melate.data.FavoritoQueries
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
 
-/**
- * ADDCEL on 2/5/19.
- */
+
 class MainPresenter(private val random: ThreadLocalRandom, private val queries: FavoritoQueries) {
 
     private val bombo = listOf(

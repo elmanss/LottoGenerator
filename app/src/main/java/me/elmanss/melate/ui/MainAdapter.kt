@@ -8,9 +8,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 
 
-/**
- * ADDCEL on 2/5/19.
- */
 class MainAdapter : RecyclerView.Adapter<ViewHolder>() {
 
     private val items = ArrayList<List<Int>>()

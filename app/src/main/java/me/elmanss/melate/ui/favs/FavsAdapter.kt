@@ -7,9 +7,6 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import me.elmanss.melate.data.Favorito
 
-/**
- * ADDCEL on 2019-12-31.
- */
 class FavsAdapter : RecyclerView.Adapter<ViewHolder>() {
 
     private val items = mutableListOf<Favorito>()

@@ -4,9 +4,6 @@ import android.app.Application
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
 
-/**
- * ADDCEL on 2019-12-31.
- */
 class Melate : Application() {
 
     companion object {
