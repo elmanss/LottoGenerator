@@ -1,0 +1,16 @@
+CREATE TABLE IF NOT EXISTS favorito (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  sorteo TEXT NOT NULL);
+
+
+CREATE INDEX IF NOT EXISTS sorteo ON favorito(sorteo);
+
+
+insertFav:
+INSERT INTO favorito (sorteo) VALUES (?);
+
+selectAll:
+SELECT * FROM favorito;
+
+deleteFav:
+DELETE FROM favorito WHERE id= ?;
