@@ -23,13 +23,10 @@ class FavsActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityFavsBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
         binding.addButton.setOnClickListener {
             AddToFavActivity.startForResult(this@FavsActivity)
         }
@@ -41,6 +38,7 @@ class FavsActivity : AppCompatActivity() {
                 LinearLayoutManager.VERTICAL
             )
         )
+
         binding.favsSorteosView.adapter = adapter
         ItemClickSupport.addTo(binding.favsSorteosView)
             .setOnItemLongClickListener { _, pos, _ ->

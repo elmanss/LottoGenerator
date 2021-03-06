@@ -2,6 +2,8 @@ package me.elmanss.melate.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
@@ -12,6 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import me.elmanss.melate.R
 import me.elmanss.melate.databinding.ActivityMainBinding
 import me.elmanss.melate.ui.custom.util.ItemClickSupport
 import me.elmanss.melate.ui.favs.FavsActivity
@@ -40,10 +43,6 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
             showWarning(pos)
         }
 
-        binding.favsButton.setOnClickListener {
-            startActivity(Intent(this@MainActivity, FavsActivity::class.java))
-        }
-
         Toast.makeText(
             this,
             "Para agregar sorteos a tus favoritos, mantén presionado el sorteo de tu elección",
@@ -52,6 +51,18 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
         observe()
         viewModel.multiSorteo()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.menu_main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId) {
+            R.id.item_favs -> startActivity(Intent(this, FavsActivity::class.java))
+        }
+        return super.onOptionsItemSelected(item)
     }
 
     private fun observe() {
