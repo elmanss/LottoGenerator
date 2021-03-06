@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 import me.elmanss.melate.Melate
 import me.elmanss.melate.business.FavoritesInteractor
 import me.elmanss.melate.business.FavoritesInteractorImpl
-import me.elmanss.melate.mapper.FavoritosMapper
+import me.elmanss.melate.extensions.toModelList
 import me.elmanss.melate.models.FavoritoModel
 
 class FavsViewModel(app: Application) : AndroidViewModel(app) {
@@ -35,7 +35,7 @@ class FavsViewModel(app: Application) : AndroidViewModel(app) {
     private fun fetchFavorites() {
         viewModelScope.launch {
             interactor.selectFavorites().mapToList(Dispatchers.IO).collect {
-                mFavorites.postValue(FavoritosMapper.entitiesToModelList(it))
+                mFavorites.postValue(it.toModelList())
             }
         }
     }
