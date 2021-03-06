@@ -1,18 +1,22 @@
 package me.elmanss.melate.ui
 
+import android.app.Application
 import android.util.Log
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import me.elmanss.melate.Melate
 import me.elmanss.melate.data.FavoritoQueries
+import me.elmanss.melate.data.Sorteo
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
 
-
-class MainPresenter(private val random: ThreadLocalRandom, private val queries: FavoritoQueries) {
-
-    private val bombo = listOf(
+class MainViewModel(app: Application): AndroidViewModel(app) {
+    private val BOMBO = listOf(
         1,
         2,
         3,
@@ -70,9 +74,16 @@ class MainPresenter(private val random: ThreadLocalRandom, private val queries: 
         55,
         56
     )
+    private val queries: FavoritoQueries by lazy {(app as Melate).database.favoritoQueries}
+    private val random = ThreadLocalRandom.current()
+
+    private val mSorteos = MutableLiveData<List<Sorteo>?>(null)
+    val sorteos: LiveData<List<Sorteo>?>
+        get() = mSorteos
+    fun resetSorteos() = mSorteos.postValue(null)
 
     private fun shuffleBombo(): List<Int> {
-        return bombo.shuffled(Random.apply { random })
+        return BOMBO.shuffled(Random.apply { random })
         //return bombo.shuffled()
     }
 
@@ -80,12 +91,12 @@ class MainPresenter(private val random: ThreadLocalRandom, private val queries: 
         return shuffleBombo().subList(0, 6).sorted()
     }
 
-    fun multiSorteo(): List<List<Int>> {
-        val sorteos = ArrayList<List<Int>>()
+    fun multiSorteo() {
+        val sorteos = mutableListOf<Sorteo>()
         for (i in 0 until 30) {
-            sorteos.add(getRangeFromBombo())
+            sorteos.add(Sorteo(getRangeFromBombo()))
         }
-        return sorteos
+        mSorteos.postValue(sorteos)
     }
 
     fun saveToFavs(sorteo: String): Disposable {

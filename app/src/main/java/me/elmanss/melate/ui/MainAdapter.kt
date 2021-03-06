@@ -6,18 +6,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import me.elmanss.melate.data.Sorteo
 
 
 class MainAdapter : RecyclerView.Adapter<ViewHolder>() {
-
-    private val items = ArrayList<List<Int>>()
+    private val items = mutableListOf<Sorteo>()
 
     fun clear() {
         items.clear()
         notifyDataSetChanged()
     }
 
-    fun add(item: List<Int>, pos: Int) {
+    fun add(item: Sorteo, pos: Int) {
         items.add(item)
         notifyItemInserted(pos)
     }
@@ -29,34 +29,15 @@ class MainAdapter : RecyclerView.Adapter<ViewHolder>() {
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
+    override fun getItemCount() = items.size
 
     @SuppressLint("CheckResult")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-
-        holder.textView.text = items[position].toString()
-
-        /*
-    RxView.clicks(viewHolder.itemView) //viewHolder.itemView here You have access to view
-            .map(aVoid -> viewHolder.getPlace())
-            .subscribe(itemViewClickSubject);
-         */
-
-
-        /*
-
-    RxView.clicks(holder.textView)
-            .takeUntil(RxView.detaches(pParent))
-            .map(aVoid -> view)
-            .subscribe(mViewClickSubject);
-         */
+        holder.textView.text =
+            items[position].numeros.joinToString(separator = ", ", transform = { it.toString() })
     }
 
-    fun getItem(pos: Int): List<Int> {
-        return items[pos]
-    }
+    fun getItem(pos: Int) = items[pos]
 }
 
 class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
