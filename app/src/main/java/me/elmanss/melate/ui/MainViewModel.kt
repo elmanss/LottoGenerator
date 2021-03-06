@@ -10,7 +10,7 @@ import kotlinx.coroutines.launch
 import me.elmanss.melate.Melate
 import me.elmanss.melate.business.FavoritesInteractor
 import me.elmanss.melate.business.FavoritesInteractorImpl
-import me.elmanss.melate.data.Sorteo
+import me.elmanss.melate.models.SorteoModel
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
 
@@ -76,8 +76,8 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val interactor: FavoritesInteractor by lazy { FavoritesInteractorImpl((app as Melate).database.favoritoQueries) }
     private val random = ThreadLocalRandom.current()
 
-    private val mSorteos = MutableLiveData<List<Sorteo>?>(null)
-    val sorteos: LiveData<List<Sorteo>?>
+    private val mSorteos = MutableLiveData<List<SorteoModel>?>(null)
+    val sorteos: LiveData<List<SorteoModel>?>
         get() = mSorteos
 
     fun resetSorteos() = mSorteos.postValue(null)
@@ -91,14 +91,14 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun multiSorteo() {
-        val sorteos = mutableListOf<Sorteo>()
+        val sorteos = mutableListOf<SorteoModel>()
         for (i in 0 until 30) {
-            sorteos.add(Sorteo(getRangeFromPool()))
+            sorteos.add(SorteoModel(getRangeFromPool()))
         }
         mSorteos.postValue(sorteos)
     }
 
-    fun saveToFavorites(sorteo: Sorteo) {
+    fun saveToFavorites(sorteo: SorteoModel) {
         viewModelScope.launch(Dispatchers.IO) {
             interactor.insertFavorite(sorteo)
         }

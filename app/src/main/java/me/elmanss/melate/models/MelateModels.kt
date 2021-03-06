@@ -1,6 +1,6 @@
-package me.elmanss.melate.data
+package me.elmanss.melate.models
 
-data class Sorteo(val numeros: List<Int>) {
+data class SorteoModel(val numeros: List<Int>) {
     fun prettyPrint(): String {
         return this.numeros.joinToString(separator = ", ", transform = {it.toString()})
     }

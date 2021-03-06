@@ -21,7 +21,6 @@ class Melate : Application() {
         val driver: SqlDriver = AndroidSqliteDriver(Database.Schema, this, "favoritos.db")
         Database.Schema.create(driver)
         database = Database(driver)
-
         instance = this
     }
 }

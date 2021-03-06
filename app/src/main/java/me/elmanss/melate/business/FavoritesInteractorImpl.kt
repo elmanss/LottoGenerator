@@ -5,10 +5,10 @@ import com.squareup.sqldelight.runtime.coroutines.asFlow
 import kotlinx.coroutines.flow.Flow
 import me.elmanss.melate.data.Favorito
 import me.elmanss.melate.data.FavoritoQueries
-import me.elmanss.melate.data.Sorteo
+import me.elmanss.melate.models.SorteoModel
 
 class FavoritesInteractorImpl(private val queries: FavoritoQueries) : FavoritesInteractor {
-    override fun insertFavorite(sorteo: Sorteo) {
+    override fun insertFavorite(sorteo: SorteoModel) {
         queries.insertFav(sorteo.prettyPrint())
     }
 

@@ -5,7 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import me.elmanss.melate.data.FavoritoModel
+import me.elmanss.melate.models.FavoritoModel
 
 
 class FavsAdapter : RecyclerView.Adapter<FavsAdapter.ViewHolder>() {

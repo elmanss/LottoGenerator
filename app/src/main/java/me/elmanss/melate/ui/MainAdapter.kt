@@ -5,18 +5,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import me.elmanss.melate.data.Sorteo
+import me.elmanss.melate.models.SorteoModel
 
 
 class MainAdapter : RecyclerView.Adapter<MainAdapter.ViewHolder>() {
-    private val items = mutableListOf<Sorteo>()
+    private val items = mutableListOf<SorteoModel>()
 
     fun clear() {
         items.clear()
         notifyDataSetChanged()
     }
 
-    fun add(item: Sorteo, pos: Int) {
+    fun add(item: SorteoModel, pos: Int) {
         items.add(item)
         notifyItemInserted(pos)
     }

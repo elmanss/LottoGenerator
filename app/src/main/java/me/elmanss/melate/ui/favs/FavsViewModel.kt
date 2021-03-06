@@ -12,20 +12,21 @@ import kotlinx.coroutines.launch
 import me.elmanss.melate.Melate
 import me.elmanss.melate.business.FavoritesInteractor
 import me.elmanss.melate.business.FavoritesInteractorImpl
-import me.elmanss.melate.data.FavoritoModel
 import me.elmanss.melate.mapper.FavoritosMapper
+import me.elmanss.melate.models.FavoritoModel
 
-class FavsViewModel(app: Application): AndroidViewModel(app) {
-    private val interactor: FavoritesInteractor by lazy { FavoritesInteractorImpl((app as Melate).database.favoritoQueries) }
+class FavsViewModel(app: Application) : AndroidViewModel(app) {
+    private val interactor: FavoritesInteractor =
+        FavoritesInteractorImpl((app as Melate).database.favoritoQueries)
     private val mFavorites = MutableLiveData<List<FavoritoModel>?>(null)
     val favorites: LiveData<List<FavoritoModel>?>
         get() = mFavorites
+
     fun resetFavorites() = mFavorites.postValue(null)
 
     init {
-      fetchFavorites()
+        fetchFavorites()
     }
-
 
     fun deleteFavs(model: FavoritoModel) {
         interactor.deleteFavorite(model.id)

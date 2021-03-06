@@ -10,8 +10,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import me.elmanss.melate.Melate
 import me.elmanss.melate.data.FavoritoQueries
-import me.elmanss.melate.data.Sorteo
 import me.elmanss.melate.databinding.ActivityAddToFavBinding
+import me.elmanss.melate.models.SorteoModel
 
 class AddToFavActivity : AppCompatActivity() {
     companion object {
@@ -63,12 +63,12 @@ class AddToFavActivity : AppCompatActivity() {
             AlertDialog.Builder(this).setTitle("Números seleccionados").setMessage(
                 "Los números que seleccionaste son: \n$sorteo.\n\n ¿Deseas guardarlos?"
             ).setPositiveButton("Guardar") { _, _ ->
-                saveToFavs(Sorteo(sorteo))
+                saveToFavs(SorteoModel(sorteo))
             }.setNegativeButton("Cancelar") { d, _ -> d.dismiss() }.show()
         }
     }
 
-    private fun saveToFavs(sorteo: Sorteo) {
+    private fun saveToFavs(sorteo: SorteoModel) {
         queries.insertFav(sorteo.prettyPrint())
         Log.i("MainPresenter", "Favorito agregado con exito")
         setResult(Activity.RESULT_OK)
