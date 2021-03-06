@@ -5,29 +5,26 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
-import me.elmanss.melate.data.Favorito
+import me.elmanss.melate.data.FavoritoModel
 
-class FavsAdapter : RecyclerView.Adapter<ViewHolder>() {
 
-    private val items = mutableListOf<Favorito>()
+class FavsAdapter : RecyclerView.Adapter<FavsAdapter.ViewHolder>() {
 
-    fun fill(item: List<Favorito>) {
-        items.addAll(item)
+    private val mItems = mutableListOf<FavoritoModel>()
+
+    fun fill(items: List<FavoritoModel>) {
+        if (mItems.isNotEmpty()) mItems.clear()
+        mItems.addAll(items)
         notifyDataSetChanged()
     }
 
     fun clear() {
-        items.clear()
+        mItems.clear()
         notifyDataSetChanged()
     }
 
-    fun removeItem(pos: Int) {
-        items.removeAt(pos)
-        notifyItemRemoved(pos)
-    }
-
-    fun getItem(pos: Int): Favorito {
-        return items[pos]
+    fun getItem(pos: Int): FavoritoModel {
+        return mItems[pos]
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -37,14 +34,15 @@ class FavsAdapter : RecyclerView.Adapter<ViewHolder>() {
     }
 
     override fun getItemCount(): Int {
-        return items.size
+        return mItems.size
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.textView.text = items[position].sorteo
+        holder.textView.text = mItems[position].sorteo
     }
-}
 
-class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    val textView: TextView = view.findViewById(android.R.id.text1)
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView = view.findViewById(android.R.id.text1)
+    }
+
 }

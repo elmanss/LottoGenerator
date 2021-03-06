@@ -8,23 +8,14 @@ import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import me.elmanss.melate.Melate
 import me.elmanss.melate.data.FavoritoQueries
+import me.elmanss.melate.data.Sorteo
 import me.elmanss.melate.databinding.ActivityAddToFavBinding
 
 class AddToFavActivity : AppCompatActivity() {
-
-
     companion object {
-
         const val REQUEST_CODE = 200
-
-
         fun startForResult(context: Context) {
             ((context as Activity).startActivityForResult(
                 Intent(
@@ -37,7 +28,6 @@ class AddToFavActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddToFavBinding
     private lateinit var queries: FavoritoQueries
-    private val compositeDisposable = CompositeDisposable()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -48,11 +38,6 @@ class AddToFavActivity : AppCompatActivity() {
         binding.bAddSave.setOnClickListener {
             clickSave()
         }
-    }
-
-    override fun onDestroy() {
-        compositeDisposable.clear()
-        super.onDestroy()
     }
 
     private fun fetchValues(): List<Int> {
@@ -78,28 +63,15 @@ class AddToFavActivity : AppCompatActivity() {
             AlertDialog.Builder(this).setTitle("Números seleccionados").setMessage(
                 "Los números que seleccionaste son: \n$sorteo.\n\n ¿Deseas guardarlos?"
             ).setPositiveButton("Guardar") { _, _ ->
-                compositeDisposable.add(saveToFavs(sorteo))
+                saveToFavs(Sorteo(sorteo))
             }.setNegativeButton("Cancelar") { d, _ -> d.dismiss() }.show()
         }
     }
 
-
-    private fun saveToFavs(sorteo: List<Int>): Disposable {
-        return Single.fromCallable {
-            queries.insertFav(sorteo.toString())
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                Log.i("MainPresenter", "Favorito agregado con exito")
-                setResult(Activity.RESULT_OK)
-                finish()
-            }, {
-                Log.e("MainPresenter", "Error al agregar favorito", it)
-                Toast.makeText(
-                    this,
-                    it.localizedMessage ?: "Error al guardar sorteo",
-                    Toast.LENGTH_SHORT
-                ).show()
-            })
+    private fun saveToFavs(sorteo: Sorteo) {
+        queries.insertFav(sorteo.prettyPrint())
+        Log.i("MainPresenter", "Favorito agregado con exito")
+        setResult(Activity.RESULT_OK)
+        finish()
     }
 }

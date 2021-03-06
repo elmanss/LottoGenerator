@@ -1,6 +1,5 @@
 package me.elmanss.melate.ui
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import me.elmanss.melate.data.Sorteo
 
 
-class MainAdapter : RecyclerView.Adapter<ViewHolder>() {
+class MainAdapter : RecyclerView.Adapter<MainAdapter.ViewHolder>() {
     private val items = mutableListOf<Sorteo>()
 
     fun clear() {
@@ -31,15 +30,13 @@ class MainAdapter : RecyclerView.Adapter<ViewHolder>() {
 
     override fun getItemCount() = items.size
 
-    @SuppressLint("CheckResult")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        holder.textView.text =
-            items[position].numeros.joinToString(separator = ", ", transform = { it.toString() })
+        holder.textView.text = items[position].prettyPrint()
     }
 
     fun getItem(pos: Int) = items[pos]
-}
 
-class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    val textView: TextView = view.findViewById(android.R.id.text1)
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView = view.findViewById(android.R.id.text1)
+    }
 }

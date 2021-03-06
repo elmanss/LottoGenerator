@@ -1,22 +1,21 @@
 package me.elmanss.melate.ui
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
+import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import me.elmanss.melate.Melate
-import me.elmanss.melate.data.FavoritoQueries
+import me.elmanss.melate.business.FavoritesInteractor
+import me.elmanss.melate.business.FavoritesInteractorImpl
 import me.elmanss.melate.data.Sorteo
 import java.util.concurrent.ThreadLocalRandom
 import kotlin.random.Random
 
-class MainViewModel(app: Application): AndroidViewModel(app) {
-    private val BOMBO = listOf(
+class MainViewModel(app: Application) : AndroidViewModel(app) {
+    private val numberPool = listOf(
         1,
         2,
         3,
@@ -74,40 +73,34 @@ class MainViewModel(app: Application): AndroidViewModel(app) {
         55,
         56
     )
-    private val queries: FavoritoQueries by lazy {(app as Melate).database.favoritoQueries}
+    private val interactor: FavoritesInteractor by lazy { FavoritesInteractorImpl((app as Melate).database.favoritoQueries) }
     private val random = ThreadLocalRandom.current()
 
     private val mSorteos = MutableLiveData<List<Sorteo>?>(null)
     val sorteos: LiveData<List<Sorteo>?>
         get() = mSorteos
+
     fun resetSorteos() = mSorteos.postValue(null)
 
-    private fun shuffleBombo(): List<Int> {
-        return BOMBO.shuffled(Random.apply { random })
-        //return bombo.shuffled()
+    private fun shufflePool(): List<Int> {
+        return numberPool.shuffled(Random.apply { random })
     }
 
-    fun getRangeFromBombo(): List<Int> {
-        return shuffleBombo().subList(0, 6).sorted()
+    private fun getRangeFromPool(): List<Int> {
+        return shufflePool().subList(0, 6).sorted()
     }
 
     fun multiSorteo() {
         val sorteos = mutableListOf<Sorteo>()
         for (i in 0 until 30) {
-            sorteos.add(Sorteo(getRangeFromBombo()))
+            sorteos.add(Sorteo(getRangeFromPool()))
         }
         mSorteos.postValue(sorteos)
     }
 
-    fun saveToFavs(sorteo: String): Disposable {
-        return Single.fromCallable {
-            queries.insertFav(sorteo)
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                Log.i("MainPresenter", "Favorito agregado con exito")
-            }, {
-                Log.e("MainPresenter", "Error al agregar favorito con exito", it)
-            })
+    fun saveToFavorites(sorteo: Sorteo) {
+        viewModelScope.launch(Dispatchers.IO) {
+            interactor.insertFavorite(sorteo)
+        }
     }
 }

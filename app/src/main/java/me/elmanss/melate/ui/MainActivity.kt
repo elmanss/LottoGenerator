@@ -2,21 +2,21 @@ package me.elmanss.melate.ui
 
 import android.content.Intent
 import android.os.Bundle
-import android.os.Handler
-import android.os.Looper
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import me.elmanss.melate.databinding.ActivityMainBinding
 import me.elmanss.melate.ui.custom.util.ItemClickSupport
 import me.elmanss.melate.ui.favs.FavsActivity
 
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
-
     private val adapter = MainAdapter()
     private val viewModel: MainViewModel by viewModels()
     private lateinit var binding: ActivityMainBinding
@@ -59,6 +59,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
             it?.let {
                 adapter.clear()
                 it.forEachIndexed { index, sorteo -> adapter.add(sorteo, index) }
+                viewModel.resetSorteos()
             }
         })
     }
@@ -68,7 +69,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
             .setTitle("Aviso")
             .setMessage("¿Deseas agregar este sorteo de tu lista de favoritos?")
             .setPositiveButton("Si") { d, _ ->
-                viewModel.saveToFavs(adapter.getItem(pos).numeros.toString())
+                viewModel.saveToFavorites(adapter.getItem(pos))
                 Toast.makeText(
                     this@MainActivity,
                     "Sorteo agregado a tus favoritos",
@@ -81,9 +82,14 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     }
 
     override fun onRefresh() {
-        Handler(Looper.getMainLooper()).postDelayed({
+        1500L.launchOnRefresh()
+    }
+
+    private fun Long.launchOnRefresh() {
+        lifecycleScope.launch {
+            delay(this@launchOnRefresh)
             binding.root.isRefreshing = false
             viewModel.multiSorteo()
-        }, 1500)
+        }
     }
 }
