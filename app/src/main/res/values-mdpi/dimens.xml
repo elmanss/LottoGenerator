@@ -2,5 +2,5 @@
 <resources>
     <dimen name="key_size">48dp</dimen>
     <dimen name="key_font_size">12sp</dimen>
-    <dimen name="key_number_font_size">48sp</dimen>
+    <dimen name="key_number_font_size">40sp</dimen>
 </resources>

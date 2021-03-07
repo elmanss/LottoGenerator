@@ -10,10 +10,13 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".ui.add.AddToFavActivity"></activity>
+        <activity
+                android:name=".ui.add.AddToFavActivity"
+                android:label="Agrega un sorteo"
+                android:parentActivityName=".ui.favs.FavsActivity" />
         <activity
                 android:name=".ui.favs.FavsActivity"
-                android:label="Favoritos"
+                android:label="Mis sorteos"
                 android:parentActivityName=".ui.MainActivity" />
         <activity android:name=".ui.MainActivity">
             <intent-filter>

@@ -47,7 +47,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
         Toast.makeText(
             this,
-            "Para agregar sorteos a tus favoritos, mantén presionado el sorteo de tu elección",
+            "Presiona sobre un sorteo para guardarlo en tu dispositivo.",
             Toast.LENGTH_LONG
         ).show()
 
@@ -78,12 +78,12 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     private fun showWarning(pos: Int) {
         AlertDialog.Builder(this)
             .setTitle("Aviso")
-            .setMessage("¿Deseas agregar este sorteo de tu lista de favoritos?")
+            .setMessage("¿Deseas guardar este sorteo?")
             .setPositiveButton("Si") { d, _ ->
                 viewModel.saveToFavorites(adapter.getItem(pos))
                 Toast.makeText(
                     this@MainActivity,
-                    "Sorteo agregado a tus favoritos",
+                    "Se ha guardado este sorteo en tu dispositivo",
                     Toast.LENGTH_SHORT
                 )
                     .show()

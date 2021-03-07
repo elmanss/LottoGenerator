@@ -82,7 +82,7 @@ class FavsActivity : AppCompatActivity(), FavsAdapter.DeleteClickListener {
     private fun showWarning(model: FavoritoModel): Boolean {
         AlertDialog.Builder(this)
             .setTitle("Aviso")
-            .setMessage("¿Deseas eliminar este sorteo de tu lista de favoritos?")
+            .setMessage("¿Deseas eliminar este sorteo de tu lista de sorteos?")
             .setPositiveButton("Borrar") { d, _ ->
                 viewModel.deleteFavs(model)
                 d.dismiss()

@@ -4,10 +4,13 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import me.elmanss.melate.R
 import me.elmanss.melate.databinding.ActivityAddToFavBinding
 import me.elmanss.melate.extensions.prettyPrint
 import me.elmanss.melate.models.FavoritoModel
@@ -45,8 +48,24 @@ class AddToFavActivity : AppCompatActivity() {
         binding = ActivityAddToFavBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
         configKeyboard()
         observe()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            android.R.id.home -> {
+                // app icon in action bar clicked; go home
+                onBackPressed()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
     }
 
     private fun setKeyboardEnabled(enabled: Boolean) {
@@ -119,7 +138,11 @@ class AddToFavActivity : AppCompatActivity() {
                 Timber.d("Sorteo not complete, state: %s", it)
                 setKeyboardEnabled(true)
                 binding.tvCaptureNumber.text = ""
-                binding.tvKeyboardInfo.text = it.prettyPrint()
+                if (it.isNotEmpty()) {
+                    binding.tvKeyboardInfo.text = it.prettyPrint()
+                } else {
+                    binding.tvKeyboardInfo.text = getString(R.string.txt_add_instructions)
+                }
                 viewModel.resetNumberAdded()
             }
         })
@@ -128,7 +151,11 @@ class AddToFavActivity : AppCompatActivity() {
             it?.let {
                 setKeyboardEnabled(true)
                 Timber.d("Sorteo not complete, state %s", it)
-                binding.tvKeyboardInfo.text = it.prettyPrint()
+                if (it.isNotEmpty()) {
+                    binding.tvKeyboardInfo.text = it.prettyPrint()
+                } else {
+                    binding.tvKeyboardInfo.text = getString(R.string.txt_add_instructions)
+                }
                 viewModel.resetNumberRemoved()
             }
         })
