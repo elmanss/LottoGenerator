@@ -78,6 +78,8 @@ class AddToFavViewModel(app: Application) : AndroidViewModel(app) {
         when {
             currentNumber.isBlank() && mNumbers.size < MAX_LEN -> mCaptureError.value =
                 "Ingresa un numero"
+            currentNumber.toInt() > 56 && mNumbers.size < MAX_LEN -> mCaptureError.value =
+                "Solo se permiten numeros hasta 56"
             isNumberInSorteo(currentNumber) && mNumbers.size < MAX_LEN -> mCaptureError.value =
                 "Numero agregado previamente"
             else -> addNumberToSorteo(currentNumber)
@@ -106,6 +108,9 @@ class AddToFavViewModel(app: Application) : AndroidViewModel(app) {
             mNumbers.add(number)
             mNumberAdded.value = mNumbers
             currentNumber = ""
+            if (mNumbers.size == MAX_LEN) {
+                mSorteoCompleted.value = mNumbers
+            }
         } else if (mNumbers.size == MAX_LEN) {
             Timber.d("Sorteo complete, notifying sorteo: %s", mNumbers)
             mSorteoCompleted.value = mNumbers
@@ -114,12 +119,7 @@ class AddToFavViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun removeNumberFromSorteo() {
         if (mNumbers.isNotEmpty()) {
-            mNumbers.removeLast()
-            if (mNumbers.isNotEmpty()) {
-                val last = mNumbers.last()
-                currentNumber = last
-            }
-
+            currentNumber = mNumbers.removeLast()
             mNumberRemoved.value = mNumbers
         }
     }

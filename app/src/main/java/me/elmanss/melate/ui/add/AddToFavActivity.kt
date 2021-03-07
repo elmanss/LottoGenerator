@@ -161,7 +161,8 @@ class AddToFavActivity : AppCompatActivity() {
     }
 
     private fun showSaveDialog(sorteo: List<String>) {
-        AlertDialog.Builder(this).setTitle("Números seleccionados")
+        AlertDialog.Builder(this)
+            .setTitle("Números seleccionados")
             .setMessage("Los números que seleccionaste son: \n${sorteo.prettyPrint()}.\n\n ¿Deseas guardarlos?")
             .setPositiveButton("Guardar") { _, _ ->
                 saveToFavs(sorteo)

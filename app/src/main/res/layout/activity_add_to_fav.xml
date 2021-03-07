@@ -24,7 +24,7 @@
             android:layout_width="0dp"
             android:gravity="center"
             android:layout_marginBottom="16dp"
-            android:textSize="18sp"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
             android:textColor="@color/colorPrimary"
             app:layout_constraintBottom_toTopOf="@id/b_keyboard_two"
             app:layout_constraintStart_toStartOf="@id/b_keyboard_one"
@@ -147,12 +147,12 @@
             app:layout_constraintStart_toEndOf="@id/b_keyboard_eight"
             app:layout_constraintTop_toTopOf="@id/b_keyboard_eight" />
 
-    <Button
+    <ImageButton
             android:id="@+id/b_keyboard_back"
             style="@style/Widget.AppCompat.Button.Borderless.Colored"
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
-            android:text="DEL"
+            android:src="@drawable/backspace"
             android:maxLines="1"
             android:ellipsize="end"
             android:textSize="@dimen/key_font_size"
@@ -179,7 +179,7 @@
             style="@style/Widget.AppCompat.Button.Borderless.Colored"
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
-            android:text=">"
+            android:text="OK"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_zero"
             app:layout_constraintDimensionRatio="1:1"
