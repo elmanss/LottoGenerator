@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="key_size">64dp</dimen>
+    <dimen name="key_font_size">18sp</dimen>
+    <dimen name="key_number_font_size">72sp</dimen>
+</resources>

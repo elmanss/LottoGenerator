@@ -3,44 +3,30 @@ package me.elmanss.melate.ui.favs
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.squareup.sqldelight.runtime.rx.asObservable
-import com.squareup.sqldelight.runtime.rx.mapToList
-import io.reactivex.Observable
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
-import me.elmanss.melate.Melate
-import me.elmanss.melate.data.FavoritoQueries
 import me.elmanss.melate.databinding.ActivityFavsBinding
+import me.elmanss.melate.models.FavoritoModel
 import me.elmanss.melate.ui.add.AddToFavActivity
-import me.elmanss.melate.ui.custom.util.ItemClickSupport
 
 
-class FavsActivity : AppCompatActivity() {
-
+class FavsActivity : AppCompatActivity(), FavsAdapter.DeleteClickListener {
     private lateinit var binding: ActivityFavsBinding
-    private lateinit var queries: FavoritoQueries
     private val adapter = FavsAdapter()
-    private val compositeDisposable = CompositeDisposable()
+    private val viewModel: FavsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityFavsBinding.inflate(layoutInflater)
         val view = binding.root
         setContentView(view)
-
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
-
         binding.addButton.setOnClickListener {
             AddToFavActivity.startForResult(this@FavsActivity)
         }
@@ -52,33 +38,20 @@ class FavsActivity : AppCompatActivity() {
                 LinearLayoutManager.VERTICAL
             )
         )
+
         binding.favsSorteosView.adapter = adapter
-        ItemClickSupport.addTo(binding.favsSorteosView)
-            .setOnItemLongClickListener { _, pos, _ ->
-                showWarning(pos)
-            }
-
-        queries = Melate.get().database.favoritoQueries
-        compositeDisposable.add(fillFavs())
+        observe()
     }
 
-    override fun onDestroy() {
-        compositeDisposable.clear()
-        super.onDestroy()
+    override fun onResume() {
+        super.onResume()
+        adapter.setListener(this)
     }
 
-
-    /*
-     * return when (item.getItemId()) {
-    R.id.home -> {
-    // app icon in action bar clicked; go home
-    val intent = Intent(this, MainActivity::class.java)
-    startActivity(intent)
-    true
+    override fun onPause() {
+        super.onPause()
+        adapter.removeListener()
     }
-    else -> super.onOptionsItemSelected(item)
-    }
-     */
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         return true
@@ -95,61 +68,23 @@ class FavsActivity : AppCompatActivity() {
         }
     }
 
-    private fun fillFavs(): Disposable {
-
-
-        return queries.selectAll()
-            .asObservable()
-            .subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .mapToList()
-            .subscribe({
+    private fun observe() {
+        viewModel.favorites.observe(this, {
+            it?.let {
+                adapter.clear()
                 adapter.fill(it)
-            }, {
-                Log.e("FavsActivity", "Ocurrió un error al obtener favoritos", it)
-            })
-
-        /*  return Observable.fromCallable {
-              queries.selectAll().executeAsList()
-          }.subscribeOn(Schedulers.io())
-              .observeOn(AndroidSchedulers.mainThread())
-              .subscribe({
-                  adapter.fill(it)
-              }, {
-                  Log.e("FavsActivity", "Ocurrió un error al obtener favoritos", it)
-              })*/
+                viewModel.resetFavorites()
+            }
+        })
     }
 
-    private fun removeFav(pos: Int): Disposable {
 
-        val forDeletion = adapter.getItem(pos)
-
-        return Observable.fromCallable {
-            queries.deleteFav(forDeletion.id)
-        }.subscribeOn(Schedulers.io())
-            .observeOn(AndroidSchedulers.mainThread())
-            .subscribe({
-                adapter.removeItem(pos)
-                Toast.makeText(
-                    this@FavsActivity,
-                    "Sorteo eliminado exitosamente",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }, {
-                Toast.makeText(
-                    this@FavsActivity,
-                    "No se pudo eliminar el sorteo",
-                    Toast.LENGTH_SHORT
-                ).show()
-            })
-    }
-
-    private fun showWarning(pos: Int): Boolean {
+    private fun showWarning(model: FavoritoModel): Boolean {
         AlertDialog.Builder(this)
             .setTitle("Aviso")
             .setMessage("¿Deseas eliminar este sorteo de tu lista de favoritos?")
-            .setPositiveButton(android.R.string.yes) { d, _ ->
-                compositeDisposable.add(removeFav(pos))
+            .setPositiveButton("Borrar") { d, _ ->
+                viewModel.deleteFavs(model)
                 d.dismiss()
             }.show()
         return true
@@ -160,9 +95,12 @@ class FavsActivity : AppCompatActivity() {
         if (requestCode == AddToFavActivity.REQUEST_CODE) {
             if (resultCode == Activity.RESULT_OK) {
                 adapter.clear()
-                compositeDisposable.add(fillFavs())
                 Toast.makeText(this, "Sorteo guardado exitosamente", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onClickDelete(model: FavoritoModel) {
+        showWarning(model)
     }
 }

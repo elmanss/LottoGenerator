@@ -1,25 +1,24 @@
 package me.elmanss.melate.ui
 
-import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
+import me.elmanss.melate.models.SorteoModel
 
 
-class MainAdapter : RecyclerView.Adapter<ViewHolder>() {
-
-    private val items = ArrayList<List<Int>>()
+class MainAdapter : RecyclerView.Adapter<MainAdapter.ViewHolder>() {
+    private val items = mutableListOf<SorteoModel>()
 
     fun clear() {
         items.clear()
         notifyDataSetChanged()
     }
 
-    fun add(item: List<Int>, pos: Int) {
+    fun add(item: SorteoModel) {
         items.add(item)
-        notifyItemInserted(pos)
+        notifyItemInserted(items.lastIndex)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -29,36 +28,15 @@ class MainAdapter : RecyclerView.Adapter<ViewHolder>() {
         return ViewHolder(view)
     }
 
-    override fun getItemCount(): Int {
-        return items.size
-    }
+    override fun getItemCount() = items.size
 
-    @SuppressLint("CheckResult")
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-
-        holder.textView.text = items[position].toString()
-
-        /*
-    RxView.clicks(viewHolder.itemView) //viewHolder.itemView here You have access to view
-            .map(aVoid -> viewHolder.getPlace())
-            .subscribe(itemViewClickSubject);
-         */
-
-
-        /*
-
-    RxView.clicks(holder.textView)
-            .takeUntil(RxView.detaches(pParent))
-            .map(aVoid -> view)
-            .subscribe(mViewClickSubject);
-         */
+        holder.textView.text = items[position].prettyPrint()
     }
 
-    fun getItem(pos: Int): List<Int> {
-        return items[pos]
-    }
-}
+    fun getItem(pos: Int) = items[pos]
 
-class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
-    val textView: TextView = view.findViewById(android.R.id.text1)
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val textView: TextView = view.findViewById(android.R.id.text1)
+    }
 }
