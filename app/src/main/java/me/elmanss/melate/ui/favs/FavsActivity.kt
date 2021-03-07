@@ -12,11 +12,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import me.elmanss.melate.databinding.ActivityFavsBinding
+import me.elmanss.melate.models.FavoritoModel
 import me.elmanss.melate.ui.add.AddToFavActivity
-import me.elmanss.melate.ui.custom.util.ItemClickSupport
 
 
-class FavsActivity : AppCompatActivity() {
+class FavsActivity : AppCompatActivity(), FavsAdapter.DeleteClickListener {
     private lateinit var binding: ActivityFavsBinding
     private val adapter = FavsAdapter()
     private val viewModel: FavsViewModel by viewModels()
@@ -40,12 +40,17 @@ class FavsActivity : AppCompatActivity() {
         )
 
         binding.favsSorteosView.adapter = adapter
-        ItemClickSupport.addTo(binding.favsSorteosView)
-            .setOnItemLongClickListener { _, pos, _ ->
-                showWarning(pos)
-            }
-
         observe()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        adapter.setListener(this)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        adapter.removeListener()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -73,22 +78,13 @@ class FavsActivity : AppCompatActivity() {
         })
     }
 
-    private fun removeFav(pos: Int) {
-        val forDeletion = adapter.getItem(pos)
-        viewModel.deleteFavs(forDeletion)
-        Toast.makeText(
-            this@FavsActivity,
-            "Sorteo eliminado exitosamente",
-            Toast.LENGTH_SHORT
-        ).show()
-    }
 
-    private fun showWarning(pos: Int): Boolean {
+    private fun showWarning(model: FavoritoModel): Boolean {
         AlertDialog.Builder(this)
             .setTitle("Aviso")
             .setMessage("¿Deseas eliminar este sorteo de tu lista de favoritos?")
-            .setPositiveButton(android.R.string.yes) { d, _ ->
-                removeFav(pos)
+            .setPositiveButton("Borrar") { d, _ ->
+                viewModel.deleteFavs(model)
                 d.dismiss()
             }.show()
         return true
@@ -102,5 +98,9 @@ class FavsActivity : AppCompatActivity() {
                 Toast.makeText(this, "Sorteo guardado exitosamente", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    override fun onClickDelete(model: FavoritoModel) {
+        showWarning(model)
     }
 }

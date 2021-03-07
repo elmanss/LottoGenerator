@@ -14,10 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import me.elmanss.melate.Pool
 import me.elmanss.melate.R
 import me.elmanss.melate.databinding.ActivityMainBinding
 import me.elmanss.melate.ui.custom.util.ItemClickSupport
 import me.elmanss.melate.ui.favs.FavsActivity
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     private val adapter = MainAdapter()
@@ -39,7 +41,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
         )
 
         binding.mainSorteosView.adapter = adapter
-        ItemClickSupport.addTo(binding.mainSorteosView).setOnItemLongClickListener { _, pos, _ ->
+        ItemClickSupport.addTo(binding.mainSorteosView).setOnItemClickListener { _, pos, _ ->
             showWarning(pos)
         }
 
@@ -50,7 +52,6 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
         ).show()
 
         observe()
-        viewModel.multiSorteo()
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -59,7 +60,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        when(item.itemId) {
+        when (item.itemId) {
             R.id.item_favs -> startActivity(Intent(this, FavsActivity::class.java))
         }
         return super.onOptionsItemSelected(item)
@@ -68,14 +69,13 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     private fun observe() {
         viewModel.sorteos.observe(this, {
             it?.let {
-                adapter.clear()
-                it.forEachIndexed { index, sorteo -> adapter.add(sorteo, index) }
-                viewModel.resetSorteos()
+                adapter.add(it)
+                Timber.d("Added item ${it.prettyPrint()} at position ${adapter.itemCount - 1}")
             }
         })
     }
 
-    private fun showWarning(pos: Int): Boolean {
+    private fun showWarning(pos: Int) {
         AlertDialog.Builder(this)
             .setTitle("Aviso")
             .setMessage("¿Deseas agregar este sorteo de tu lista de favoritos?")
@@ -89,7 +89,6 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
                     .show()
                 d.dismiss()
             }.show()
-        return true
     }
 
     override fun onRefresh() {
@@ -98,9 +97,10 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
 
     private fun Long.launchOnRefresh() {
         lifecycleScope.launch {
+            adapter.clear()
             delay(this@launchOnRefresh)
             binding.root.isRefreshing = false
-            viewModel.multiSorteo()
+            viewModel.fetchSorteos(Pool.numbers)
         }
     }
 }

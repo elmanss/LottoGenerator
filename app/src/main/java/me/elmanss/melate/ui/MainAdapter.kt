@@ -16,9 +16,9 @@ class MainAdapter : RecyclerView.Adapter<MainAdapter.ViewHolder>() {
         notifyDataSetChanged()
     }
 
-    fun add(item: SorteoModel, pos: Int) {
+    fun add(item: SorteoModel) {
         items.add(item)
-        notifyItemInserted(pos)
+        notifyItemInserted(items.lastIndex)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
