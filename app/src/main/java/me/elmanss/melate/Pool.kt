@@ -62,4 +62,4 @@ val NUMBERS_POOL = listOf(
     56
 )
 
-fun getSorteoNumbers(random: ThreadLocalRandom) = NUMBERS_POOL.shuffled(random).subList(0, 6).sorted()
+fun getSorteoNumbers(random: ThreadLocalRandom) = NUMBERS_POOL.shuffled(random).take(6).sorted()
