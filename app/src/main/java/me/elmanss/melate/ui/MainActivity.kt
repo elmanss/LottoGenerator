@@ -14,7 +14,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.elmanss.melate.NUMBERS_POOL
 import me.elmanss.melate.R
 import me.elmanss.melate.databinding.ActivityMainBinding
 import me.elmanss.melate.ui.custom.util.ItemClickSupport
@@ -31,20 +30,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
         binding = ActivityMainBinding.inflate(layoutInflater)
         val root = binding.root
         setContentView(root)
-        binding.mainScreen.setOnRefreshListener(this)
-        binding.mainSorteosView.layoutManager = LinearLayoutManager(this)
-        binding.mainSorteosView.addItemDecoration(
-            DividerItemDecoration(
-                this,
-                LinearLayoutManager.VERTICAL
-            )
-        )
-
-        binding.mainSorteosView.adapter = adapter
-        ItemClickSupport.addTo(binding.mainSorteosView).setOnItemClickListener { _, pos, _ ->
-            showWarning(pos)
-        }
-
+        configBinding(binding)
         Toast.makeText(
             this,
             "Para agregar sorteos a tus favoritos, mantén presionado el sorteo de tu elección",
@@ -52,6 +38,24 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
         ).show()
 
         observe()
+    }
+
+    private fun configBinding(binding: ActivityMainBinding) {
+        binding.apply {
+            mainScreen.setOnRefreshListener(this@MainActivity)
+            mainSorteosView.layoutManager = LinearLayoutManager(this@MainActivity)
+            mainSorteosView.addItemDecoration(
+                DividerItemDecoration(
+                    this@MainActivity,
+                    LinearLayoutManager.VERTICAL
+                )
+            )
+
+            mainSorteosView.adapter = adapter
+            ItemClickSupport.addTo(mainSorteosView).setOnItemClickListener { _, pos, _ ->
+                showWarning(pos)
+            }
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
@@ -100,7 +104,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
             adapter.clear()
             delay(this@launchOnRefresh)
             binding.root.isRefreshing = false
-            viewModel.fetchSorteos(NUMBERS_POOL)
+            viewModel.fetchSorteos()
         }
     }
 }

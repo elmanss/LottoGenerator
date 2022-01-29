@@ -1,5 +1,7 @@
 package me.elmanss.melate
 
+import java.util.concurrent.ThreadLocalRandom
+
 
 val NUMBERS_POOL = listOf(
     1,
@@ -59,3 +61,5 @@ val NUMBERS_POOL = listOf(
     55,
     56
 )
+
+fun getSorteoNumbers(random: ThreadLocalRandom) = NUMBERS_POOL.shuffled(random).subList(0, 6)

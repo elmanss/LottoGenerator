@@ -9,14 +9,13 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.elmanss.melate.Melate
-import me.elmanss.melate.NUMBERS_POOL
 import me.elmanss.melate.business.FavoritesInteractor
 import me.elmanss.melate.business.FavoritesInteractorImpl
 import me.elmanss.melate.extensions.toFavorito
+import me.elmanss.melate.getSorteoNumbers
 import me.elmanss.melate.models.SorteoModel
 import timber.log.Timber
 import java.util.concurrent.ThreadLocalRandom
-import kotlin.random.Random
 
 class MainViewModel(app: Application) : AndroidViewModel(app) {
     private val interactor: FavoritesInteractor by lazy { FavoritesInteractorImpl((app as Melate).database.favoritoQueries) }
@@ -26,27 +25,19 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     val sorteos: LiveData<SorteoModel?>
         get() = mSorteos
 
-    fun resetSorteos() {
-        mSorteos.value = null
+    fun setSorteos(value: SorteoModel? = null) {
+        mSorteos.value = value
     }
 
     init {
-        fetchSorteos(NUMBERS_POOL)
+        fetchSorteos()
     }
 
-    private fun shufflePool(pool: List<Int>): List<Int> {
-        return pool.shuffled(Random.apply { random })
-    }
-
-    private fun getRangeFromPool(pool: List<Int>): List<Int> {
-        return shufflePool(pool).subList(0, 6).sorted()
-    }
-
-    fun fetchSorteos(pool: List<Int>) {
+    fun fetchSorteos() {
         viewModelScope.launch {
             repeat(30) {
                 Timber.d("$it times")
-                mSorteos.value = SorteoModel(getRangeFromPool(pool))
+                setSorteos(SorteoModel(getSorteoNumbers(random)))
                 delay(5)
             }
         }
