@@ -9,7 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.elmanss.melate.Melate
-import me.elmanss.melate.Pool
+import me.elmanss.melate.NUMBERS_POOL
 import me.elmanss.melate.business.FavoritesInteractor
 import me.elmanss.melate.business.FavoritesInteractorImpl
 import me.elmanss.melate.extensions.toFavorito
@@ -31,7 +31,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     init {
-        fetchSorteos(Pool.numbers)
+        fetchSorteos(NUMBERS_POOL)
     }
 
     private fun shufflePool(pool: List<Int>): List<Int> {

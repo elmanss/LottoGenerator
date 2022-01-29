@@ -14,7 +14,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import me.elmanss.melate.Pool
+import me.elmanss.melate.NUMBERS_POOL
 import me.elmanss.melate.R
 import me.elmanss.melate.databinding.ActivityMainBinding
 import me.elmanss.melate.ui.custom.util.ItemClickSupport
@@ -67,12 +67,12 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     }
 
     private fun observe() {
-        viewModel.sorteos.observe(this, {
+        viewModel.sorteos.observe(this) {
             it?.let {
                 adapter.add(it)
                 Timber.d("Added item ${it.prettyPrint()} at position ${adapter.itemCount - 1}")
             }
-        })
+        }
     }
 
     private fun showWarning(pos: Int) {
@@ -100,7 +100,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
             adapter.clear()
             delay(this@launchOnRefresh)
             binding.root.isRefreshing = false
-            viewModel.fetchSorteos(Pool.numbers)
+            viewModel.fetchSorteos(NUMBERS_POOL)
         }
     }
 }
