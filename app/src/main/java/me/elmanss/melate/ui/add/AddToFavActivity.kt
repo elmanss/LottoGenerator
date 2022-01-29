@@ -8,10 +8,11 @@ import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import logcat.logcat
 import me.elmanss.melate.databinding.ActivityAddToFavBinding
 import me.elmanss.melate.extensions.prettyPrint
 import me.elmanss.melate.models.FavoritoModel
-import timber.log.Timber
+
 
 class AddToFavActivity : AppCompatActivity() {
     companion object {
@@ -114,50 +115,50 @@ class AddToFavActivity : AppCompatActivity() {
     }
 
     private fun observe() {
-        viewModel.numberAdded.observe(this, {
+        viewModel.numberAdded.observe(this) {
             it?.let {
-                Timber.d("Sorteo not complete, state: %s", it)
+                logcat { "Sorteo not complete, state: $it" }
                 setKeyboardEnabled(true)
                 binding.tvCaptureNumber.text = ""
                 binding.tvKeyboardInfo.text = it.prettyPrint()
                 viewModel.resetNumberAdded()
             }
-        })
+        }
 
-        viewModel.numberRemoved.observe(this, {
+        viewModel.numberRemoved.observe(this) {
             it?.let {
                 setKeyboardEnabled(true)
-                Timber.d("Sorteo not complete, state %s", it)
+                logcat { "Sorteo not complete, state $it" }
                 binding.tvKeyboardInfo.text = it.prettyPrint()
                 viewModel.resetNumberRemoved()
             }
-        })
+        }
 
-        viewModel.sorteoCompleted.observe(this, {
+        viewModel.sorteoCompleted.observe(this) {
             it?.let {
-                Timber.d("Sorteo complete, notified sorteo: %s", it)
+                logcat { "Sorteo complete, notified sorteo: $it" }
                 showSaveDialog(it)
                 viewModel.resetCorteoCompleted()
             }
-        })
+        }
 
-        viewModel.captureNumber.observe(this, {
+        viewModel.captureNumber.observe(this) {
             it?.let {
-                Timber.d("Captured digit: %s", it)
+                logcat { "Captured digit: $it" }
                 setKeyboardEnabled(it.length < 2)
                 binding.bKeyboardZero.isEnabled = (it.length == 1)
                 binding.tvCaptureNumber.text = it
                 viewModel.resetCaptureNumber()
             }
-        })
+        }
 
-        viewModel.captureError.observe(this, {
+        viewModel.captureError.observe(this) {
             it?.let {
-                Timber.d("Error thrown while capturing digit")
+                logcat { "Error thrown while capturing digit" }
                 Toast.makeText(this@AddToFavActivity, it, Toast.LENGTH_SHORT).show()
                 viewModel.resetCaptureError()
             }
-        })
+        }
     }
 
     private fun showSaveDialog(sorteo: List<String>) {
@@ -174,7 +175,7 @@ class AddToFavActivity : AppCompatActivity() {
 
     private fun saveToFavs(sorteo: List<String>) {
         viewModel.insertFavorite(FavoritoModel(0, sorteo.prettyPrint()))
-        Timber.d("Favorito agregado con exito")
+        logcat { "Favorito agregado con exito" }
         setResult(Activity.RESULT_OK)
         finish()
     }

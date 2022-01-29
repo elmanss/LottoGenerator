@@ -3,7 +3,9 @@ package me.elmanss.melate
 import android.app.Application
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
-import timber.log.Timber
+import logcat.AndroidLogcatLogger
+import logcat.LogPriority
+
 
 class Melate : Application() {
 
@@ -22,7 +24,7 @@ class Melate : Application() {
         val driver: SqlDriver = AndroidSqliteDriver(Database.Schema, this, "favoritos.db")
         Database.Schema.create(driver)
         database = Database(driver)
-        Timber.plant(Timber.DebugTree())
+        AndroidLogcatLogger.installOnDebuggableApp(this, minPriority = LogPriority.VERBOSE)
         instance = this
     }
 }

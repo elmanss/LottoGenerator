@@ -14,11 +14,12 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import logcat.logcat
 import me.elmanss.melate.R
 import me.elmanss.melate.databinding.ActivityMainBinding
 import me.elmanss.melate.ui.custom.util.ItemClickSupport
 import me.elmanss.melate.ui.favs.FavsActivity
-import timber.log.Timber
+
 
 class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
     private val adapter = MainAdapter()
@@ -74,7 +75,7 @@ class MainActivity : AppCompatActivity(), SwipeRefreshLayout.OnRefreshListener {
         viewModel.sorteos.observe(this) {
             it?.let {
                 adapter.add(it)
-                Timber.d("Added item ${it.prettyPrint()} at position ${adapter.itemCount - 1}")
+                logcat { "Added item ${it.prettyPrint()} at position ${adapter.itemCount - 1}" }
             }
         }
     }
