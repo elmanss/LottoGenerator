@@ -1,6 +1,19 @@
 <resources>
     <string name="app_name">MelateKotlin</string>
     <string name="txt_mis_sorteos">Mis sorteos</string>
+    <string name="txt_button_mis_favs">Mis favoritos</string>
+    <string name="desc_keyboard_back">Back icon</string>
+    <string name="label_keyboard_0">0</string>
+    <string name="label_keyboard_1">1</string>
+    <string name="label_keyboard_2">2</string>
+    <string name="label_keyboard_3">3</string>
+    <string name="label_keyboard_4">4</string>
+    <string name="label_keyboard_5">5</string>
+    <string name="label_keyboard_6">6</string>
+    <string name="label_keyboard_7">7</string>
+    <string name="label_keyboard_8">8</string>
+    <string name="label_keyboard_9">9</string>
+    <string name="label_keyboard_OK">OK</string>
     <string-array name="numbers">
         <item>1</item>
         <item>2</item>

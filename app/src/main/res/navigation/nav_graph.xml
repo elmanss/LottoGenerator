@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/nav_graph"
+        app:startDestination="@id/sorteoListFragment">
+
+    <fragment
+            android:id="@+id/sorteoListFragment"
+            android:name="me.elmanss.melate.ui.list.SorteoListFragment"
+            android:label="SorteoListFragment" >
+        <action
+                android:id="@+id/action_sorteoListFragment_to_favsFragment"
+                app:destination="@id/favsFragment" />
+    </fragment>
+    <fragment
+            android:id="@+id/favsFragment"
+            android:name="me.elmanss.melate.ui.favs.FavsFragment"
+            android:label="FavsFragment" >
+        <action
+                android:id="@+id/action_favsFragment_to_addToFavFragment"
+                app:destination="@id/addToFavFragment" />
+    </fragment>
+    <fragment
+            android:id="@+id/addToFavFragment"
+            android:name="me.elmanss.melate.ui.add.AddToFavFragment"
+            android:label="AddToFavFragment" />
+</navigation>

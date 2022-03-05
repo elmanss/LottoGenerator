@@ -1,19 +1,18 @@
 package me.elmanss.melate.ui.add
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
+import android.app.AlertDialog
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
-import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
-import me.elmanss.melate.databinding.ActivityAddToFavBinding
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import logcat.logcat
+import me.elmanss.melate.R
+import me.elmanss.melate.databinding.FragmentAddToFavBinding
 import me.elmanss.melate.extensions.prettyPrint
 import me.elmanss.melate.models.FavoritoModel
-import timber.log.Timber
 
-class AddToFavActivity : AppCompatActivity() {
+class AddToFavFragment : Fragment(R.layout.fragment_add_to_fav) {
     companion object {
         private const val ONE = "1"
         private const val TWO = "2"
@@ -25,29 +24,21 @@ class AddToFavActivity : AppCompatActivity() {
         private const val EIGHT = "8"
         private const val NINE = "9"
         private const val ZERO = "0"
-
-        const val REQUEST_CODE = 200
-        fun startForResult(context: Context) {
-            ((context as Activity).startActivityForResult(
-                Intent(
-                    context,
-                    AddToFavActivity::class.java
-                ), REQUEST_CODE
-            ))
-        }
     }
 
-    private lateinit var binding: ActivityAddToFavBinding
+    //
+    private lateinit var binding: FragmentAddToFavBinding
     private val viewModel: AddToFavViewModel by viewModels()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        binding = ActivityAddToFavBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        binding = FragmentAddToFavBinding.bind(view)
+
         configKeyboard()
         observe()
     }
+
 
     private fun setKeyboardEnabled(enabled: Boolean) {
         binding.bKeyboardOne.isEnabled = enabled
@@ -114,68 +105,68 @@ class AddToFavActivity : AppCompatActivity() {
     }
 
     private fun observe() {
-        viewModel.numberAdded.observe(this, {
+        viewModel.numberAdded.observe(viewLifecycleOwner) {
             it?.let {
-                Timber.d("Sorteo not complete, state: %s", it)
+                logcat { "Sorteo not complete, state: $it" }
                 setKeyboardEnabled(true)
                 binding.tvCaptureNumber.text = ""
                 binding.tvKeyboardInfo.text = it.prettyPrint()
                 viewModel.resetNumberAdded()
             }
-        })
-
-        viewModel.numberRemoved.observe(this, {
+        }
+//
+        viewModel.numberRemoved.observe(viewLifecycleOwner) {
             it?.let {
                 setKeyboardEnabled(true)
-                Timber.d("Sorteo not complete, state %s", it)
+                logcat { "Sorteo not complete, state $it" }
                 binding.tvKeyboardInfo.text = it.prettyPrint()
                 viewModel.resetNumberRemoved()
             }
-        })
-
-        viewModel.sorteoCompleted.observe(this, {
+        }
+//
+        viewModel.sorteoCompleted.observe(viewLifecycleOwner) {
             it?.let {
-                Timber.d("Sorteo complete, notified sorteo: %s", it)
+                logcat { "Sorteo complete, notified sorteo: $it" }
                 showSaveDialog(it)
                 viewModel.resetCorteoCompleted()
             }
-        })
-
-        viewModel.captureNumber.observe(this, {
+        }
+//
+        viewModel.captureNumber.observe(viewLifecycleOwner) {
             it?.let {
-                Timber.d("Captured digit: %s", it)
+                logcat { "Captured digit: $it" }
                 setKeyboardEnabled(it.length < 2)
                 binding.bKeyboardZero.isEnabled = (it.length == 1)
                 binding.tvCaptureNumber.text = it
                 viewModel.resetCaptureNumber()
             }
-        })
-
-        viewModel.captureError.observe(this, {
+        }
+//
+        viewModel.captureError.observe(viewLifecycleOwner) {
             it?.let {
-                Timber.d("Error thrown while capturing digit")
-                Toast.makeText(this@AddToFavActivity, it, Toast.LENGTH_SHORT).show()
+                logcat { "Error thrown while capturing digit" }
+                Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
                 viewModel.resetCaptureError()
             }
-        })
+        }
     }
 
+    //
     private fun showSaveDialog(sorteo: List<String>) {
-        AlertDialog.Builder(this)
-            .setTitle("Números seleccionados")
-            .setMessage("Los números que seleccionaste son: \n${sorteo.prettyPrint()}.\n\n ¿Deseas guardarlos?")
-            .setPositiveButton("Guardar") { _, _ ->
-                saveToFavs(sorteo)
-            }
-            .setNegativeButton("Cancelar") { d, _ ->
-                d.dismiss()
-            }.show()
+        context?.let { c ->
+            AlertDialog.Builder(c).setTitle("Números seleccionados")
+                .setMessage("Los números que seleccionaste son: \n${sorteo.prettyPrint()}.\n\n ¿Deseas guardarlos?")
+                .setPositiveButton("Guardar") { _, _ ->
+                    saveToFavs(sorteo)
+                }.setNegativeButton("Cancelar") { d, _ ->
+                    d.dismiss()
+                }.show()
+        }
     }
 
+    //
     private fun saveToFavs(sorteo: List<String>) {
         viewModel.insertFavorite(FavoritoModel(0, sorteo.prettyPrint()))
-        Timber.d("Favorito agregado con exito")
-        setResult(Activity.RESULT_OK)
-        finish()
+        logcat { "Favorito agregado con exito" }
     }
 }

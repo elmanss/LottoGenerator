@@ -5,6 +5,19 @@
       <configuration PROFILE_NAME="Debug" CONFIG_NAME="Debug" />
     </configurations>
   </component>
+  <component name="DesignSurface">
+    <option name="filePathToZoomLevelMap">
+      <map>
+        <entry key="..\:/Users/carlo/StudioProjects/LottoGenerator/app/src/main/res/drawable/backspace.xml" value="0.2245" />
+        <entry key="..\:/Users/carlo/StudioProjects/LottoGenerator/app/src/main/res/drawable/plus.xml" value="0.2245" />
+        <entry key="..\:/Users/carlo/StudioProjects/LottoGenerator/app/src/main/res/layout/activity_main.xml" value="0.13796296296296295" />
+        <entry key="..\:/Users/carlo/StudioProjects/LottoGenerator/app/src/main/res/layout/activity_main2.xml" value="0.5" />
+        <entry key="..\:/Users/carlo/StudioProjects/LottoGenerator/app/src/main/res/layout/fragment_add_to_fav.xml" value="0.13796296296296295" />
+        <entry key="..\:/Users/carlo/StudioProjects/LottoGenerator/app/src/main/res/layout/fragment_favs.xml" value="0.13796296296296295" />
+        <entry key="..\:/Users/carlo/StudioProjects/LottoGenerator/app/src/main/res/layout/fragment_sorteo_list.xml" value="0.3333333333333333" />
+      </map>
+    </option>
+  </component>
   <component name="ProjectRootManager" version="2" languageLevel="JDK_11" default="true" project-jdk-name="1.8" project-jdk-type="JavaSDK">
     <output url="file://$PROJECT_DIR$/build/classes" />
   </component>

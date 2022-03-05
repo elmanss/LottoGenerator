@@ -1,4 +1,4 @@
-package me.elmanss.melate.ui
+package me.elmanss.melate.ui.list
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -8,16 +8,17 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import logcat.logcat
 import me.elmanss.melate.Melate
 import me.elmanss.melate.business.FavoritesInteractor
 import me.elmanss.melate.business.FavoritesInteractorImpl
 import me.elmanss.melate.extensions.toFavorito
 import me.elmanss.melate.getSorteoNumbers
 import me.elmanss.melate.models.SorteoModel
-import timber.log.Timber
+
 import java.util.concurrent.ThreadLocalRandom
 
-class MainViewModel(app: Application) : AndroidViewModel(app) {
+class SorteoListViewModel(app: Application) : AndroidViewModel(app) {
     private val interactor: FavoritesInteractor by lazy { FavoritesInteractorImpl((app as Melate).database.favoritoQueries) }
     private val random = ThreadLocalRandom.current()
 
@@ -36,7 +37,7 @@ class MainViewModel(app: Application) : AndroidViewModel(app) {
     fun fetchSorteos() {
         viewModelScope.launch {
             repeat(30) {
-                Timber.d("$it times")
+                logcat { "$it times" }
                 setSorteos(SorteoModel(getSorteoNumbers(random)))
                 delay(5)
             }

@@ -4,11 +4,12 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import logcat.logcat
 import me.elmanss.melate.Melate
 import me.elmanss.melate.business.FavoritesInteractor
 import me.elmanss.melate.business.FavoritesInteractorImpl
 import me.elmanss.melate.models.FavoritoModel
-import timber.log.Timber
+
 
 class AddToFavViewModel(app: Application) : AndroidViewModel(app) {
     companion object {
@@ -87,7 +88,7 @@ class AddToFavViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun captureDigit(digit: String) {
-        Timber.d("Capturing digit: %s", digit)
+        logcat { "Capturing digit: $digit" }
         if (mNumbers.size < MAX_LEN) {
             currentNumber += digit
         } else {
@@ -102,9 +103,9 @@ class AddToFavViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun addNumberToSorteo(number: String) {
-        Timber.d("Adding number to sorteo: %s", number)
+        logcat { "Adding number to sorteo: $number" }
         if (mNumbers.size in MIN_LEN until MAX_LEN) {
-            Timber.d("Sorteo not complete, adding %s, to index: %d", number, mNumbers.size)
+            logcat { "Sorteo not complete, adding $number, to index: ${mNumbers.size}" }
             mNumbers.add(number)
             mNumberAdded.value = mNumbers
             currentNumber = ""
@@ -112,7 +113,7 @@ class AddToFavViewModel(app: Application) : AndroidViewModel(app) {
                 mSorteoCompleted.value = mNumbers
             }
         } else if (mNumbers.size == MAX_LEN) {
-            Timber.d("Sorteo complete, notifying sorteo: %s", mNumbers)
+            logcat { "Sorteo complete, notifying sorteo: $mNumbers" }
             mSorteoCompleted.value = mNumbers
         }
     }
