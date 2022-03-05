@@ -1,4 +1,4 @@
-package me.elmanss.melate.ui
+package me.elmanss.melate.ui.list
 
 import android.view.LayoutInflater
 import android.view.View
@@ -8,7 +8,7 @@ import androidx.recyclerview.widget.RecyclerView
 import me.elmanss.melate.models.SorteoModel
 
 
-class MainAdapter : RecyclerView.Adapter<MainAdapter.ViewHolder>() {
+class SorteoListAdapter : RecyclerView.Adapter<SorteoListAdapter.ViewHolder>() {
     private val items = mutableListOf<SorteoModel>()
 
     fun clear() {

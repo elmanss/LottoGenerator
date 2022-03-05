@@ -10,12 +10,6 @@
             android:roundIcon="@mipmap/ic_launcher_round"
             android:supportsRtl="true"
             android:theme="@style/AppTheme">
-        <activity android:name=".ui.add.AddToFavActivity" />
-        <activity
-                android:name=".ui.favs.FavsActivity"
-                android:exported="false"
-                android:label="Favoritos"
-                android:parentActivityName=".ui.MainActivity" />
         <activity
                 android:name=".ui.MainActivity"
                 android:exported="true">

@@ -1,4 +1,4 @@
-package me.elmanss.melate.ui
+package me.elmanss.melate.ui.list
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -18,7 +18,7 @@ import me.elmanss.melate.models.SorteoModel
 
 import java.util.concurrent.ThreadLocalRandom
 
-class MainViewModel(app: Application) : AndroidViewModel(app) {
+class SorteoListViewModel(app: Application) : AndroidViewModel(app) {
     private val interactor: FavoritesInteractor by lazy { FavoritesInteractorImpl((app as Melate).database.favoritoQueries) }
     private val random = ThreadLocalRandom.current()
 

@@ -5,31 +5,31 @@
         android:id="@+id/screen_add_to_fav"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".ui.add.AddToFavActivity">
+        tools:context=".ui.MainActivity">
 
     <TextView
             android:id="@+id/tv_capture_number"
             android:layout_width="0dp"
-            app:layout_constraintStart_toStartOf="@id/tv_keyboard_info"
-            app:layout_constraintEnd_toEndOf="@id/tv_keyboard_info"
-            app:layout_constraintTop_toTopOf="parent"
+            android:layout_height="0dp"
             android:gravity="center"
-            android:textColor="@color/colorPrimary"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_number_font_size"
             app:layout_constraintBottom_toTopOf="@id/tv_keyboard_info"
-            android:layout_height="0dp" />
+            app:layout_constraintEnd_toEndOf="@id/tv_keyboard_info"
+            app:layout_constraintStart_toStartOf="@id/tv_keyboard_info"
+            app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
             android:id="@+id/tv_keyboard_info"
             android:layout_width="0dp"
-            android:gravity="center"
+            android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            android:gravity="center"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-            android:textColor="@color/colorPrimary"
+            android:textColor="#FF0000"
             app:layout_constraintBottom_toTopOf="@id/b_keyboard_two"
-            app:layout_constraintStart_toStartOf="@id/b_keyboard_one"
             app:layout_constraintEnd_toEndOf="@id/b_keyboard_three"
-            android:layout_height="wrap_content" />
+            app:layout_constraintStart_toStartOf="@id/b_keyboard_one" />
 
     <Button
             android:id="@+id/b_keyboard_one"
@@ -37,12 +37,13 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="1"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_two"
+            app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintEnd_toStartOf="@id/b_keyboard_two"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/b_keyboard_two"
-            app:layout_constraintDimensionRatio="1:1" />
+            app:layout_constraintTop_toTopOf="@id/b_keyboard_two" />
 
     <Button
             android:id="@+id/b_keyboard_two"
@@ -50,6 +51,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="2"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toTopOf="@id/b_keyboard_five"
             app:layout_constraintDimensionRatio="1:1"
@@ -62,6 +64,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="3"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_two"
             app:layout_constraintDimensionRatio="1:1"
@@ -76,12 +79,13 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="4"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_five"
+            app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintEnd_toStartOf="@id/b_keyboard_five"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/b_keyboard_five"
-            app:layout_constraintDimensionRatio="1:1" />
+            app:layout_constraintTop_toTopOf="@id/b_keyboard_five" />
 
     <Button
             android:id="@+id/b_keyboard_five"
@@ -89,6 +93,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="5"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toTopOf="@id/b_keyboard_eight"
             app:layout_constraintDimensionRatio="1:1"
@@ -101,6 +106,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="6"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_five"
             app:layout_constraintDimensionRatio="1:1"
@@ -115,12 +121,13 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="7"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_eight"
+            app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintEnd_toStartOf="@id/b_keyboard_eight"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/b_keyboard_eight"
-            app:layout_constraintDimensionRatio="1:1" />
+            app:layout_constraintTop_toTopOf="@id/b_keyboard_eight" />
 
     <Button
             android:id="@+id/b_keyboard_eight"
@@ -128,6 +135,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="8"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toTopOf="@id/b_keyboard_zero"
             app:layout_constraintDimensionRatio="1:1"
@@ -140,6 +148,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="9"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_eight"
             app:layout_constraintDimensionRatio="1:1"
@@ -152,15 +161,15 @@
             style="@style/Widget.AppCompat.Button.Borderless.Colored"
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
-            android:src="@drawable/backspace"
-            android:maxLines="1"
             android:ellipsize="end"
+            android:maxLines="1"
+            android:src="@drawable/backspace"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_zero"
+            app:layout_constraintDimensionRatio="1:1"
             app:layout_constraintEnd_toStartOf="@id/b_keyboard_zero"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="@id/b_keyboard_zero"
-            app:layout_constraintDimensionRatio="1:1" />
+            app:layout_constraintTop_toTopOf="@id/b_keyboard_zero" />
 
     <Button
             android:id="@+id/b_keyboard_zero"
@@ -168,6 +177,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="0"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintDimensionRatio="1:1"
@@ -180,6 +190,7 @@
             android:layout_width="0dp"
             android:layout_height="@dimen/key_size"
             android:text="OK"
+            android:textColor="#FF0000"
             android:textSize="@dimen/key_font_size"
             app:layout_constraintBottom_toBottomOf="@id/b_keyboard_zero"
             app:layout_constraintDimensionRatio="1:1"
