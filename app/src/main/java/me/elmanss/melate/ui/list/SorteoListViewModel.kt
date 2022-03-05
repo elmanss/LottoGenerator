@@ -22,6 +22,8 @@ class SorteoListViewModel(app: Application) : AndroidViewModel(app) {
     private val interactor: FavoritesInteractor by lazy { FavoritesInteractorImpl((app as Melate).database.favoritoQueries) }
     private val random = ThreadLocalRandom.current()
 
+    var isWarningShown = false
+
     private val mSorteos = MutableLiveData<SorteoModel?>(null)
     val sorteos: LiveData<SorteoModel?>
         get() = mSorteos

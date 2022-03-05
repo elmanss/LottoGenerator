@@ -51,7 +51,13 @@ class SorteoListFragment : Fragment(R.layout.fragment_sorteo_list),
 
             mainSorteosView.adapter = adapter
             ItemClickSupport.addTo(mainSorteosView).setOnItemClickListener { _, pos, _ ->
-                showWarning(pos)
+                if (binding.root.isRefreshing) {
+                    logcat { "Sorteos are being refreshed" }
+                } else {
+                    showWarning(pos).also {
+                        viewModel.isWarningShown = true
+                    }
+                }
             }
 
             bMainFavs.setOnClickListener {
@@ -64,8 +70,14 @@ class SorteoListFragment : Fragment(R.layout.fragment_sorteo_list),
     private fun observe() {
         viewModel.sorteos.observe(viewLifecycleOwner) {
             it?.let {
-                adapter.add(it)
-                logcat { "Added item ${it.prettyPrint()} at position ${adapter.itemCount - 1}" }
+                if (adapter.containsItem(it)) {
+                    logcat { "item ${it.prettyPrint()} is already in list" }
+                } else {
+                    adapter.add(it)
+                    logcat { "Added item ${it.prettyPrint()} at position ${adapter.itemCount - 1}" }
+                }
+
+                viewModel.setSorteos()
             }
         }
     }
@@ -76,16 +88,23 @@ class SorteoListFragment : Fragment(R.layout.fragment_sorteo_list),
                 .setMessage("¿Deseas agregar este sorteo de tu lista de favoritos?")
                 .setPositiveButton("Si") { d, _ ->
                     viewModel.saveToFavorites(adapter.getItem(pos))
+                    viewModel.isWarningShown = false
                     Toast.makeText(
                         c, "Sorteo agregado a tus favoritos", Toast.LENGTH_SHORT
                     ).show()
                     d.dismiss()
+                }.setOnDismissListener {
+                    viewModel.isWarningShown = false
+                }.setOnCancelListener {
+                    viewModel.isWarningShown = false
                 }.show()
         }
     }
 
     override fun onRefresh() {
-        1500L.launchOnRefresh()
+        if (!viewModel.isWarningShown) {
+            1500L.launchOnRefresh()
+        }
     }
 
     private fun Long.launchOnRefresh() {

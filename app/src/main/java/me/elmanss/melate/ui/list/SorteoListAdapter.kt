@@ -16,6 +16,10 @@ class SorteoListAdapter : RecyclerView.Adapter<SorteoListAdapter.ViewHolder>() {
         notifyDataSetChanged()
     }
 
+    fun containsItem(item: SorteoModel): Boolean {
+        return item in items
+    }
+
     fun add(item: SorteoModel) {
         items.add(item)
         notifyItemInserted(items.lastIndex)
