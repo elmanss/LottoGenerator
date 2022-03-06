@@ -166,7 +166,8 @@ class AddToFavFragment : Fragment(R.layout.fragment_add_to_fav) {
 
     //
     private fun saveToFavs(sorteo: List<String>) {
-        viewModel.insertFavorite(FavoritoModel(0, sorteo.prettyPrint()))
+        val map = sorteo.map { it.toInt() }.sorted().map { it.toString() }
+        viewModel.insertFavorite(FavoritoModel(0, map.prettyPrint()))
         logcat { "Favorito agregado con exito" }
         activity?.onBackPressed()
     }
