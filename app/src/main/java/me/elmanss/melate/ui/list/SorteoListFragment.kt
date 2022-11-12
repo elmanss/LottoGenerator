@@ -16,13 +16,14 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.R
 import me.elmanss.melate.databinding.FragmentSorteoListBinding
-import me.elmanss.melate.ui.custom.util.ItemClickSupport
 
 class SorteoListFragment : Fragment(R.layout.fragment_sorteo_list),
     SwipeRefreshLayout.OnRefreshListener {
 
     private lateinit var binding: FragmentSorteoListBinding
-    private val adapter = SorteoListAdapter()
+    private val adapter = SorteoListAdapter() {
+        onItemClicked(it)
+    }
     private val viewModel: SorteoListViewModel by viewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -39,6 +40,16 @@ class SorteoListFragment : Fragment(R.layout.fragment_sorteo_list),
         observe()
     }
 
+    private fun onItemClicked(pos: Int) {
+        if (binding.root.isRefreshing) {
+            logcat { "Sorteos are being refreshed" }
+        } else {
+            showWarning(pos).also {
+                viewModel.isWarningShown = true
+            }
+        }
+    }
+
     private fun configBinding(binding: FragmentSorteoListBinding) {
         binding.apply {
             mainScreen.setOnRefreshListener(this@SorteoListFragment)
@@ -50,16 +61,6 @@ class SorteoListFragment : Fragment(R.layout.fragment_sorteo_list),
             )
 
             mainSorteosView.adapter = adapter
-            ItemClickSupport.addTo(mainSorteosView).setOnItemClickListener { _, pos, _ ->
-                if (binding.root.isRefreshing) {
-                    logcat { "Sorteos are being refreshed" }
-                } else {
-                    showWarning(pos).also {
-                        viewModel.isWarningShown = true
-                    }
-                }
-            }
-
             bMainFavs.setOnClickListener {
                 Navigation.findNavController(it)
                     .navigate(R.id.action_sorteoListFragment_to_favsFragment)
