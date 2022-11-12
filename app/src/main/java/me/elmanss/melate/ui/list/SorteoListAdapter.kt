@@ -1,5 +1,6 @@
 package me.elmanss.melate.ui.list
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,12 +9,18 @@ import androidx.recyclerview.widget.RecyclerView
 import me.elmanss.melate.models.SorteoModel
 
 
-class SorteoListAdapter : RecyclerView.Adapter<SorteoListAdapter.ViewHolder>() {
+class SorteoListAdapter(val onItemClicked: (pos: Int) -> Unit) :
+    RecyclerView.Adapter<SorteoListAdapter.ViewHolder>() {
     private val items = mutableListOf<SorteoModel>()
 
+    @SuppressLint("NotifyDataSetChanged")
     fun clear() {
         items.clear()
         notifyDataSetChanged()
+    }
+
+    fun containsItem(item: SorteoModel): Boolean {
+        return item in items
     }
 
     fun add(item: SorteoModel) {
@@ -32,6 +39,9 @@ class SorteoListAdapter : RecyclerView.Adapter<SorteoListAdapter.ViewHolder>() {
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         holder.textView.text = items[position].prettyPrint()
+        holder.itemView.setOnClickListener {
+            onItemClicked(position)
+        }
     }
 
     fun getItem(pos: Int) = items[pos]
