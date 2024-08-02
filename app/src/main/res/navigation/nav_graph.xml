@@ -7,7 +7,7 @@
     <fragment
             android:id="@+id/sorteoListFragment"
             android:name="me.elmanss.melate.ui.list.SorteoListFragment"
-            android:label="SorteoListFragment" >
+            android:label="SorteoListFragment">
         <action
                 android:id="@+id/action_sorteoListFragment_to_favsFragment"
                 app:destination="@id/favsFragment" />
@@ -15,7 +15,7 @@
     <fragment
             android:id="@+id/favsFragment"
             android:name="me.elmanss.melate.ui.favs.FavsFragment"
-            android:label="FavsFragment" >
+            android:label="FavsFragment">
         <action
                 android:id="@+id/action_favsFragment_to_addToFavFragment"
                 app:destination="@id/addToFavFragment" />
