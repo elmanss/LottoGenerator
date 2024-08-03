@@ -6,7 +6,7 @@
 
     <fragment
             android:id="@+id/sorteoListFragment"
-            android:name="me.elmanss.melate.ui.list.SorteoListFragment"
+            android:name="me.elmanss.melate.home.presentation.HomeScreenFragment"
             android:label="SorteoListFragment">
         <action
                 android:id="@+id/action_sorteoListFragment_to_favsFragment"
@@ -14,7 +14,7 @@
     </fragment>
     <fragment
             android:id="@+id/favsFragment"
-            android:name="me.elmanss.melate.ui.favs.FavsFragment"
+            android:name="me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenFragment"
             android:label="FavsFragment">
         <action
                 android:id="@+id/action_favsFragment_to_addToFavFragment"
@@ -22,6 +22,6 @@
     </fragment>
     <fragment
             android:id="@+id/addToFavFragment"
-            android:name="me.elmanss.melate.ui.add.AddToFavFragment"
+            android:name="me.elmanss.melate.favorites.presentation.create.CreateFavoriteScreenFragment"
             android:label="AddToFavFragment" />
 </navigation>
