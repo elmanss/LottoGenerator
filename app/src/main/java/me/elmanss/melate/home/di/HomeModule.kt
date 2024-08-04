@@ -19,9 +19,16 @@ import me.elmanss.melate.home.domain.usecase.SaveToFavorites
 @InstallIn(ViewModelComponent::class)
 object HomeModule {
 
+  @Provides @ViewModelScoped fun provideSorteoRange(): IntRange = 1..56
+
   @Provides
   @ViewModelScoped
-  fun provideApi(): SorteoApi = SorteoApiImpl(ThreadLocalRandom.current())
+  fun providerRandomGenerator(): ThreadLocalRandom = ThreadLocalRandom.current()
+
+  @Provides
+  @ViewModelScoped
+  fun provideApi(randomGenerator: ThreadLocalRandom, sorteoRange: IntRange): SorteoApi =
+    SorteoApiImpl(random = randomGenerator, sorteoRange = sorteoRange)
 
   @Provides
   @ViewModelScoped

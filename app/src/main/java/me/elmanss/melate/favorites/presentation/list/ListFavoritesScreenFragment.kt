@@ -21,7 +21,6 @@ import me.elmanss.melate.databinding.FragmentFavsBinding
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 
 @AndroidEntryPoint
-
 class ListFavoritesScreenFragment :
   Fragment(R.layout.fragment_favs), ListFavoritesAdapter.DeleteClickListener {
   private lateinit var binding: FragmentFavsBinding

@@ -9,7 +9,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 import me.elmanss.melate.Database
-import me.elmanss.melate.Melate
 import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.data.repository.FavoritosRepositoryImpl
 
