@@ -10,9 +10,9 @@ import androidx.navigation.Navigation
 import dagger.hilt.android.AndroidEntryPoint
 import logcat.logcat
 import me.elmanss.melate.R
+import me.elmanss.melate.common.util.delegate.viewBinding
 import me.elmanss.melate.common.util.prettyPrint
 import me.elmanss.melate.databinding.FragmentAddToFavBinding
-import me.elmanss.melate.favorites.domain.model.FavoritoModel
 
 @AndroidEntryPoint
 class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
@@ -30,14 +30,12 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
   }
 
   //
-  private lateinit var binding: FragmentAddToFavBinding
+  private val binding: FragmentAddToFavBinding by viewBinding()
   private val viewModel: CreateFavoriteScreenViewModel by
     viewModels<CreateFavoriteScreenViewModel>()
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    binding = FragmentAddToFavBinding.bind(view)
-
     configKeyboard()
     observe()
   }
@@ -145,9 +143,9 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
 
   //
   private fun saveToFavs(sorteo: List<String>) {
-    val map = sorteo.map { it.toInt() }.sorted().map { it.toString() }
-    viewModel.insertFavorite(FavoritoModel(0, map.prettyPrint()))
-    logcat { "Favorito agregado con exito" }
-    Navigation.findNavController(binding.root).navigateUp()
+    viewModel.insertFavorite(sorteo) {
+      logcat { "Favorito agregado con exito" }
+      Navigation.findNavController(binding.root).navigateUp()
+    }
   }
 }
