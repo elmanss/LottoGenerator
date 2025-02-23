@@ -15,3 +15,5 @@ fun <T> MutableList<T>.takeRandom(random: Random = Random): T {
   val randomIndex = random.nextInt(size)
   return removeAt(randomIndex)
 }
+
+fun <T> MutableList<T>.legacyRemoveLast(): T = this.removeAt(this.lastIndex)

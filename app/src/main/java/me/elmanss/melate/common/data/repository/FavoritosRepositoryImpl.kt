@@ -1,8 +1,8 @@
 package me.elmanss.melate.common.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
-import me.elmanss.melate.data.FavoritoQueries
 import javax.inject.Inject
+import me.elmanss.melate.data.FavoritoQueries
 
 class FavoritosRepositoryImpl @Inject constructor(private val dao: FavoritoQueries) :
   FavoritosRepository {

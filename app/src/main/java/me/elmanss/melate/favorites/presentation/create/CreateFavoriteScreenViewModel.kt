@@ -5,12 +5,13 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.launch
 import logcat.logcat
+import me.elmanss.melate.common.util.legacyRemoveLast
 import me.elmanss.melate.common.util.prettyPrint
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
-import javax.inject.Inject
 
 @HiltViewModel
 class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
@@ -125,7 +126,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
 
   private fun removeNumberFromSorteo() {
     if (mNumbers.isNotEmpty()) {
-      currentNumber = mNumbers.removeLast()
+      currentNumber = mNumbers.legacyRemoveLast()
       mNumberRemoved.value = mNumbers
     }
   }
