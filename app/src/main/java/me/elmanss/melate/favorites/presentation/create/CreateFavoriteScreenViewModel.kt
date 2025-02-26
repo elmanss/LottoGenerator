@@ -8,6 +8,8 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
 import kotlinx.coroutines.launch
 import logcat.logcat
+import me.elmanss.melate.common.util.legacyRemoveLast
+import me.elmanss.melate.common.util.prettyPrint
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
 
@@ -97,8 +99,13 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     mCaptureNumber.value = currentNumber
   }
 
-  fun insertFavorite(favoritoModel: FavoritoModel) {
-    viewModelScope.launch { useCases.addFavorite(favoritoModel) }
+  fun insertFavorite(sorteo: List<String>, onInserted: () -> Unit) {
+    viewModelScope.launch {
+      val map = sorteo.map { it.toInt() }.sorted().map { it.toString() }
+      val model = FavoritoModel(0, map.prettyPrint())
+      useCases.addFavorite(model)
+      onInserted.invoke()
+    }
   }
 
   private fun addNumberToSorteo(number: String) {
@@ -119,7 +126,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
 
   private fun removeNumberFromSorteo() {
     if (mNumbers.isNotEmpty()) {
-      currentNumber = mNumbers.removeLast()
+      currentNumber = mNumbers.legacyRemoveLast()
       mNumberRemoved.value = mNumbers
     }
   }

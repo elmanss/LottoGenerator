@@ -9,7 +9,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.Navigation
-import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -17,19 +16,19 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.R
+import me.elmanss.melate.common.util.delegate.viewBinding
 import me.elmanss.melate.databinding.FragmentFavsBinding
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 
 @AndroidEntryPoint
 class ListFavoritesScreenFragment :
   Fragment(R.layout.fragment_favs), ListFavoritesAdapter.DeleteClickListener {
-  private lateinit var binding: FragmentFavsBinding
+  private val binding: FragmentFavsBinding by viewBinding()
   private val adapter = ListFavoritesAdapter()
   private val viewModel: ListFavoritesScreenViewModel by viewModels<ListFavoritesScreenViewModel>()
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
-    binding = FragmentFavsBinding.bind(view)
 
     binding.addButton.setOnClickListener {
       Navigation.findNavController(it)
