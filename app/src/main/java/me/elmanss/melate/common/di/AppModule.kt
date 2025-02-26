@@ -7,10 +7,10 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Singleton
 import me.elmanss.melate.Database
 import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.data.repository.FavoritosRepositoryImpl
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)

@@ -1,10 +1,10 @@
 package me.elmanss.melate.home.data.datasource.remote
 
-import java.util.Random
-import javax.inject.Inject
 import logcat.LogPriority
 import logcat.logcat
 import me.elmanss.melate.common.util.takeRandom
+import java.util.Random
+import javax.inject.Inject
 
 class SorteoApiImpl
 @Inject
