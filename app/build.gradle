@@ -33,11 +33,11 @@ android {
     viewBinding.enabled = true
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_17
-        targetCompatibility JavaVersion.VERSION_17
+        sourceCompatibility JavaVersion.VERSION_21
+        targetCompatibility JavaVersion.VERSION_21
     }
     kotlinOptions {
-        jvmTarget = '17'
+        jvmTarget = '21'
     }
 
     namespace 'me.elmanss.melate'
@@ -50,7 +50,7 @@ dependencies {
     implementation 'androidx.swiperefreshlayout:swiperefreshlayout:1.1.0'
     implementation 'androidx.core:core-ktx:1.15.0'
     implementation 'androidx.fragment:fragment-ktx:1.8.6'
-    implementation 'androidx.constraintlayout:constraintlayout:2.2.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.2.1'
     implementation 'app.cash.sqldelight:android-driver:2.0.2'
     implementation 'app.cash.sqldelight:coroutines-extensions:2.0.2'
     implementation 'com.squareup.logcat:logcat:0.1'
@@ -59,14 +59,14 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
 
     //Android Jetpack
-    implementation 'androidx.navigation:navigation-fragment-ktx:2.8.7'
+    implementation 'androidx.navigation:navigation-fragment-ktx:2.8.8'
     // For Kotlin use navigation-fragment-ktx
-    implementation 'androidx.navigation:navigation-ui-ktx:2.8.7'
+    implementation 'androidx.navigation:navigation-ui-ktx:2.8.8'
     // For Kotlin use navigation-ui-ktx
 
 
-    implementation "com.google.dagger:hilt-android:2.51.1"
-    kapt "com.google.dagger:hilt-compiler:2.51.1"
+    implementation 'com.google.dagger:hilt-android:2.55'
+    kapt 'com.google.dagger:hilt-compiler:2.55'
 
 
 }
