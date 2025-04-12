@@ -29,7 +29,7 @@ fun Throwable.getRootCause(): Throwable {
 fun Throwable.getRootCauseWithCycleGuard(): Throwable {
   var rootCause: Throwable = this
   val visited = mutableSetOf<Throwable>()
-  while (rootCause.cause != null && rootCause.cause != rootCause && !visited.contains(rootCause)){
+  while (rootCause.cause != null && rootCause.cause != rootCause && !visited.contains(rootCause)) {
     visited.add(rootCause)
     rootCause = rootCause.cause!!
     println("Current root cause: $rootCause")
