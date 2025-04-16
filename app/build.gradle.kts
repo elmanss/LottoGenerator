@@ -1,10 +1,10 @@
 plugins {
-  id("com.android.application")
-  id("org.jetbrains.kotlin.android")
-  id("app.cash.sqldelight")
-  id("androidx.navigation.safeargs.kotlin")
-  id("kotlin-kapt")
-  id("dagger.hilt.android.plugin")
+  alias(libs.plugins.android.application)
+  alias(libs.plugins.kotlin.android) 
+  alias(libs.plugins.cash.sqldelight) 
+  alias(libs.plugins.safeargs.kotlin) 
+  alias(libs.plugins.kotlin.kapt) 
+  alias(libs.plugins.hilt.plugin) 
 }
 
 android {
@@ -38,28 +38,27 @@ android {
 }
 
 dependencies {
-  implementation(fileTree(mapOf("dir" to "libs", "include" to arrayOf("*.jar"))))
-  implementation("androidx.appcompat:appcompat:1.7.0")
-  implementation("com.google.android.material:material:1.12.0")
-  implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
-  implementation("androidx.core:core-ktx:1.16.0")
-  implementation("androidx.fragment:fragment-ktx:1.8.6")
-  implementation("androidx.constraintlayout:constraintlayout:2.2.1")
-  implementation("app.cash.sqldelight:android-driver:2.0.2")
-  implementation("app.cash.sqldelight:coroutines-extensions:2.0.2")
-  implementation("com.squareup.logcat:logcat:0.1")
-  testImplementation("junit:junit:4.13.2")
-  androidTestImplementation("androidx.test.ext:junit:1.2.1")
-  androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
+  implementation(libs.appcompat)
+  implementation(libs.material)
+  implementation(libs.swiperefreshlayout)
+  implementation(libs.core.ktx)
+  implementation(libs.fragment.ktx)
+  implementation(libs.constraintlayout)
+  implementation(libs.android.driver)
+  implementation(libs.coroutines.extensions)
+  implementation(libs.logcat)
+  testImplementation(libs.junit)
+  androidTestImplementation(libs.ext.junit)
+  androidTestImplementation(libs.espresso.core)
 
   // Android Jetpack
-  implementation("androidx.navigation:navigation-fragment-ktx:2.8.9")
+  implementation(libs.navigation.fragment.ktx)
   // For Kotlin use navigation-fragment-ktx
-  implementation("androidx.navigation:navigation-ui-ktx:2.8.9")
+  implementation(libs.navigation.ui.ktx)
   // For Kotlin use navigation-ui-ktx
 
-  implementation("com.google.dagger:hilt-android:2.56.1")
-  kapt("com.google.dagger:hilt-compiler:2.56.1")
+  implementation(libs.hilt.android)
+  kapt(libs.hilt.compiler)
 }
 
 sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }
