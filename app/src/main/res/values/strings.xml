@@ -77,4 +77,5 @@
         <item>55</item>
         <item>56</item>
     </string-array>
+    <string name="title_activity_compose_main">ComposeMainActivity</string>
 </resources>
