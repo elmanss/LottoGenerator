@@ -62,11 +62,6 @@ dependencies {
   kapt("com.google.dagger:hilt-compiler:2.56.1")
 }
 
-repositories {
-  google()
-  mavenCentral()
-}
-
 sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }
 
 kapt { correctErrorTypes = true }
