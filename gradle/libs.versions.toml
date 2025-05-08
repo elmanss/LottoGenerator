@@ -1,10 +1,11 @@
 [versions]
-agp = "8.9.1"
+agp = "8.9.2"
+hiltNavigationCompose = "1.2.0"
 kotlin = "2.0.21"
 sqldelight = "2.0.2"
 kapt = "2.1.20"
 hiltPlugin = "2.51.1"
-navigation = "2.8.9"
+navigation = "2.9.0"
 appcompat = "1.7.0"
 constraintlayout = "2.2.1"
 coreKtx = "1.16.0"
@@ -18,9 +19,9 @@ junitVersion = "1.2.1"
 logcat = "0.1"
 material = "1.12.0"
 swiperefreshlayout = "1.1.0"
-lifecycleRuntimeKtx = "2.8.7"
+lifecycleRuntimeKtx = "2.9.0"
 activityCompose = "1.10.1"
-composeBom = "2025.04.00"
+composeBom = "2025.05.00"
 
 [libraries]
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
@@ -33,6 +34,7 @@ espresso-core = { module = "androidx.test.espresso:espresso-core", version.ref =
 fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragmentKtx" }
 hilt-android = { module = "com.google.dagger:hilt-android", version.ref = "hiltCompiler" }
 hilt-compiler = { module = "com.google.dagger:hilt-compiler", version.ref = "hiltCompiler" }
+hilt-navigation-compose = { module = "androidx.hilt:hilt-navigation-compose", version.ref = "hiltNavigationCompose" }
 logcat = { module = "com.squareup.logcat:logcat", version.ref = "logcat" }
 junit = { module = "junit:junit", version.ref = "junit" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
