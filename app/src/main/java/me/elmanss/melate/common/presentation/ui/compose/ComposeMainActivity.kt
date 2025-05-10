@@ -9,22 +9,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import dagger.hilt.android.AndroidEntryPoint
+import me.elmanss.melate.common.presentation.ui.compose.ui.navigation.MelateNavHost
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.LottoGeneratorTheme
-import me.elmanss.melate.home.presentation.compose.HomeScreen
 
 @AndroidEntryPoint
 class ComposeMainActivity : ComponentActivity() {
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
-    setContent {
-      LottoGeneratorTheme {
-        //        Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-        //          Greeting(name = "Android", modifier = Modifier.padding(innerPadding))
-        //        }
-          HomeScreen()
-      }
-    }
+    setContent { LottoGeneratorTheme { MelateNavHost() } }
   }
 }
 

@@ -3,8 +3,8 @@ package me.elmanss.melate.favorites.presentation.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
+import javax.inject.Inject
 
 @HiltViewModel
 class ListFavoritesScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
@@ -31,7 +32,11 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
   }
 
   fun deleteFavs(model: FavoritoModel) {
-    viewModelScope.launch { useCases.deleteFavorite(model) }
+    viewModelScope.launch {
+      useCases.deleteFavorite(model)
+      delay(250)
+      showDeletionMessage(true)
+    }
   }
 
   private fun launchFetchFavorites() {
@@ -42,5 +47,9 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
         .map { it.map { FavoritoModel(it.id, it.sorteo) } }
         .onEach { _state.update { state -> state.copy(favs = it) } }
         .launchIn(viewModelScope)
+  }
+
+  fun showDeletionMessage(show: Boolean = false) {
+    _state.update { state -> state.copy(showDeletionSuccess = show) }
   }
 }

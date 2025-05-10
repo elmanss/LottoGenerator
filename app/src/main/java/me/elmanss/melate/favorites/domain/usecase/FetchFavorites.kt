@@ -1,9 +1,9 @@
 package me.elmanss.melate.favorites.domain.usecase
 
-import javax.inject.Inject
 import kotlinx.coroutines.flow.map
 import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
+import javax.inject.Inject
 
 class FetchFavorites @Inject constructor(private val repository: FavoritosRepository) {
   operator fun invoke() =

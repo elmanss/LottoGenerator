@@ -77,5 +77,12 @@
         <item>55</item>
         <item>56</item>
     </string-array>
-    <string name="title_activity_compose_main">ComposeMainActivity</string>
+    <string name="title_activity_compose_main">@string/app_name</string>
+    <string name="txt_title_aviso">Aviso</string>
+    <string name="txt_msg_add_to_fav">¿Deseas agregar este sorteo de tu lista de favoritos?</string>
+    <string name="txt_action_yes">Si</string>
+    <string name="txt_action_add">Agregar</string>
+    <string name="txt_sorteo_success">Sorteo agregado a favoritos.</string>
+    <string name="txt_button_mis_favs_create">Crear</string>
+    <string name="txt_fav_deletion_success">Sorteo eliminados de favoritos.</string>
 </resources>

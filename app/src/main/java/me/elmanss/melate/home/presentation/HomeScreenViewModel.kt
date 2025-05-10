@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -39,14 +40,24 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
   }
 
   fun launchSaveToFavorites(sorteoModel: SorteoModel) {
-    viewModelScope.launch { useCases.saveToFavorites(sorteoModel) }
+    viewModelScope.launch {
+      useCases.saveToFavorites(sorteoModel)
+      delay(250)
+      dismissWarning()
+      showSuccessMsg(true)
+    }
   }
 
-  fun showWarning() {
-    _state.update { state -> state.copy(isWarningShown = true) }
+  fun showWarning(sorteo: SorteoModel? = null) {
+    logcat { "clicked sorteo" }
+    _state.update { state -> state.copy(isWarningShown = true, clickedSorteo = sorteo) }
   }
 
   fun dismissWarning() {
-    _state.update { state -> state.copy(isWarningShown = false) }
+    _state.update { state -> state.copy(isWarningShown = false, clickedSorteo = null) }
+  }
+
+  fun showSuccessMsg(show: Boolean) {
+    _state.update { state -> state.copy(showStorageSuccess = show) }
   }
 }

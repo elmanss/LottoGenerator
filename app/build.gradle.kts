@@ -1,11 +1,12 @@
 plugins {
   alias(libs.plugins.android.application)
-  alias(libs.plugins.kotlin.android) 
-  alias(libs.plugins.cash.sqldelight) 
-  alias(libs.plugins.safeargs.kotlin) 
-  alias(libs.plugins.kotlin.kapt) 
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.cash.sqldelight)
+  alias(libs.plugins.safeargs.kotlin)
+  alias(libs.plugins.kotlin.kapt)
   alias(libs.plugins.hilt.plugin)
   alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -27,7 +28,8 @@ android {
     }
   }
 
-  buildFeatures { viewBinding = true
+  buildFeatures {
+    viewBinding = true
     compose = true
   }
 
@@ -75,6 +77,7 @@ dependencies {
   kapt(libs.hilt.compiler)
   // https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
   implementation(libs.hilt.navigation.compose)
+  implementation(libs.navigation.compose)
 }
 
 sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }
