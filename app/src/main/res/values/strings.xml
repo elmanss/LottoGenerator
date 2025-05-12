@@ -85,5 +85,7 @@
     <string name="txt_sorteo_success">Sorteo agregado a favoritos.</string>
     <string name="txt_button_mis_favs_create">Crear</string>
     <string name="txt_fav_deletion_success">Sorteo eliminados de favoritos.</string>
+    <string name="txt_msg_delete_fav">¿Deseas eliminar este sorteo de tu lista de favoritos?</string>
+    <string name="txt_action_delete">Eliminar</string>
     <string name="txt_title_fav_create">Crear un sorteo</string>
 </resources>

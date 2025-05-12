@@ -26,6 +26,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
+import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewModel
 
@@ -56,13 +57,23 @@ fun ListFavoritesScreen(
             modifier =
               Modifier.fillMaxWidth()
                 .padding(16.dp)
-                .combinedClickable(onClick = {}, onLongClick = { viewModel.deleteFavs(fav) }),
+                .combinedClickable(onClick = {}, onLongClick = { viewModel.showWarning(fav) }),
             text = fav.sorteo,
           )
           if (index < favs.lastIndex) {
             HorizontalDivider(thickness = Dp.Hairline)
           }
         }
+      }
+
+      uiState.value.favToDelete?.let { sorteo ->
+        MelateSorteoActionDialog(
+          { viewModel.dismissWarning() },
+          { viewModel.deleteFavs(sorteo) },
+          R.string.txt_title_aviso,
+          R.string.txt_msg_delete_fav,
+          R.string.txt_action_delete,
+        )
       }
 
       if (uiState.value.showDeletionSuccess) {

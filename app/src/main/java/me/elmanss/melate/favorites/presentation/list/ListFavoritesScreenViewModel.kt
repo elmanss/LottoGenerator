@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import logcat.logcat
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
 import javax.inject.Inject
@@ -35,6 +36,7 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
     viewModelScope.launch {
       useCases.deleteFavorite(model)
       delay(250)
+      dismissWarning()
       showDeletionMessage(true)
     }
   }
@@ -47,6 +49,15 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
         .map { it.map { FavoritoModel(it.id, it.sorteo) } }
         .onEach { _state.update { state -> state.copy(favs = it) } }
         .launchIn(viewModelScope)
+  }
+
+  fun showWarning(sorteo: FavoritoModel? = null) {
+    logcat { "clicked fav" }
+    _state.update { state -> state.copy(favToDelete = sorteo) }
+  }
+
+  fun dismissWarning() {
+    _state.update { state -> state.copy(favToDelete = null) }
   }
 
   fun showDeletionMessage(show: Boolean = false) {
