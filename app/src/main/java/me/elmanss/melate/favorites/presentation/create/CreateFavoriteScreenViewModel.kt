@@ -1,10 +1,13 @@
 package me.elmanss.melate.favorites.presentation.create
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.common.util.legacyRemoveLast
@@ -21,48 +24,15 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     const val MAX_LEN = 6
   }
 
+  private val _state = MutableStateFlow(CreateFavoriteScreenState())
+  val state =
+    _state
+      .asStateFlow()
+      .stateIn(viewModelScope, SharingStarted.Eagerly, CreateFavoriteScreenState())
+
   var currentNumber = ""
-  private val mCaptureNumber = MutableLiveData<String?>(null)
-  val captureNumber: LiveData<String?>
-    get() = mCaptureNumber
-
-  fun resetCaptureNumber() {
-    mCaptureNumber.value = null
-  }
-
-  private val mCaptureError = MutableLiveData<String?>(null)
-  val captureError: LiveData<String?>
-    get() = mCaptureError
-
-  fun resetCaptureError() {
-    mCaptureError.value = null
-  }
 
   private val mNumbers = mutableListOf<String>()
-
-  private val mNumberAdded = MutableLiveData<List<String>?>(null)
-  val numberAdded: LiveData<List<String>?>
-    get() = mNumberAdded
-
-  fun resetNumberAdded() {
-    mNumberAdded.value = null
-  }
-
-  private val mSorteoCompleted = MutableLiveData<List<String>?>(null)
-  val sorteoCompleted: LiveData<List<String>?>
-    get() = mSorteoCompleted
-
-  fun resetCorteoCompleted() {
-    mSorteoCompleted.value = null
-  }
-
-  private val mNumberRemoved = MutableLiveData<List<String>?>(null)
-  val numberRemoved: LiveData<List<String>?>
-    get() = mNumberRemoved
-
-  fun resetNumberRemoved() {
-    mNumberRemoved.value = null
-  }
 
   fun deleteDigit() {
     if (currentNumber.isNotEmpty()) {
@@ -73,17 +43,37 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       removeNumberFromSorteo()
     }
 
-    mCaptureNumber.value = currentNumber
+    _state.update { state -> state.copy(captureNumber = currentNumber) }
+  }
+
+  fun clearNumberAdded() {
+    _state.update { state -> state.copy(numberAdded = emptyList()) }
+  }
+
+  fun clearNumberRemoved() {
+    _state.update { state -> state.copy(numberRemoved = emptyList()) }
+  }
+
+  fun clearSorteoCompleted() {
+    _state.update { state -> state.copy(sorteoCompleted = emptyList()) }
+  }
+
+  fun clearCaptureNumber() {
+    _state.update { state -> state.copy(captureNumber = "") }
+  }
+
+  fun clearError() {
+    _state.update { state -> state.copy(captureError = "") }
   }
 
   fun moveToNext() {
     when {
       currentNumber.isBlank() && mNumbers.size < MAX_LEN ->
-        mCaptureError.value = "Ingresa un numero"
+        _state.update { state -> state.copy(captureError = "Ingresa un numero") }
       currentNumber.toInt() > 56 && mNumbers.size < MAX_LEN ->
-        mCaptureError.value = "Solo se permiten numeros hasta 56"
+        _state.update { state -> state.copy(captureError = "Solo se permiten numeros hasta 56") }
       isNumberInSorteo(currentNumber) && mNumbers.size < MAX_LEN ->
-        mCaptureError.value = "Numero agregado previamente"
+        _state.update { state -> state.copy(captureError = "Numero agregado previamente") }
       else -> addNumberToSorteo(currentNumber)
     }
   }
@@ -93,10 +83,12 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     if (mNumbers.size < MAX_LEN) {
       currentNumber += digit
     } else {
-      mCaptureError.value = "El sorteo esta completo, presiona '>' para guardarlo"
+      _state.update { state ->
+        state.copy(captureError = "El sorteo esta completo, presiona '>' para guardarlo")
+      }
       currentNumber = ""
     }
-    mCaptureNumber.value = currentNumber
+    _state.update { state -> state.copy(captureNumber = currentNumber) }
   }
 
   fun insertFavorite(sorteo: List<String>, onInserted: () -> Unit) {
@@ -113,21 +105,21 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     if (mNumbers.size in MIN_LEN until MAX_LEN) {
       logcat { "Sorteo not complete, adding $number, to index: ${mNumbers.size}" }
       mNumbers.add(number)
-      mNumberAdded.value = mNumbers
+      _state.update { state -> state.copy(numberAdded = mNumbers) }
       currentNumber = ""
       if (mNumbers.size == MAX_LEN) {
-        mSorteoCompleted.value = mNumbers
+        _state.update { state -> state.copy(sorteoCompleted = mNumbers) }
       }
     } else if (mNumbers.size == MAX_LEN) {
       logcat { "Sorteo complete, notifying sorteo: $mNumbers" }
-      mSorteoCompleted.value = mNumbers
+      _state.update { state -> state.copy(sorteoCompleted = mNumbers) }
     }
   }
 
   private fun removeNumberFromSorteo() {
     if (mNumbers.isNotEmpty()) {
       currentNumber = mNumbers.legacyRemoveLast()
-      mNumberRemoved.value = mNumbers
+      _state.update { state -> state.copy(numberRemoved = mNumbers) }
     }
   }
 

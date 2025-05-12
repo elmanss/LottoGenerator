@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -61,7 +61,8 @@ class HomeScreenFragment :
 
       mainSorteosView.adapter = adapter
       bMainFavs.setOnClickListener {
-        Navigation.findNavController(it)
+        it
+          .findNavController()
           .navigate(HomeScreenFragmentDirections.actionSorteoListFragmentToFavsFragment())
       }
     }
