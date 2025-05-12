@@ -7,12 +7,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import kotlinx.serialization.Serializable
+import me.elmanss.melate.favorites.presentation.create.compose.CreateFavoriteScreen
 import me.elmanss.melate.favorites.presentation.list.compose.ListFavoritesScreen
 import me.elmanss.melate.home.presentation.compose.HomeScreen
 
 @Serializable object Home
 
 @Serializable object Favs
+
+@Serializable object Create
 
 // @Serializable object AddFav
 
@@ -23,6 +26,7 @@ fun MelateNavHost(
 ) {
   NavHost(navController = navController, startDestination = Home, modifier = modifier) {
     composable<Home> { HomeScreen(onNavigateToFavs = { navController.navigate(Favs) }) }
-    composable<Favs> { ListFavoritesScreen() }
+    composable<Favs> { ListFavoritesScreen(onCreateClicked = { navController.navigate(Create) }) }
+    composable<Create> { CreateFavoriteScreen() }
   }
 }

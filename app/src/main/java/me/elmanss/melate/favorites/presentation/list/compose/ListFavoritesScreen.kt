@@ -31,7 +31,10 @@ import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewMode
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ListFavoritesScreen(viewModel: ListFavoritesScreenViewModel = hiltViewModel()) {
+fun ListFavoritesScreen(
+  onCreateClicked: () -> Unit,
+  viewModel: ListFavoritesScreenViewModel = hiltViewModel(),
+) {
 
   val uiState = viewModel.state.collectAsState()
   val sorteoState = rememberLazyListState()
@@ -39,7 +42,9 @@ fun ListFavoritesScreen(viewModel: ListFavoritesScreenViewModel = hiltViewModel(
 
   Scaffold(
     topBar = { MelateTopBar(title = R.string.txt_mis_sorteos) },
-    floatingActionButton = { MelateFab(action = {}, text = R.string.txt_button_mis_favs_create) },
+    floatingActionButton = {
+      MelateFab(action = { onCreateClicked.invoke() }, text = R.string.txt_button_mis_favs_create)
+    },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
     Column(modifier = Modifier.fillMaxWidth().padding(it)) {
