@@ -1,5 +1,6 @@
 [versions]
 agp = "8.9.2"
+constraintlayoutCompose = "1.1.1"
 hiltNavigationCompose = "1.2.0"
 kotlin = "2.0.21"
 sqldelight = "2.0.2"
@@ -28,6 +29,7 @@ serialization = "2.2.0-Beta2"
 android-driver = { module = "app.cash.sqldelight:android-driver", version.ref = "androidDriver" }
 appcompat = { module = "androidx.appcompat:appcompat", version.ref = "appcompat" }
 constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version.ref = "constraintlayout" }
+constraintlayout-compose = { module = "androidx.constraintlayout:constraintlayout-compose", version.ref = "constraintlayoutCompose" }
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
 coroutines-extensions = { module = "app.cash.sqldelight:coroutines-extensions", version.ref = "coroutinesExtensions" }
 ext-junit = { module = "androidx.test.ext:junit", version.ref = "junitVersion" }

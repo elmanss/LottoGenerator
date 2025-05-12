@@ -78,6 +78,7 @@ dependencies {
   // https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
   implementation(libs.hilt.navigation.compose)
   implementation(libs.navigation.compose)
+  implementation(libs.constraintlayout.compose)
 }
 
 sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }
