@@ -83,10 +83,13 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
         },
       ) {
         LazyColumn(state = sorteoState) {
-          itemsIndexed(sorteos) { index, sorteo ->
+          itemsIndexed(items = sorteos, key = { index, _ -> viewModel.getListId() }) { index, sorteo
+            ->
             Text(
               modifier =
-                Modifier.fillMaxWidth().padding(16.dp).clickable { viewModel.showWarning(sorteo) },
+                Modifier.animateItem().fillMaxWidth().padding(16.dp).clickable {
+                  viewModel.showWarning(sorteo)
+                },
               text = sorteo.numeros.joinToString(),
             )
             if (index < sorteos.lastIndex) {

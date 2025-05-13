@@ -32,6 +32,8 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
     fetchJob = viewModelScope.launch { fetchSorteos() }
   }
 
+  fun getListId() = useCases.getListId()
+
   suspend fun fetchSorteos() {
     useCases.fetchSorteos().collectLatest {
       logcat("HomeScreenVm") { it.toString() }

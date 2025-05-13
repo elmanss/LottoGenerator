@@ -11,6 +11,7 @@ import me.elmanss.melate.home.data.datasource.remote.SorteoApiImpl
 import me.elmanss.melate.home.data.repository.SorteoRepository
 import me.elmanss.melate.home.data.repository.SorteoRepositoryImpl
 import me.elmanss.melate.home.domain.usecase.FetchSorteos
+import me.elmanss.melate.home.domain.usecase.GetListId
 import me.elmanss.melate.home.domain.usecase.HomeUseCases
 import me.elmanss.melate.home.domain.usecase.SaveToFavorites
 import java.util.Random
@@ -38,6 +39,11 @@ object HomeModule {
   fun provideHomeUseCases(
     favoritosRepository: FavoritosRepository,
     sorteoRepository: SorteoRepository,
+    randomGenerator: Random,
   ): HomeUseCases =
-    HomeUseCases(FetchSorteos(sorteoRepository), SaveToFavorites(favoritosRepository))
+    HomeUseCases(
+      FetchSorteos(sorteoRepository),
+      SaveToFavorites(favoritosRepository),
+      GetListId(randomGenerator),
+    )
 }
