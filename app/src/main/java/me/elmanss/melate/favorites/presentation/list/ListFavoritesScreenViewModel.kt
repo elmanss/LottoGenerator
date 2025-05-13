@@ -3,6 +3,7 @@ package me.elmanss.melate.favorites.presentation.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,6 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
-import javax.inject.Inject
 
 @HiltViewModel
 class ListFavoritesScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
@@ -46,7 +46,7 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
     fetchJob =
       useCases
         .fetchFavorites()
-        .map { it.map { FavoritoModel(it.id, it.sorteo) } }
+        .map { it.map { FavoritoModel(it.id, it.sorteo.removePrefix("[").removeSuffix("]")) } }
         .onEach { _state.update { state -> state.copy(favs = it) } }
         .launchIn(viewModelScope)
   }
