@@ -1,6 +1,7 @@
 package me.elmanss.melate.favorites.domain.usecase
 
 import kotlinx.coroutines.flow.map
+import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import javax.inject.Inject
@@ -10,5 +11,5 @@ class FetchFavorites @Inject constructor(private val repository: FavoritosReposi
     repository
       .selectAllFavoritos()
       .map { it.executeAsList() }
-      .map { it.map { FavoritoModel(it.id, it.sorteo) } }
+      .map { it.map { FavoritoModel(it.id, it.sorteo, FavOrigin.valueOf(it.origin)) } }
 }

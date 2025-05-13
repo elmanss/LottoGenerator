@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import me.elmanss.melate.R
+import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
@@ -58,7 +59,9 @@ fun ListFavoritesScreen(
               Modifier.fillMaxWidth()
                 .padding(16.dp)
                 .combinedClickable(onClick = {}, onLongClick = { viewModel.showWarning(fav) }),
-            text = fav.sorteo,
+            text =
+              if (fav.origin == FavOrigin.Random) fav.sorteo.removePrefix("[").removeSuffix("]")
+              else fav.sorteo,
           )
           if (index < favs.lastIndex) {
             HorizontalDivider(thickness = Dp.Hairline)
