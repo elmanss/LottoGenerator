@@ -25,12 +25,15 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.TextUnit
+import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
 import logcat.logcat
 import me.elmanss.melate.R
+import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.melateRed
 import me.elmanss.melate.favorites.presentation.create.CreateFavoriteScreenViewModel
@@ -73,7 +76,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
           },
         contentAlignment = Alignment.Center,
       ) {
-        uiState.value.captureNumber.let {
+        uiState.value.keyboardInput.let {
           Text(
             it,
             fontSize = dimensionResource(R.dimen.key_number_font_size).value.sp,
@@ -91,22 +94,13 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
           },
         contentAlignment = Alignment.Center,
       ) {
-        logcat { "Added: ${uiState.value.numberAdded.joinToString()}" }
-        logcat { "Deleted: ${uiState.value.numberRemoved.joinToString()}" }
-        if (uiState.value.numberAdded.isNotEmpty()) {
+        logcat { "Added: ${uiState.value.numbers.joinToString()}" }
+        if (uiState.value.numbers.isNotEmpty()) {
           Text(
             modifier = Modifier.wrapContentHeight().fillMaxWidth(),
-            text = uiState.value.numberAdded.joinToString(),
+            text = uiState.value.numbers.joinToString(),
             color = melateRed(),
-            textAlign = TextAlign.Center,
-          )
-        }
-
-        if (uiState.value.numberRemoved.isNotEmpty()) {
-          Text(
-            modifier = Modifier.wrapContentHeight().fillMaxWidth(),
-            text = uiState.value.numberRemoved.joinToString(),
-            color = melateRed(),
+            fontSize = TextUnit(20F, TextUnitType.Sp),
             textAlign = TextAlign.Center,
           )
         }
@@ -297,12 +291,22 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
             start.linkTo(zero.end)
           },
       ) {
-        Text(
-          text = stringResource(R.string.label_keyboard_OK),
-          color = melateRed(),
-          textAlign = TextAlign.Center,
-        )
+        val img =
+          if (uiState.value.numbers.size == 6) R.drawable.check_bold else R.drawable.chevron_right
+        Image(painterResource(img), "Next")
       }
+    }
+
+    if (uiState.value.sorteoCompleted.isNotEmpty()) {
+      MelateSorteoActionDialog(
+        { viewModel.clearSorteoCompleted() },
+        {
+          viewModel.insertFavorite(uiState.value.sorteoCompleted) { viewModel.clearAfterStorage() }
+        },
+        R.string.txt_sorteo_dialog_title,
+        stringResource(R.string.txt_sorteo_dialog_msg, uiState.value.sorteoCompleted),
+        R.string.txt_action_add,
+      )
     }
 
     if (uiState.value.captureError.isNotEmpty()) {
@@ -315,6 +319,20 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
         when (result) {
           SnackbarResult.Dismissed -> {
             viewModel.clearError()
+          }
+
+          SnackbarResult.ActionPerformed -> {}
+        }
+      }
+    }
+
+    if (uiState.value.sorteoStored) {
+      val msg = stringResource(R.string.txt_sorteo_success)
+      LaunchedEffect(true) {
+        val result = snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
+        when (result) {
+          SnackbarResult.Dismissed -> {
+            viewModel.showMessage(false)
           }
 
           SnackbarResult.ActionPerformed -> {}

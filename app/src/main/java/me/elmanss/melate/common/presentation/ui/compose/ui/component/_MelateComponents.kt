@@ -69,6 +69,18 @@ fun MelateSorteoActionDialog(
   @StringRes actionTxt: Int,
   modifier: Modifier = Modifier,
 ) {
+  MelateSorteoActionDialog(onDismiss, action, title, stringResource(msg), actionTxt, modifier)
+}
+
+@Composable
+fun MelateSorteoActionDialog(
+  onDismiss: () -> Unit,
+  action: () -> Unit,
+  @StringRes title: Int,
+  msg: String,
+  @StringRes actionTxt: Int,
+  modifier: Modifier = Modifier,
+) {
   Dialog({ onDismiss.invoke() }, properties = DialogProperties()) {
     Column(
       modifier =
@@ -82,7 +94,7 @@ fun MelateSorteoActionDialog(
     ) {
       Text(text = stringResource(title), fontSize = TextUnit(24F, TextUnitType.Sp))
       Spacer(modifier.height(8.dp))
-      Text(text = stringResource(msg))
+      Text(text = msg)
       MelateDialogButton({ action.invoke() }, stringResource(actionTxt))
     }
   }

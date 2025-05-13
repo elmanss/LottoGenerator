@@ -88,19 +88,11 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
   private fun observe() {
     lifecycleScope.launch {
       viewModel.state.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED).collectLatest {
-        if (it.numberAdded.isNotEmpty()) {
+        if (it.numbers.isNotEmpty()) {
           logcat { "Sorteo not complete, state: $it" }
           setKeyboardEnabled(true)
           binding.tvCaptureNumber.text = ""
-          binding.tvKeyboardInfo.text = it.numberAdded.prettyPrint()
-          viewModel.clearNumberAdded()
-        }
-
-        if (it.numberRemoved.isNotEmpty()) {
-          setKeyboardEnabled(true)
-          logcat { "Sorteo not complete, state $it" }
-          binding.tvKeyboardInfo.text = it.numberRemoved.prettyPrint()
-          viewModel.clearNumberRemoved()
+          binding.tvKeyboardInfo.text = it.numbers.prettyPrint()
         }
 
         if (it.sorteoCompleted.isNotEmpty()) {
@@ -109,11 +101,11 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
           viewModel.clearSorteoCompleted()
         }
 
-        if (it.captureNumber.isNotEmpty()) {
+        if (it.keyboardInput.isNotEmpty()) {
           logcat { "Captured digit: $it" }
-          setKeyboardEnabled(it.captureNumber.length < 2)
-          binding.bKeyboardZero.isEnabled = (it.captureNumber.length == 1)
-          binding.tvCaptureNumber.text = it.captureNumber
+          setKeyboardEnabled(it.keyboardInput.length < 2)
+          binding.bKeyboardZero.isEnabled = (it.keyboardInput.length == 1)
+          binding.tvCaptureNumber.text = it.keyboardInput
           viewModel.clearCaptureNumber()
         }
 
