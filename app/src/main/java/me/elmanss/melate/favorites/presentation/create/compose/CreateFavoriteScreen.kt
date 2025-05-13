@@ -1,18 +1,35 @@
 package me.elmanss.melate.favorites.presentation.create.compose
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.requiredHeight
+import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.navigation.compose.hiltViewModel
+import logcat.logcat
 import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.melateRed
@@ -21,11 +38,17 @@ import me.elmanss.melate.favorites.presentation.create.CreateFavoriteScreenViewM
 @Composable
 fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewModel()) {
 
-  Scaffold(topBar = { MelateTopBar(R.string.txt_title_fav_create) }) {
+  val uiState = viewModel.state.collectAsState()
+  val snackbarState = remember { SnackbarHostState() }
+
+  Scaffold(
+    topBar = { MelateTopBar(R.string.txt_title_fav_create) },
+    snackbarHost = { SnackbarHost(snackbarState) },
+  ) {
     ConstraintLayout(modifier = Modifier.padding(it).fillMaxSize()) {
       val (
         largeText,
-        statutText,
+        statusText,
         one,
         two,
         three,
@@ -40,11 +63,60 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
         ok) =
         createRefs()
 
+      Box(
+        modifier =
+          Modifier.fillMaxWidth().constrainAs(largeText) {
+            bottom.linkTo(statusText.top)
+            top.linkTo(parent.top)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+          },
+        contentAlignment = Alignment.Center,
+      ) {
+        uiState.value.captureNumber.let {
+          Text(
+            it,
+            fontSize = dimensionResource(R.dimen.key_number_font_size).value.sp,
+            color = melateRed(),
+          )
+        }
+      }
+
+      Box(
+        modifier =
+          Modifier.requiredHeight(48.dp).fillMaxWidth().constrainAs(statusText) {
+            bottom.linkTo(one.top)
+            start.linkTo(parent.start)
+            end.linkTo(parent.end)
+          },
+        contentAlignment = Alignment.Center,
+      ) {
+        logcat { "Added: ${uiState.value.numberAdded.joinToString()}" }
+        logcat { "Deleted: ${uiState.value.numberRemoved.joinToString()}" }
+        if (uiState.value.numberAdded.isNotEmpty()) {
+          Text(
+            modifier = Modifier.wrapContentHeight().fillMaxWidth(),
+            text = uiState.value.numberAdded.joinToString(),
+            color = melateRed(),
+            textAlign = TextAlign.Center,
+          )
+        }
+
+        if (uiState.value.numberRemoved.isNotEmpty()) {
+          Text(
+            modifier = Modifier.wrapContentHeight().fillMaxWidth(),
+            text = uiState.value.numberRemoved.joinToString(),
+            color = melateRed(),
+            textAlign = TextAlign.Center,
+          )
+        }
+      }
+
       // 1st-row
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("1") },
         modifier =
-          Modifier.constrainAs(one) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(one) {
             bottom.linkTo(four.top)
             start.linkTo(parent.start)
             end.linkTo(two.start)
@@ -58,9 +130,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("2") },
         modifier =
-          Modifier.constrainAs(two) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(two) {
             bottom.linkTo(five.top)
             start.linkTo(one.end)
             end.linkTo(three.start)
@@ -74,9 +146,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("3") },
         modifier =
-          Modifier.constrainAs(three) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(three) {
             bottom.linkTo(six.top)
             end.linkTo(parent.end)
             start.linkTo(two.end)
@@ -91,9 +163,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
       // 2nd-row
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("4") },
         modifier =
-          Modifier.constrainAs(four) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(four) {
             bottom.linkTo(seven.top)
             start.linkTo(parent.start)
             end.linkTo(five.start)
@@ -107,9 +179,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("5") },
         modifier =
-          Modifier.constrainAs(five) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(five) {
             bottom.linkTo(eight.top)
             start.linkTo(four.end)
             end.linkTo(six.start)
@@ -123,9 +195,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("6") },
         modifier =
-          Modifier.constrainAs(six) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(six) {
             bottom.linkTo(nine.top)
             end.linkTo(parent.end)
             start.linkTo(five.end)
@@ -140,9 +212,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
       // 3rd-row
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("7") },
         modifier =
-          Modifier.constrainAs(seven) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(seven) {
             bottom.linkTo(backspace.top)
             start.linkTo(parent.start)
             end.linkTo(eight.start)
@@ -156,9 +228,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("8") },
         modifier =
-          Modifier.constrainAs(eight) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(eight) {
             bottom.linkTo(zero.top)
             start.linkTo(seven.end)
             end.linkTo(nine.start)
@@ -172,9 +244,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("9") },
         modifier =
-          Modifier.constrainAs(nine) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(nine) {
             bottom.linkTo(ok.top)
             end.linkTo(parent.end)
             start.linkTo(eight.end)
@@ -189,9 +261,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
       // Bottom-row
       TextButton(
-        onClick = {},
+        onClick = { viewModel.deleteDigit() },
         modifier =
-          Modifier.constrainAs(backspace) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(backspace) {
             bottom.linkTo(parent.bottom)
             start.linkTo(parent.start)
             end.linkTo(zero.start)
@@ -201,9 +273,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = {},
+        onClick = { viewModel.captureDigit("0") },
         modifier =
-          Modifier.constrainAs(zero) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(zero) {
             bottom.linkTo(parent.bottom)
             start.linkTo(backspace.end)
             end.linkTo(ok.start)
@@ -217,9 +289,9 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = {},
+        onClick = { viewModel.moveToNext() },
         modifier =
-          Modifier.constrainAs(ok) {
+          Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(ok) {
             bottom.linkTo(parent.bottom)
             end.linkTo(parent.end)
             start.linkTo(zero.end)
@@ -230,6 +302,23 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
           color = melateRed(),
           textAlign = TextAlign.Center,
         )
+      }
+    }
+
+    if (uiState.value.captureError.isNotEmpty()) {
+      LaunchedEffect(true) {
+        val result =
+          snackbarState.showSnackbar(
+            message = uiState.value.captureError,
+            duration = SnackbarDuration.Short,
+          )
+        when (result) {
+          SnackbarResult.Dismissed -> {
+            viewModel.clearError()
+          }
+
+          SnackbarResult.ActionPerformed -> {}
+        }
       }
     }
   }
