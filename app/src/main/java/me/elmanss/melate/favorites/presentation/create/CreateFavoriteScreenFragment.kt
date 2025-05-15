@@ -6,8 +6,13 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.navigation.Navigation
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.flowWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.findNavController
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.R
 import me.elmanss.melate.common.util.delegate.viewBinding
@@ -81,48 +86,34 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
   }
 
   private fun observe() {
-    viewModel.numberAdded.observe(viewLifecycleOwner) {
-      it?.let {
-        logcat { "Sorteo not complete, state: $it" }
-        setKeyboardEnabled(true)
-        binding.tvCaptureNumber.text = ""
-        binding.tvKeyboardInfo.text = it.prettyPrint()
-        viewModel.resetNumberAdded()
-      }
-    }
-    //
-    viewModel.numberRemoved.observe(viewLifecycleOwner) {
-      it?.let {
-        setKeyboardEnabled(true)
-        logcat { "Sorteo not complete, state $it" }
-        binding.tvKeyboardInfo.text = it.prettyPrint()
-        viewModel.resetNumberRemoved()
-      }
-    }
-    //
-    viewModel.sorteoCompleted.observe(viewLifecycleOwner) {
-      it?.let {
-        logcat { "Sorteo complete, notified sorteo: $it" }
-        showSaveDialog(it)
-        viewModel.resetCorteoCompleted()
-      }
-    }
-    //
-    viewModel.captureNumber.observe(viewLifecycleOwner) {
-      it?.let {
-        logcat { "Captured digit: $it" }
-        setKeyboardEnabled(it.length < 2)
-        binding.bKeyboardZero.isEnabled = (it.length == 1)
-        binding.tvCaptureNumber.text = it
-        viewModel.resetCaptureNumber()
-      }
-    }
-    //
-    viewModel.captureError.observe(viewLifecycleOwner) {
-      it?.let {
-        logcat { "Error thrown while capturing digit" }
-        Toast.makeText(context, it, Toast.LENGTH_SHORT).show()
-        viewModel.resetCaptureError()
+    lifecycleScope.launch {
+      viewModel.state.flowWithLifecycle(lifecycle, Lifecycle.State.STARTED).collectLatest {
+        if (it.numbers.isNotEmpty()) {
+          logcat { "Sorteo not complete, state: $it" }
+          setKeyboardEnabled(true)
+          binding.tvCaptureNumber.text = ""
+          binding.tvKeyboardInfo.text = it.numbers.prettyPrint()
+        }
+
+        if (it.sorteoCompleted.isNotEmpty()) {
+          logcat { "Sorteo complete, notified sorteo: $it" }
+          showSaveDialog(it.sorteoCompleted)
+          viewModel.clearSorteoCompleted()
+        }
+
+        if (it.keyboardInput.isNotEmpty()) {
+          logcat { "Captured digit: $it" }
+          setKeyboardEnabled(it.keyboardInput.length < 2)
+          binding.bKeyboardZero.isEnabled = (it.keyboardInput.length == 1)
+          binding.tvCaptureNumber.text = it.keyboardInput
+          viewModel.clearCaptureNumber()
+        }
+
+        if (it.captureError.isNotEmpty()) {
+          logcat { "Error thrown while capturing digit" }
+          Toast.makeText(context, it.captureError, Toast.LENGTH_SHORT).show()
+          viewModel.clearError()
+        }
       }
     }
   }
@@ -145,7 +136,7 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
   private fun saveToFavs(sorteo: List<String>) {
     viewModel.insertFavorite(sorteo) {
       logcat { "Favorito agregado con exito" }
-      Navigation.findNavController(binding.root).navigateUp()
+      binding.root.findNavController().navigateUp()
     }
   }
 }

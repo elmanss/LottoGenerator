@@ -1,13 +1,14 @@
 package me.elmanss.melate.common.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
-import javax.inject.Inject
+import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.data.FavoritoQueries
+import javax.inject.Inject
 
 class FavoritosRepositoryImpl @Inject constructor(private val dao: FavoritoQueries) :
   FavoritosRepository {
-  override suspend fun createFavoritos(sorteoString: String) {
-    dao.insertFav(sorteoString)
+  override suspend fun createFavoritos(sorteoString: String, origin: FavOrigin) {
+    dao.insertFav(sorteoString, origin.name)
   }
 
   override fun selectAllFavoritos() = dao.selectAll().asFlow()

@@ -5,16 +5,17 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
-import java.util.Random
-import java.util.concurrent.ThreadLocalRandom
 import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.home.data.datasource.remote.SorteoApi
 import me.elmanss.melate.home.data.datasource.remote.SorteoApiImpl
 import me.elmanss.melate.home.data.repository.SorteoRepository
 import me.elmanss.melate.home.data.repository.SorteoRepositoryImpl
 import me.elmanss.melate.home.domain.usecase.FetchSorteos
+import me.elmanss.melate.home.domain.usecase.GetListId
 import me.elmanss.melate.home.domain.usecase.HomeUseCases
 import me.elmanss.melate.home.domain.usecase.SaveToFavorites
+import java.util.Random
+import java.util.concurrent.ThreadLocalRandom
 
 @Module
 @InstallIn(ViewModelComponent::class)
@@ -38,6 +39,11 @@ object HomeModule {
   fun provideHomeUseCases(
     favoritosRepository: FavoritosRepository,
     sorteoRepository: SorteoRepository,
+    randomGenerator: Random,
   ): HomeUseCases =
-    HomeUseCases(FetchSorteos(sorteoRepository), SaveToFavorites(favoritosRepository))
+    HomeUseCases(
+      FetchSorteos(sorteoRepository),
+      SaveToFavorites(favoritosRepository),
+      GetListId(randomGenerator),
+    )
 }

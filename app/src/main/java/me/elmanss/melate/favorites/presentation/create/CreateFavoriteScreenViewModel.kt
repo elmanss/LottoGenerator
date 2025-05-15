@@ -1,14 +1,18 @@
 package me.elmanss.melate.favorites.presentation.create
 
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
-import me.elmanss.melate.common.util.legacyRemoveLast
+import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.util.prettyPrint
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
@@ -21,117 +25,114 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     const val MAX_LEN = 6
   }
 
-  var currentNumber = ""
-  private val mCaptureNumber = MutableLiveData<String?>(null)
-  val captureNumber: LiveData<String?>
-    get() = mCaptureNumber
-
-  fun resetCaptureNumber() {
-    mCaptureNumber.value = null
-  }
-
-  private val mCaptureError = MutableLiveData<String?>(null)
-  val captureError: LiveData<String?>
-    get() = mCaptureError
-
-  fun resetCaptureError() {
-    mCaptureError.value = null
-  }
-
-  private val mNumbers = mutableListOf<String>()
-
-  private val mNumberAdded = MutableLiveData<List<String>?>(null)
-  val numberAdded: LiveData<List<String>?>
-    get() = mNumberAdded
-
-  fun resetNumberAdded() {
-    mNumberAdded.value = null
-  }
-
-  private val mSorteoCompleted = MutableLiveData<List<String>?>(null)
-  val sorteoCompleted: LiveData<List<String>?>
-    get() = mSorteoCompleted
-
-  fun resetCorteoCompleted() {
-    mSorteoCompleted.value = null
-  }
-
-  private val mNumberRemoved = MutableLiveData<List<String>?>(null)
-  val numberRemoved: LiveData<List<String>?>
-    get() = mNumberRemoved
-
-  fun resetNumberRemoved() {
-    mNumberRemoved.value = null
-  }
+  private val _state = MutableStateFlow(CreateFavoriteScreenState())
+  val state =
+    _state
+      .asStateFlow()
+      .stateIn(viewModelScope, SharingStarted.Eagerly, CreateFavoriteScreenState())
 
   fun deleteDigit() {
-    if (currentNumber.isNotEmpty()) {
-      currentNumber = currentNumber.dropLast(1)
+    val currentInput = state.value.keyboardInput
+    if (currentInput.isEmpty()) {
+      val currentNumbers = state.value.numbers
+      if (currentNumbers.isNotEmpty()) {
+        _state.update { state -> state.copy(numbers = currentNumbers.dropLast(1)) }
+      }
+    } else {
+      if (currentInput.length == 1) {
+        _state.update { state -> state.copy(keyboardInput = "") }
+      } else {
+        _state.update { state -> state.copy(keyboardInput = currentInput.dropLast(1)) }
+      }
     }
+  }
 
-    if (currentNumber.isEmpty()) {
-      removeNumberFromSorteo()
+  fun clearSorteoCompleted() {
+    _state.update { state -> state.copy(sorteoCompleted = emptyList()) }
+  }
+
+  fun clearCaptureNumber() {
+    _state.update { state -> state.copy(keyboardInput = "") }
+  }
+
+  fun clearError() {
+    _state.update { state -> state.copy(captureError = "") }
+  }
+
+  fun clearAfterStorage() {
+    _state.update { state ->
+      state.copy(
+        captureError = "",
+        keyboardInput = "",
+        numbers = emptyList(),
+        sorteoCompleted = emptyList(),
+        sorteoStored = true,
+      )
     }
-
-    mCaptureNumber.value = currentNumber
   }
 
   fun moveToNext() {
-    when {
-      currentNumber.isBlank() && mNumbers.size < MAX_LEN ->
-        mCaptureError.value = "Ingresa un numero"
-      currentNumber.toInt() > 56 && mNumbers.size < MAX_LEN ->
-        mCaptureError.value = "Solo se permiten numeros hasta 56"
-      isNumberInSorteo(currentNumber) && mNumbers.size < MAX_LEN ->
-        mCaptureError.value = "Numero agregado previamente"
-      else -> addNumberToSorteo(currentNumber)
+    val currentInput = state.value.keyboardInput
+    val currentNumbers = state.value.numbers
+    if (currentNumbers.size == MAX_LEN) {
+      // show storage prompt
+      _state.update { state -> state.copy(sorteoCompleted = currentNumbers) }
+    } else {
+      when {
+        currentInput.isBlank() ->
+          _state.update { state -> state.copy(captureError = "Ingresa un numero.") }
+        !currentInput.isDigitsOnly() ->
+          _state.update { state -> state.copy(captureError = "Solo se permite ingresar numeros.") }
+        currentInput.toInt() > 56 ->
+          _state.update { state -> state.copy(captureError = "Solo se permiten numeros hasta 56.") }
+        isNumberInSorteo(currentInput) ->
+          _state.update { state -> state.copy(captureError = "Numero agregado previamente.") }
+        else -> addNumberToSorteo(currentInput)
+      }
     }
   }
 
   fun captureDigit(digit: String) {
     logcat { "Capturing digit: $digit" }
-    if (mNumbers.size < MAX_LEN) {
-      currentNumber += digit
-    } else {
-      mCaptureError.value = "El sorteo esta completo, presiona '>' para guardarlo"
-      currentNumber = ""
+    val numbersSize = state.value.numbers.size
+    var currentInput = state.value.keyboardInput
+    if (currentInput.length < 2) {
+      if (numbersSize < MAX_LEN) {
+        currentInput += digit
+      } else {
+        _state.update { state ->
+          state.copy(captureError = "El sorteo esta completo, presiona '>' para guardarlo")
+        }
+        currentInput = ""
+      }
+      _state.update { state -> state.copy(keyboardInput = currentInput) }
     }
-    mCaptureNumber.value = currentNumber
   }
 
   fun insertFavorite(sorteo: List<String>, onInserted: () -> Unit) {
     viewModelScope.launch {
       val map = sorteo.map { it.toInt() }.sorted().map { it.toString() }
-      val model = FavoritoModel(0, map.prettyPrint())
+      val model = FavoritoModel(0, map.prettyPrint(), FavOrigin.Manual)
       useCases.addFavorite(model)
       onInserted.invoke()
     }
   }
 
-  private fun addNumberToSorteo(number: String) {
-    logcat { "Adding number to sorteo: $number" }
-    if (mNumbers.size in MIN_LEN until MAX_LEN) {
-      logcat { "Sorteo not complete, adding $number, to index: ${mNumbers.size}" }
-      mNumbers.add(number)
-      mNumberAdded.value = mNumbers
-      currentNumber = ""
-      if (mNumbers.size == MAX_LEN) {
-        mSorteoCompleted.value = mNumbers
-      }
-    } else if (mNumbers.size == MAX_LEN) {
-      logcat { "Sorteo complete, notifying sorteo: $mNumbers" }
-      mSorteoCompleted.value = mNumbers
-    }
+  fun showMessage(show: Boolean) {
+    _state.update { state -> state.copy(sorteoStored = show) }
   }
 
-  private fun removeNumberFromSorteo() {
-    if (mNumbers.isNotEmpty()) {
-      currentNumber = mNumbers.legacyRemoveLast()
-      mNumberRemoved.value = mNumbers
+  private fun addNumberToSorteo(number: String) {
+    logcat { "Adding number to sorteo: $number" }
+    val currentNumbers = state.value.numbers.toMutableList()
+    if (currentNumbers.size in MIN_LEN until MAX_LEN) {
+      logcat { "Sorteo not complete, adding $number, to index: ${currentNumbers.size}" }
+      currentNumbers.add(number)
+      _state.update { state -> state.copy(numbers = currentNumbers, keyboardInput = "") }
     }
   }
 
   private fun isNumberInSorteo(number: String): Boolean {
-    return mNumbers.any { it == number }
+    return state.value.numbers.contains(number)
   }
 }

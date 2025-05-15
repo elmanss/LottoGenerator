@@ -1,13 +1,15 @@
 CREATE TABLE IF NOT EXISTS favorito (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
-  sorteo TEXT NOT NULL);
+  sorteo TEXT NOT NULL,
+  origin TEXT NOT NULL
+  );
 
 
 CREATE INDEX IF NOT EXISTS sorteo ON favorito(sorteo);
 
 
 insertFav:
-INSERT INTO favorito (sorteo) VALUES (?);
+INSERT INTO favorito (sorteo, origin) VALUES (?, ?);
 
 selectAll:
 SELECT * FROM favorito;

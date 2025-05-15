@@ -1,10 +1,12 @@
 plugins {
   alias(libs.plugins.android.application)
-  alias(libs.plugins.kotlin.android) 
-  alias(libs.plugins.cash.sqldelight) 
-  alias(libs.plugins.safeargs.kotlin) 
-  alias(libs.plugins.kotlin.kapt) 
-  alias(libs.plugins.hilt.plugin) 
+  alias(libs.plugins.kotlin.android)
+  alias(libs.plugins.cash.sqldelight)
+  alias(libs.plugins.safeargs.kotlin)
+  alias(libs.plugins.kotlin.kapt)
+  alias(libs.plugins.hilt.plugin)
+  alias(libs.plugins.kotlin.compose)
+  alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -26,7 +28,10 @@ android {
     }
   }
 
-  buildFeatures { viewBinding = true }
+  buildFeatures {
+    viewBinding = true
+    compose = true
+  }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -47,6 +52,13 @@ dependencies {
   implementation(libs.android.driver)
   implementation(libs.coroutines.extensions)
   implementation(libs.logcat)
+  implementation(libs.lifecycle.runtime.ktx)
+  implementation(libs.activity.compose)
+  implementation(platform(libs.compose.bom))
+  implementation(libs.ui)
+  implementation(libs.ui.graphics)
+  implementation(libs.ui.tooling.preview)
+  implementation(libs.material3)
   testImplementation(libs.junit)
   androidTestImplementation(libs.ext.junit)
   androidTestImplementation(libs.espresso.core)
@@ -58,7 +70,15 @@ dependencies {
   // For Kotlin use navigation-ui-ktx
 
   implementation(libs.hilt.android)
+  androidTestImplementation(platform(libs.compose.bom))
+  androidTestImplementation(libs.ui.test.junit4)
+  debugImplementation(libs.ui.tooling)
+  debugImplementation(libs.ui.test.manifest)
   kapt(libs.hilt.compiler)
+  // https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
+  implementation(libs.hilt.navigation.compose)
+  implementation(libs.navigation.compose)
+  implementation(libs.constraintlayout.compose)
 }
 
 sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }

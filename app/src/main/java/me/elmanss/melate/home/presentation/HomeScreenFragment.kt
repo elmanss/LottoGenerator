@@ -9,7 +9,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -61,7 +61,8 @@ class HomeScreenFragment :
 
       mainSorteosView.adapter = adapter
       bMainFavs.setOnClickListener {
-        Navigation.findNavController(it)
+        it
+          .findNavController()
           .navigate(HomeScreenFragmentDirections.actionSorteoListFragmentToFavsFragment())
       }
     }
@@ -89,9 +90,9 @@ class HomeScreenFragment :
   private fun showWarning(pos: Int) {
     context?.let { c ->
       AlertDialog.Builder(c)
-        .setTitle("Aviso")
-        .setMessage("¿Deseas agregar este sorteo de tu lista de favoritos?")
-        .setPositiveButton("Si") { d, _ ->
+        .setTitle(getString(R.string.txt_title_aviso))
+        .setMessage(getString(R.string.txt_msg_add_to_fav))
+        .setPositiveButton(getString(R.string.txt_action_yes)) { d, _ ->
           viewModel.launchSaveToFavorites(adapter.getItem(pos))
           viewModel.dismissWarning()
           Toast.makeText(c, "Sorteo agregado a tus favoritos", Toast.LENGTH_SHORT).show()
