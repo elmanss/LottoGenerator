@@ -55,7 +55,13 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
   Scaffold(
     topBar = { MelateTopBar(title = R.string.app_name) },
     floatingActionButton = {
-      MelateFab(action = { onNavigateToFavs.invoke() }, text = R.string.txt_button_mis_favs)
+      MelateFab(
+        action = {
+          viewModel.clearNotifications()
+          onNavigateToFavs.invoke()
+        },
+        text = R.string.txt_button_mis_favs,
+      )
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
@@ -83,8 +89,9 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
         },
       ) {
         LazyColumn(state = sorteoState) {
-          itemsIndexed(items = sorteos, key = { index, _ -> viewModel.getListId() }) { index, sorteo
-            ->
+          itemsIndexed(items = sorteos, key = { index, _ -> index + viewModel.getListId() }) {
+            index,
+            sorteo ->
             Text(
               modifier =
                 Modifier.animateItem().fillMaxWidth().padding(16.dp).clickable {

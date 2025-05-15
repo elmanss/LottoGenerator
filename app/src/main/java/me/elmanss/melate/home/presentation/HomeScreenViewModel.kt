@@ -62,4 +62,9 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
   fun showSuccessMsg(show: Boolean) {
     _state.update { state -> state.copy(showStorageSuccess = show) }
   }
+
+  fun clearNotifications() {
+    dismissWarning()
+    showSuccessMsg(false)
+  }
 }
