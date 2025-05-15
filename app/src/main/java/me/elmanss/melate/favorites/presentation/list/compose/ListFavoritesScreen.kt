@@ -50,7 +50,13 @@ fun ListFavoritesScreen(
   Scaffold(
     topBar = { MelateTopBar(title = R.string.txt_mis_sorteos) },
     floatingActionButton = {
-      MelateFab(action = { onCreateClicked.invoke() }, text = R.string.txt_button_mis_favs_create)
+      MelateFab(
+        action = {
+          viewModel.clearNotifications()
+          onCreateClicked.invoke()
+        },
+        text = R.string.txt_button_mis_favs_create,
+      )
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {

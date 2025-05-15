@@ -63,4 +63,9 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
   fun showDeletionMessage(show: Boolean = false) {
     _state.update { state -> state.copy(showDeletionSuccess = show) }
   }
+
+  fun clearNotifications() {
+    dismissWarning()
+    showDeletionMessage()
+  }
 }
