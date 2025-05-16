@@ -4,7 +4,6 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +15,8 @@ import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.util.prettyPrint
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
+import java.time.ZonedDateTime
+import javax.inject.Inject
 
 @HiltViewModel
 class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
@@ -112,7 +113,13 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
   fun insertFavorite(sorteo: List<String>, onInserted: () -> Unit) {
     viewModelScope.launch {
       val map = sorteo.map { it.toInt() }.sorted().map { it.toString() }
-      val model = FavoritoModel(0, map.prettyPrint(), FavOrigin.Manual)
+      val model =
+        FavoritoModel(
+          0,
+          map.prettyPrint(),
+          FavOrigin.Manual,
+          ZonedDateTime.now().toInstant().toEpochMilli(),
+        )
       useCases.addFavorite(model)
       onInserted.invoke()
     }

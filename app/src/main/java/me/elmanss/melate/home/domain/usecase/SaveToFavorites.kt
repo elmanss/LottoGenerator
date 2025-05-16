@@ -6,7 +6,7 @@ import me.elmanss.melate.home.domain.model.SorteoModel
 import javax.inject.Inject
 
 class SaveToFavorites @Inject constructor(private val repository: FavoritosRepository) {
-  suspend operator fun invoke(sorteo: SorteoModel) {
-    repository.createFavoritos(sorteo.numeros.toString(), FavOrigin.Random)
+  suspend operator fun invoke(sorteo: SorteoModel, createdAt: Long) {
+    repository.createFavoritos(sorteo.numeros.toString(), FavOrigin.Random, createdAt)
   }
 }

@@ -11,5 +11,7 @@ class FetchFavorites @Inject constructor(private val repository: FavoritosReposi
     repository
       .selectAllFavoritos()
       .map { it.executeAsList() }
-      .map { it.map { FavoritoModel(it.id, it.sorteo, FavOrigin.valueOf(it.origin)) } }
+      .map {
+        it.map { FavoritoModel(it.id, it.sorteo, FavOrigin.valueOf(it.origin), it.created_at) }
+      }
 }

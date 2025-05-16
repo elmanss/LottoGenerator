@@ -15,6 +15,7 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.home.domain.model.SorteoModel
 import me.elmanss.melate.home.domain.usecase.HomeUseCases
+import java.time.ZonedDateTime
 import javax.inject.Inject
 
 @HiltViewModel
@@ -43,7 +44,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
 
   fun launchSaveToFavorites(sorteoModel: SorteoModel) {
     viewModelScope.launch {
-      useCases.saveToFavorites(sorteoModel)
+      useCases.saveToFavorites(sorteoModel, ZonedDateTime.now().toInstant().toEpochMilli())
       delay(250)
       dismissWarning()
       showSuccessMsg(true)

@@ -7,7 +7,11 @@ import me.elmanss.melate.data.Favorito
 
 interface FavoritosRepository {
 
-  suspend fun createFavoritos(sorteoString: String, origin: FavOrigin = FavOrigin.Random)
+  suspend fun createFavoritos(
+    sorteoString: String,
+    origin: FavOrigin = FavOrigin.Random,
+    createdAt: Long = 0L,
+  )
 
   fun selectAllFavoritos(): Flow<Query<Favorito>>
 

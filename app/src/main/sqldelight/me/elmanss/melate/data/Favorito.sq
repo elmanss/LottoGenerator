@@ -1,7 +1,8 @@
 CREATE TABLE IF NOT EXISTS favorito (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   sorteo TEXT NOT NULL,
-  origin TEXT NOT NULL
+  origin TEXT NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT 0
   );
 
 
@@ -9,7 +10,7 @@ CREATE INDEX IF NOT EXISTS sorteo ON favorito(sorteo);
 
 
 insertFav:
-INSERT INTO favorito (sorteo, origin) VALUES (?, ?);
+INSERT INTO favorito (sorteo, origin, created_at) VALUES (?, ?, ?);
 
 selectAll:
 SELECT * FROM favorito;
