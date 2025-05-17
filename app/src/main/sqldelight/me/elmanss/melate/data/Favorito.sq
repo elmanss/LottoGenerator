@@ -13,7 +13,7 @@ insertFav:
 INSERT INTO favorito (sorteo, origin, created_at) VALUES (?, ?, ?);
 
 selectAll:
-SELECT * FROM favorito;
+SELECT * FROM favorito ORDER BY created_at DESC;
 
 deleteFav:
 DELETE FROM favorito WHERE id= ?;

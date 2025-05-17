@@ -68,4 +68,7 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
     dismissWarning()
     showDeletionMessage()
   }
+
+  fun formatDate(favModel: FavoritoModel) =
+    useCases.formatFavoriteCreationDate.invoke(favModel.createdAt)
 }
