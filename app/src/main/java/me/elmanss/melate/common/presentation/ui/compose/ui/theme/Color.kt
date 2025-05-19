@@ -14,6 +14,7 @@ val Pink40 = Color(0xFF2f4858)
 
 val White = Color(0xFFFFFFFF)
 val Black = Color(0xFF000000)
+val Gray = Color(0xffe3e3e3)
 
 @Composable
 fun melateRed(): Color {

@@ -90,4 +90,5 @@
     <string name="txt_title_fav_create">Crear un sorteo</string>
     <string name="txt_sorteo_dialog_title">Numeros seleccionados</string>
     <string name="txt_sorteo_dialog_msg">Los números que seleccionaste son: \n%s.\n\n¿Deseas guardarlos?</string>
+    <string name="txt_empty_fav_msg">No tienes sorteos guardados.\nCrea uno nuevo, o selecciona el sorteo de tu preferencia en la pantalla anterior.</string>
 </resources>
