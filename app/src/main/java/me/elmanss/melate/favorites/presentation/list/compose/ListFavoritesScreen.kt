@@ -1,10 +1,6 @@
 package me.elmanss.melate.favorites.presentation.list.compose
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.combinedClickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -17,20 +13,15 @@ import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import me.elmanss.melate.R
-import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
@@ -50,7 +41,13 @@ fun ListFavoritesScreen(
   Scaffold(
     topBar = { MelateTopBar(title = R.string.txt_mis_sorteos) },
     floatingActionButton = {
-      MelateFab(action = { onCreateClicked.invoke() }, text = R.string.txt_button_mis_favs_create)
+      MelateFab(
+        action = {
+          viewModel.clearNotifications()
+          onCreateClicked.invoke()
+        },
+        text = R.string.txt_button_mis_favs_create,
+      )
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
@@ -59,32 +56,10 @@ fun ListFavoritesScreen(
 
       LazyColumn(state = sorteoState) {
         itemsIndexed(favs) { index, fav ->
-          Row(
-            modifier =
-              Modifier.fillMaxWidth()
-                .padding(16.dp)
-                .combinedClickable(onClick = {}, onLongClick = { viewModel.showWarning(fav) })
-          ) {
-            Text(
-              text =
-                if (fav.origin == FavOrigin.Random) fav.sorteo.removePrefix("[").removeSuffix("]")
-                else fav.sorteo
-            )
-            Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.End,
-              verticalAlignment = Alignment.CenterVertically,
-            ) {
-              Image(
-                painter =
-                  painterResource(
-                    if (fav.origin == FavOrigin.Random) R.drawable.cellphone
-                    else R.drawable.human_edit
-                  ),
-                contentDescription = "Origin icon",
-              )
-            }
+          ListFavoriteItem(favorite = fav, formatter = { viewModel.formatDate(fav) }) {
+            viewModel.showWarning(fav)
           }
+
           if (index < favs.lastIndex) {
             HorizontalDivider(thickness = Dp.Hairline)
           }

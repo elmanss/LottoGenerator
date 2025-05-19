@@ -7,8 +7,8 @@ import javax.inject.Inject
 
 class FavoritosRepositoryImpl @Inject constructor(private val dao: FavoritoQueries) :
   FavoritosRepository {
-  override suspend fun createFavoritos(sorteoString: String, origin: FavOrigin) {
-    dao.insertFav(sorteoString, origin.name)
+  override suspend fun createFavoritos(sorteoString: String, origin: FavOrigin, createdAt: Long) {
+    dao.insertFav(sorteoString, origin.name, createdAt)
   }
 
   override fun selectAllFavoritos() = dao.selectAll().asFlow()

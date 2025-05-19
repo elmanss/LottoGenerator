@@ -4,4 +4,5 @@ data class FavoritesUseCases(
   val addFavorite: AddFavorite,
   val deleteFavorite: DeleteFavorite,
   val fetchFavorites: FetchFavorites,
+  val formatFavoriteCreationDate: FormatFavCreationDate
 )
