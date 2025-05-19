@@ -25,10 +25,13 @@ fun ListFavoriteItem(
   formatter: (FavoritoModel) -> String,
   onLongClick: (FavoritoModel) -> Unit,
 ) {
-  Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-    Row(
-      modifier = Modifier.combinedClickable(onClick = {}, onLongClick = { onLongClick(favorite) })
-    ) {
+  Column(
+    modifier =
+      Modifier.fillMaxWidth()
+        .padding(16.dp)
+        .combinedClickable(onClick = {}, onLongClick = { onLongClick(favorite) })
+  ) {
+    Row {
       Text(
         text =
           if (favorite.origin == FavOrigin.Random)
