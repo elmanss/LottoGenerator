@@ -1,21 +1,24 @@
 package me.elmanss.melate.home.presentation.compose
 
-import androidx.compose.foundation.clickable
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -31,14 +34,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import me.elmanss.melate.R
+import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
-import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.home.presentation.HomeScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -51,9 +53,25 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
   var isRefreshing by remember { mutableStateOf(false) }
   val snackbarState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
+  var multiselectState by remember { mutableStateOf(false) }
+
+  BackHandler(enabled = multiselectState) {
+    viewModel.clearSelected()
+    multiselectState = !multiselectState
+  }
 
   Scaffold(
-    topBar = { MelateTopBar(title = R.string.app_name) },
+    topBar = {
+      MelateActionTopBar(title = R.string.app_name) {
+        if (multiselectState) {
+          IconButton(
+            onClick = { viewModel.saveSelected { multiselectState = !multiselectState } }
+          ) {
+            Icon(imageVector = Icons.Default.Check, contentDescription = "Save")
+          }
+        }
+      }
+    },
     floatingActionButton = {
       MelateFab(
         action = {
@@ -92,13 +110,22 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
           itemsIndexed(items = sorteos, key = { index, _ -> index + viewModel.getListId() }) {
             index,
             sorteo ->
-            Text(
-              modifier =
-                Modifier.animateItem().fillMaxWidth().padding(16.dp).clickable {
-                  viewModel.showWarning(sorteo)
-                },
-              text = sorteo.numeros.joinToString(),
-            )
+            HomeListItem(
+              selectableMode = multiselectState,
+              sorteo = sorteo,
+              onChecked = { s -> viewModel.markItemAsSelected(s, index) },
+              onClick = { s ->
+                if (!multiselectState) {
+                  viewModel.showWarning(s)
+                }
+              },
+            ) { s ->
+              if (!multiselectState) {
+                multiselectState = true
+                viewModel.markItemAsSelected(s, index)
+              }
+            }
+
             if (index < sorteos.lastIndex) {
               HorizontalDivider(thickness = Dp.Hairline)
             }

@@ -68,4 +68,29 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
     dismissWarning()
     showSuccessMsg(false)
   }
+
+  fun markItemAsSelected(sorteo: SorteoModel, index: Int) {
+    val currentSorteosMutable = state.value.sorteos.toMutableList()
+    currentSorteosMutable[index] = sorteo
+    _state.update { state -> state.copy(sorteos = currentSorteosMutable) }
+  }
+
+  fun saveSelected(onFinished: () -> Unit) {
+    viewModelScope.launch {
+      val selectedSorteos = state.value.sorteos.filter { it.selected }
+      logcat { "Selected sorteos: $selectedSorteos" }
+      selectedSorteos
+        .forEach { useCases.saveToFavorites(it, ZonedDateTime.now().toInstant().toEpochMilli()) }
+        .also {
+          clearSelected()
+          onFinished.invoke()
+        }
+    }
+  }
+
+  fun clearSelected() {
+    val clearedSorteos = state.value.sorteos.onEach { if (it.selected) it.selected = false }
+    logcat { "Cleared sorteos: ${clearedSorteos}" }
+    _state.update { state -> state.copy(sorteos = clearedSorteos) }
+  }
 }
