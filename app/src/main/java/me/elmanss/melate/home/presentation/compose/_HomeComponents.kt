@@ -16,7 +16,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
-import logcat.logcat
 import me.elmanss.melate.home.domain.model.SorteoModel
 
 @Composable
@@ -37,7 +36,11 @@ fun HomeListItem(
         .padding(16.dp)
         .combinedClickable(
           onClick = { onClick.invoke(sorteo) },
-          onLongClick = { onLongClick.invoke(sorteo) },
+          onLongClick = {
+            actionState = true
+            sorteo.selected = true
+            onLongClick.invoke(sorteo)
+          },
         )
   ) {
     val (text, check) = createRefs()
@@ -55,7 +58,6 @@ fun HomeListItem(
         onCheckedChange = {
           actionState = !actionState
           sorteo.selected = actionState
-          logcat { "Sorteo ${sorteo.numeros} selected state: ${sorteo.selected}" }
           onChecked.invoke(sorteo)
         },
       )
