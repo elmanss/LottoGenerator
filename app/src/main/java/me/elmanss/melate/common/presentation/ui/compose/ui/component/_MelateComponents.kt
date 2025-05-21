@@ -137,9 +137,13 @@ fun MelateSorteoActionDialog(
           .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      Text(text = stringResource(title), fontSize = TextUnit(24F, TextUnitType.Sp))
+      Text(
+        text = stringResource(title),
+        fontSize = TextUnit(24F, TextUnitType.Sp),
+        color = MaterialTheme.colorScheme.onSurface,
+      )
       Spacer(modifier.height(8.dp))
-      Text(text = msg)
+      Text(text = msg, color = MaterialTheme.colorScheme.onSurface)
       MelateDialogButton({ action.invoke() }, stringResource(actionTxt))
     }
   }

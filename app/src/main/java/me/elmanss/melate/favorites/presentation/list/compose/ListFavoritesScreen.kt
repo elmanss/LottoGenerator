@@ -67,9 +67,7 @@ fun ListFavoritesScreen(
     topBar = {
       MelateActionTopBar(title = R.string.txt_mis_sorteos) {
         if (multiselectState) {
-          IconButton(
-            onClick = { viewModel.deleteSelected { multiselectState = !multiselectState } }
-          ) {
+          IconButton(onClick = { viewModel.showMultideletionPrompt(true) }) {
             Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
           }
         }
@@ -123,7 +121,9 @@ fun ListFavoritesScreen(
                 }
               },
             ) {
-              viewModel.showWarning(fav)
+              if (!multiselectState) {
+                viewModel.showWarning(fav)
+              }
             }
 
             if (index < favs.lastIndex) {
@@ -158,5 +158,20 @@ fun ListFavoritesScreen(
         }
       }
     }
+  }
+
+  if (uiState.value.showMultiDeletionPrompt) {
+    MelateSorteoActionDialog(
+      { viewModel.showMultideletionPrompt(false) },
+      {
+        viewModel.deleteSelected {
+          multiselectState = !multiselectState
+          viewModel.showMultideletionPrompt(false)
+        }
+      },
+      R.string.txt_title_aviso,
+      "Se eliminaran los sorteos seleccionados.",
+      R.string.txt_action_delete,
+    )
   }
 }

@@ -6,4 +6,5 @@ data class ListFavoritesScreenState(
   val favs: List<FavoritoModel> = emptyList(),
   val showDeletionSuccess: Boolean = false,
   val favToDelete: FavoritoModel? = null,
+  val showMultiDeletionPrompt: Boolean = false,
 )

@@ -3,7 +3,6 @@ package me.elmanss.melate.favorites.presentation.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -18,6 +17,7 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
+import javax.inject.Inject
 
 @HiltViewModel
 class ListFavoritesScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
@@ -95,5 +95,9 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
     val clearedFavs = state.value.favs.onEach { if (it.selected) it.selected = false }
     logcat { "Cleared favs: ${clearedFavs}" }
     _state.update { state -> state.copy(favs = clearedFavs) }
+  }
+
+  fun showMultideletionPrompt(show: Boolean = false) {
+    _state.update { state -> state.copy(showMultiDeletionPrompt = show) }
   }
 }
