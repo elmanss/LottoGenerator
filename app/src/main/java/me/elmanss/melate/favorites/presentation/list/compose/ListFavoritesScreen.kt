@@ -53,6 +53,7 @@ fun ListFavoritesScreen(
     topBar = { MelateTopBar(title = R.string.txt_mis_sorteos) },
     floatingActionButton = {
       MelateFab(
+        listState = sorteoState,
         action = {
           viewModel.clearNotifications()
           onCreateClicked.invoke()
