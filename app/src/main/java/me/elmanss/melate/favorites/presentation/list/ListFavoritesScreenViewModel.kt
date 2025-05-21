@@ -71,4 +71,33 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
 
   fun formatDate(favModel: FavoritoModel) =
     useCases.formatFavoriteCreationDate.invoke(favModel.createdAt)
+
+  fun markItemAsSelected(fav: FavoritoModel, index: Int) {
+    val currentFavsMutable = state.value.favs.toMutableList()
+    currentFavsMutable[index] = fav
+    _state.update { state -> state.copy(favs = currentFavsMutable) }
+  }
+
+  fun deleteSelected(onFinished: () -> Unit) {
+    viewModelScope.launch {
+      val selectedFavs = state.value.favs.filter { it.selected }
+      logcat { "Selected favs: $selectedFavs" }
+      selectedFavs
+        .forEach { useCases.deleteFavorite(it) }
+        .also {
+          clearSelected()
+          onFinished.invoke()
+        }
+    }
+  }
+
+  fun clearSelected() {
+    val clearedFavs = state.value.favs.onEach { if (it.selected) it.selected = false }
+    logcat { "Cleared favs: ${clearedFavs}" }
+    _state.update { state -> state.copy(favs = clearedFavs) }
+  }
+
+  fun showMultideletionPrompt(show: Boolean = false) {
+    _state.update { state -> state.copy(showMultiDeletionPrompt = show) }
+  }
 }

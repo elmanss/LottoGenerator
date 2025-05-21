@@ -1,6 +1,7 @@
 package me.elmanss.melate.common.presentation.ui.compose.ui.component
 
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -18,6 +20,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.State
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -66,13 +71,37 @@ private fun getTopBarColors(isDark: Boolean) =
   )
 
 @Composable
-fun MelateFab(action: () -> Unit, @StringRes text: Int, modifier: Modifier = Modifier) {
-  FloatingActionButton(
-    containerColor = MaterialTheme.colorScheme.primaryContainer,
-    onClick = { action.invoke() },
-    contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-  ) {
-    Text(stringResource(text), modifier = modifier.padding(horizontal = 4.dp))
+fun MelateFab(
+  action: () -> Unit,
+  @StringRes text: Int,
+  modifier: Modifier = Modifier,
+  listState: LazyListState,
+) {
+  AnimatedVisibility(visible = listState.isScrollingUp().value) {
+    FloatingActionButton(
+      containerColor = MaterialTheme.colorScheme.primaryContainer,
+      onClick = { action.invoke() },
+      contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+    ) {
+      Text(stringResource(text), modifier = modifier.padding(horizontal = 4.dp))
+    }
+  }
+}
+
+@Composable
+fun LazyListState.isScrollingUp(): State<Boolean> {
+  return produceState(initialValue = true) {
+    var lastIndex = 0
+    var lastScroll = Int.MAX_VALUE
+    snapshotFlow { firstVisibleItemIndex to firstVisibleItemScrollOffset }
+      .collect { (currentIndex, currentScroll) ->
+        if (currentIndex != lastIndex || currentScroll != lastScroll) {
+          value =
+            currentIndex < lastIndex || (currentIndex == lastIndex && currentScroll < lastScroll)
+          lastIndex = currentIndex
+          lastScroll = currentScroll
+        }
+      }
   }
 }
 
@@ -108,9 +137,13 @@ fun MelateSorteoActionDialog(
           .padding(start = 16.dp, top = 16.dp, end = 16.dp, bottom = 16.dp),
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-      Text(text = stringResource(title), fontSize = TextUnit(24F, TextUnitType.Sp))
+      Text(
+        text = stringResource(title),
+        fontSize = TextUnit(24F, TextUnitType.Sp),
+        color = MaterialTheme.colorScheme.onSurface,
+      )
       Spacer(modifier.height(8.dp))
-      Text(text = msg)
+      Text(text = msg, color = MaterialTheme.colorScheme.onSurface)
       MelateDialogButton({ action.invoke() }, stringResource(actionTxt))
     }
   }

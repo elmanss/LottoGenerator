@@ -74,6 +74,7 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
     },
     floatingActionButton = {
       MelateFab(
+        listState = sorteoState,
         action = {
           viewModel.clearNotifications()
           onNavigateToFavs.invoke()
