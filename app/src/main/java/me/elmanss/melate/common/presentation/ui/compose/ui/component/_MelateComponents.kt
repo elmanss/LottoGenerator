@@ -4,6 +4,7 @@ import androidx.annotation.StringRes
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -36,6 +37,21 @@ fun MelateTopBar(@StringRes title: Int, modifier: Modifier = Modifier) {
     title = { Text(text = stringResource(title)) },
     colors = getTopBarColors(isSystemInDarkTheme()),
     modifier = modifier,
+  )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun MelateActionTopBar(
+  @StringRes title: Int,
+  modifier: Modifier = Modifier,
+  actions: @Composable (RowScope.() -> Unit) = {},
+) {
+  TopAppBar(
+    title = { Text(text = stringResource(title)) },
+    colors = getTopBarColors(isSystemInDarkTheme()),
+    modifier = modifier,
+    actions = actions,
   )
 }
 
