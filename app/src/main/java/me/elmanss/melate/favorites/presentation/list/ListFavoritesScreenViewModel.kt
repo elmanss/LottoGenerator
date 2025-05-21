@@ -3,6 +3,7 @@ package me.elmanss.melate.favorites.presentation.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,6 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
-import javax.inject.Inject
 
 @HiltViewModel
 class ListFavoritesScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
@@ -71,4 +71,29 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
 
   fun formatDate(favModel: FavoritoModel) =
     useCases.formatFavoriteCreationDate.invoke(favModel.createdAt)
+
+  fun markItemAsSelected(fav: FavoritoModel, index: Int) {
+    val currentFavsMutable = state.value.favs.toMutableList()
+    currentFavsMutable[index] = fav
+    _state.update { state -> state.copy(favs = currentFavsMutable) }
+  }
+
+  fun deleteSelected(onFinished: () -> Unit) {
+    viewModelScope.launch {
+      val selectedFavs = state.value.favs.filter { it.selected }
+      logcat { "Selected favs: $selectedFavs" }
+      selectedFavs
+        .forEach { useCases.deleteFavorite(it) }
+        .also {
+          clearSelected()
+          onFinished.invoke()
+        }
+    }
+  }
+
+  fun clearSelected() {
+    val clearedFavs = state.value.favs.onEach { if (it.selected) it.selected = false }
+    logcat { "Cleared favs: ${clearedFavs}" }
+    _state.update { state -> state.copy(favs = clearedFavs) }
+  }
 }

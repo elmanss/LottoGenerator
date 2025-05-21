@@ -1,5 +1,6 @@
 package me.elmanss.melate.favorites.presentation.list.compose
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -9,8 +10,12 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -20,7 +25,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
@@ -32,9 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import me.elmanss.melate.R
+import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
-import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.Gray
 import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewModel
 
@@ -48,9 +56,25 @@ fun ListFavoritesScreen(
   val uiState = viewModel.state.collectAsState()
   val sorteoState = rememberLazyListState()
   val snackbarState = remember { SnackbarHostState() }
+  var multiselectState by remember { mutableStateOf(false) }
+
+  BackHandler(enabled = multiselectState) {
+    viewModel.clearSelected()
+    multiselectState = !multiselectState
+  }
 
   Scaffold(
-    topBar = { MelateTopBar(title = R.string.txt_mis_sorteos) },
+    topBar = {
+      MelateActionTopBar(title = R.string.txt_mis_sorteos) {
+        if (multiselectState) {
+          IconButton(
+            onClick = { viewModel.deleteSelected { multiselectState = !multiselectState } }
+          ) {
+            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+          }
+        }
+      }
+    },
     floatingActionButton = {
       MelateFab(
         listState = sorteoState,
@@ -87,7 +111,18 @@ fun ListFavoritesScreen(
       Column(modifier = Modifier.fillMaxSize().padding(it)) {
         LazyColumn(state = sorteoState) {
           itemsIndexed(favs) { index, fav ->
-            ListFavoriteItem(favorite = fav, formatter = { viewModel.formatDate(fav) }) {
+            ListFavoriteItem(
+              editableState = multiselectState,
+              favorite = fav,
+              formatter = { viewModel.formatDate(fav) },
+              onChecked = { f -> viewModel.markItemAsSelected(f, index) },
+              onLongClick = { f ->
+                if (!multiselectState) {
+                  multiselectState = true
+                  viewModel.markItemAsSelected(f, index)
+                }
+              },
+            ) {
               viewModel.showWarning(fav)
             }
 
