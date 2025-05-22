@@ -38,6 +38,8 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       val currentNumbers = state.value.numbers
       if (currentNumbers.isNotEmpty()) {
         _state.update { state -> state.copy(numbers = currentNumbers.dropLast(1)) }
+      } else {
+        _state.update { state -> state.copy(navigateBack = true) }
       }
     } else {
       if (currentInput.length == 1) {
@@ -46,6 +48,11 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
         _state.update { state -> state.copy(keyboardInput = currentInput.dropLast(1)) }
       }
     }
+  }
+
+  fun clearBackNavigation() {
+    _state.update { state -> state.copy(navigateBack = false) }
+
   }
 
   fun clearSorteoCompleted() {

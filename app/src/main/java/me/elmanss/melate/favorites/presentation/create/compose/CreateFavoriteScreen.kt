@@ -1,5 +1,6 @@
 package me.elmanss.melate.favorites.presentation.create.compose
 
+import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -43,6 +44,8 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
   val uiState = viewModel.state.collectAsState()
   val snackbarState = remember { SnackbarHostState() }
+
+  val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
 
   Scaffold(
     topBar = { MelateTopBar(R.string.txt_title_fav_create) },
@@ -338,6 +341,11 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
           SnackbarResult.ActionPerformed -> {}
         }
       }
+    }
+
+    if (uiState.value.navigateBack) {
+      onBackPressedDispatcher?.onBackPressed()
+      viewModel.clearBackNavigation()
     }
   }
 }
