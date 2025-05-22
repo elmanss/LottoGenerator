@@ -6,6 +6,7 @@ data class CreateFavoriteScreenState(
   val numbers: List<String> = emptyList(),
   val sorteoCompleted: List<String> = emptyList(),
   val sorteoStored: Boolean = false,
+  val navigateBack: Boolean = false,
 )
 
 /*
