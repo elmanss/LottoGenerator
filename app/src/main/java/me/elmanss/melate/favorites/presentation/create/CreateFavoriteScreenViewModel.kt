@@ -24,6 +24,11 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
   companion object {
     const val MIN_LEN = 0
     const val MAX_LEN = 6
+    private const val ERROR_EMPTY_INPUT = "Ingresa un numero."
+    private const val ERROR_ONLY_DIGITS = "Solo se permite ingresar numeros."
+    private const val ERROR_INPUT_ABOVE_56 = "Solo se permiten numeros hasta 56."
+    private const val ERROR_ALREADY_ADDED = "Numero agregado previamente."
+    private const val MSG_COMPLETED_DRAW = "El sorteo esta completo, presiona \u2713 para guardarlo"
   }
 
   private val _state = MutableStateFlow(CreateFavoriteScreenState())
@@ -52,7 +57,6 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
 
   fun clearBackNavigation() {
     _state.update { state -> state.copy(navigateBack = false) }
-
   }
 
   fun clearSorteoCompleted() {
@@ -88,13 +92,13 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     } else {
       when {
         currentInput.isBlank() ->
-          _state.update { state -> state.copy(captureError = "Ingresa un numero.") }
+          _state.update { state -> state.copy(captureError = ERROR_EMPTY_INPUT) }
         !currentInput.isDigitsOnly() ->
-          _state.update { state -> state.copy(captureError = "Solo se permite ingresar numeros.") }
+          _state.update { state -> state.copy(captureError = ERROR_ONLY_DIGITS) }
         currentInput.toInt() > 56 ->
-          _state.update { state -> state.copy(captureError = "Solo se permiten numeros hasta 56.") }
+          _state.update { state -> state.copy(captureError = ERROR_INPUT_ABOVE_56) }
         isNumberInSorteo(currentInput) ->
-          _state.update { state -> state.copy(captureError = "Numero agregado previamente.") }
+          _state.update { state -> state.copy(captureError = ERROR_ALREADY_ADDED) }
         else -> addNumberToSorteo(currentInput)
       }
     }
@@ -108,9 +112,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       if (numbersSize < MAX_LEN) {
         currentInput += digit
       } else {
-        _state.update { state ->
-          state.copy(captureError = "El sorteo esta completo, presiona '>' para guardarlo")
-        }
+        _state.update { state -> state.copy(captureError = MSG_COMPLETED_DRAW) }
         currentInput = ""
       }
       _state.update { state -> state.copy(keyboardInput = currentInput) }
