@@ -52,7 +52,6 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
 
   fun clearBackNavigation() {
     _state.update { state -> state.copy(navigateBack = false) }
-
   }
 
   fun clearSorteoCompleted() {
@@ -109,7 +108,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
         currentInput += digit
       } else {
         _state.update { state ->
-          state.copy(captureError = "El sorteo esta completo, presiona '>' para guardarlo")
+          state.copy(captureError = "El sorteo esta completo, presiona \u2713 para guardarlo")
         }
         currentInput = ""
       }
