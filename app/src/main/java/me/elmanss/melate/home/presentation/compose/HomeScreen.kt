@@ -42,6 +42,7 @@ import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActio
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.home.presentation.HomeScreenViewModel
+import me.elmanss.melate.home.presentation.HomeUiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,18 +56,13 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
   val coroutineScope = rememberCoroutineScope()
   var multiselectState by remember { mutableStateOf(false) }
 
-  BackHandler(enabled = multiselectState) {
-    viewModel.clearSelected()
-    multiselectState = !multiselectState
-  }
+  BackHandler(enabled = multiselectState) { viewModel.sendEvent(HomeUiEvent.ExitMultiSelect) }
 
   Scaffold(
     topBar = {
       MelateActionTopBar(title = R.string.app_name) {
         if (multiselectState) {
-          IconButton(
-            onClick = { viewModel.saveSelected { multiselectState = !multiselectState } }
-          ) {
+          IconButton(onClick = { viewModel.sendEvent(HomeUiEvent.ConfirmMultiSelect) }) {
             Icon(imageVector = Icons.Default.Check, contentDescription = "Save")
           }
         }
@@ -75,15 +71,14 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
     floatingActionButton = {
       MelateFab(
         listState = sorteoState,
-        action = {
-          viewModel.clearNotifications()
-          onNavigateToFavs.invoke()
-        },
+        action = { viewModel.sendEvent(HomeUiEvent.GoToFavs) },
         text = R.string.txt_button_mis_favs,
       )
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
+    multiselectState = uiState.value.multiSelectMode
+
     Column(modifier = Modifier.fillMaxWidth().padding(it)) {
       val sorteos = uiState.value.sorteos
       PullToRefreshBox(
@@ -92,7 +87,7 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
           isRefreshing = true
           coroutineScope.launch {
             delay(1500)
-            viewModel.fetchSorteos()
+            viewModel.sendEvent(HomeUiEvent.RefreshSorteos)
             isRefreshing = false
           }
         },
@@ -114,16 +109,15 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
             HomeListItem(
               selectableMode = multiselectState,
               sorteo = sorteo,
-              onChecked = { s -> viewModel.markItemAsSelected(s, index) },
+              onChecked = { s -> HomeUiEvent.SelectSorteo(s, index) },
               onClick = { s ->
                 if (!multiselectState) {
-                  viewModel.showWarning(s)
+                  viewModel.sendEvent(HomeUiEvent.ShowSaveSorteoDialog(s))
                 }
               },
             ) { s ->
               if (!multiselectState) {
-                multiselectState = true
-                viewModel.markItemAsSelected(s, index)
+                viewModel.sendEvent(HomeUiEvent.EnableSorteoMultiSelect(s, index))
               }
             }
 
@@ -136,8 +130,8 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
 
       uiState.value.clickedSorteo?.let { sorteo ->
         MelateSorteoActionDialog(
-          { viewModel.dismissWarning() },
-          { viewModel.launchSaveToFavorites(sorteo) },
+          { viewModel.sendEvent(HomeUiEvent.HideSaveSorteoDialog) },
+          { viewModel.sendEvent(HomeUiEvent.ConfirmSaveSorteo(sorteo)) },
           R.string.txt_title_aviso,
           R.string.txt_msg_add_to_fav,
           R.string.txt_action_add,
@@ -151,7 +145,7 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
             snackbarState.showSnackbar(message = successMsg, duration = SnackbarDuration.Short)
           when (result) {
             SnackbarResult.Dismissed -> {
-              viewModel.showSuccessMsg(false)
+              viewModel.sendEvent(HomeUiEvent.DisplaySuccessMessage(visible = true))
             }
 
             SnackbarResult.ActionPerformed -> {}
@@ -159,5 +153,10 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
         }
       }
     }
+  }
+
+  if (uiState.value.onGoToFav) {
+    onNavigateToFavs.invoke()
+    viewModel.sendEvent(HomeUiEvent.ClearFlags)
   }
 }
