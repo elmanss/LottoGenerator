@@ -9,7 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -28,7 +28,7 @@ fun HomeListItem(
   onLongClick: (SorteoModel) -> Unit,
 ) {
 
-  var actionState by remember { mutableStateOf(false) }
+  var actionState by rememberSaveable { mutableStateOf(false) }
   ConstraintLayout(
     modifier =
       modifier
@@ -61,6 +61,8 @@ fun HomeListItem(
           onChecked.invoke(sorteo)
         },
       )
+    } else {
+      actionState = false
     }
 
     Text(

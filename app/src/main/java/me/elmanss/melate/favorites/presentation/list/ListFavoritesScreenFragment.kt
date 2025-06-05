@@ -8,7 +8,7 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.flowWithLifecycle
 import androidx.lifecycle.lifecycleScope
-import androidx.navigation.Navigation
+import androidx.navigation.findNavController
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import dagger.hilt.android.AndroidEntryPoint
@@ -31,7 +31,8 @@ class ListFavoritesScreenFragment :
     super.onViewCreated(view, savedInstanceState)
 
     binding.addButton.setOnClickListener {
-      Navigation.findNavController(it)
+      it
+        .findNavController()
         .navigate(ListFavoritesScreenFragmentDirections.actionFavsFragmentToAddToFavFragment())
     }
 
@@ -72,7 +73,7 @@ class ListFavoritesScreenFragment :
         .setTitle("Aviso")
         .setMessage("¿Deseas eliminar este sorteo de tu lista de favoritos?")
         .setPositiveButton("Borrar") { d, _ ->
-          viewModel.deleteFavs(model)
+          viewModel.sendEvent(ListFavUiEvent.DeleteFav(model))
           d.dismiss()
         }
         .show()

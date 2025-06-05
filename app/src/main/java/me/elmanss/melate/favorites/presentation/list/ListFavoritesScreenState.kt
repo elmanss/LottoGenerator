@@ -7,4 +7,17 @@ data class ListFavoritesScreenState(
   val showDeletionSuccess: Boolean = false,
   val favToDelete: FavoritoModel? = null,
   val showMultiDeletionPrompt: Boolean = false,
-)
+  val multiselectEnabled: Boolean = false,
+  val multideleteCompleted: Boolean = false,
+  val favTapped: Boolean = false,
+) {
+  fun clearFlags() =
+    this.copy(
+      showDeletionSuccess = false,
+      favToDelete = null,
+      showMultiDeletionPrompt = false,
+      multiselectEnabled = false,
+      multideleteCompleted = false,
+      favTapped = false,
+    )
+}

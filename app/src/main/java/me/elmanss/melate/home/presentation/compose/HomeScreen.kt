@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -54,7 +55,7 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
   var isRefreshing by remember { mutableStateOf(false) }
   val snackbarState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
-  var multiselectState by remember { mutableStateOf(false) }
+  var multiselectState by rememberSaveable { mutableStateOf(false) }
 
   BackHandler(enabled = multiselectState) { viewModel.sendEvent(HomeUiEvent.ExitMultiSelect) }
 
@@ -103,9 +104,8 @@ fun HomeScreen(onNavigateToFavs: () -> Unit, viewModel: HomeScreenViewModel = hi
         },
       ) {
         LazyColumn(state = sorteoState) {
-          itemsIndexed(items = sorteos, key = { index, _ -> index + viewModel.getListId() }) {
-            index,
-            sorteo ->
+          itemsIndexed(items = sorteos, key = { index, _ -> index.toHexString() }) { index, sorteo
+            ->
             HomeListItem(
               selectableMode = multiselectState,
               sorteo = sorteo,

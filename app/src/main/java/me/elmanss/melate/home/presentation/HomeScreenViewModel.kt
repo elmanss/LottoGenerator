@@ -17,6 +17,7 @@ import me.elmanss.melate.home.domain.model.SorteoModel
 import me.elmanss.melate.home.domain.usecase.HomeUseCases
 import java.time.ZonedDateTime
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.milliseconds
 
 sealed class HomeUiEvent {
   data object RefreshSorteos : HomeUiEvent()
@@ -47,6 +48,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
   private val _state = MutableStateFlow(HomeScreenState())
   val state = _state.asStateFlow().stateIn(viewModelScope, SharingStarted.Lazily, HomeScreenState())
   private var fetchJob: Job? = null
+  private var clearJob: Job? = null
 
   fun sendEvent(event: HomeUiEvent) {
     when (event) {
@@ -84,7 +86,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
       }
 
       HomeUiEvent.ExitMultiSelect -> {
-        _state.update { state -> state.copy(multiSelectMode = false) }
+        launchExitMultiselect()
       }
 
       HomeUiEvent.ClearFlags -> {
@@ -101,8 +103,6 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
     fetchJob?.cancel()
     fetchJob = viewModelScope.launch { fetchSorteos() }
   }
-
-  fun getListId() = useCases.getListId()
 
   private suspend fun fetchSorteos() {
     useCases.fetchSorteos().collectLatest {
@@ -150,6 +150,17 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
           _state.update { state -> state.copy(multiSelectMode = false) }
         }
     }
+  }
+
+  private fun launchExitMultiselect() {
+    clearJob?.cancel()
+    clearJob = viewModelScope.launch { exitMultiSelect() }
+  }
+
+  private suspend fun exitMultiSelect() {
+    clearSelected()
+    delay(100.milliseconds)
+    _state.update { state -> state.copy(multiSelectMode = false) }
   }
 
   private fun clearSelected() {

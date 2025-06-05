@@ -44,6 +44,7 @@ import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActio
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.Gray
+import me.elmanss.melate.favorites.presentation.list.ListFavUiEvent
 import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -58,33 +59,30 @@ fun ListFavoritesScreen(
   val snackbarState = remember { SnackbarHostState() }
   var multiselectState by remember { mutableStateOf(false) }
 
-  BackHandler(enabled = multiselectState) {
-    viewModel.clearSelected()
-    multiselectState = !multiselectState
-  }
+  BackHandler(enabled = multiselectState) { viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete) }
 
   Scaffold(
     topBar = {
       MelateActionTopBar(title = R.string.txt_mis_sorteos) {
         if (multiselectState) {
-          IconButton(onClick = { viewModel.showMultideletionPrompt(true) }) {
+          IconButton(onClick = { viewModel.sendEvent(ListFavUiEvent.ShowMultiDeleteFavDialog) }) {
             Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
           }
         }
       }
     },
     floatingActionButton = {
-      MelateFab(
-        listState = sorteoState,
-        action = {
-          viewModel.clearNotifications()
-          onCreateClicked.invoke()
-        },
-        text = R.string.txt_button_mis_favs_create,
-      )
+      if (!multiselectState) {
+        MelateFab(
+          listState = sorteoState,
+          action = { viewModel.sendEvent(ListFavUiEvent.GoToCreate) },
+          text = R.string.txt_button_mis_favs_create,
+        )
+      }
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
+    multiselectState = uiState.value.multiselectEnabled
     val favs = uiState.value.favs
     if (favs.isEmpty()) {
       Column(
@@ -113,16 +111,15 @@ fun ListFavoritesScreen(
               editableState = multiselectState,
               favorite = fav,
               formatter = { viewModel.formatDate(fav) },
-              onChecked = { f -> viewModel.markItemAsSelected(f, index) },
+              onChecked = { f -> viewModel.sendEvent(ListFavUiEvent.SelectFav(fav, index)) },
               onLongClick = { f ->
                 if (!multiselectState) {
-                  multiselectState = true
-                  viewModel.markItemAsSelected(f, index)
+                  viewModel.sendEvent(ListFavUiEvent.EnableMultiDelete(fav, index))
                 }
               },
             ) {
               if (!multiselectState) {
-                viewModel.showWarning(fav)
+                viewModel.sendEvent(ListFavUiEvent.ShowDeleteFavDialog(fav))
               }
             }
 
@@ -136,8 +133,8 @@ fun ListFavoritesScreen(
 
     uiState.value.favToDelete?.let { sorteo ->
       MelateSorteoActionDialog(
-        { viewModel.dismissWarning() },
-        { viewModel.deleteFavs(sorteo) },
+        { viewModel.sendEvent(ListFavUiEvent.HideDeleteFavDialog) },
+        { viewModel.sendEvent(ListFavUiEvent.DeleteFav(sorteo)) },
         R.string.txt_title_aviso,
         R.string.txt_msg_delete_fav,
         R.string.txt_action_delete,
@@ -151,7 +148,7 @@ fun ListFavoritesScreen(
           snackbarState.showSnackbar(message = successMsg, duration = SnackbarDuration.Short)
         when (result) {
           SnackbarResult.Dismissed -> {
-            viewModel.showDeletionMessage(false)
+            viewModel.sendEvent(ListFavUiEvent.HideSuccessMessage)
           }
 
           SnackbarResult.ActionPerformed -> {}
@@ -162,16 +159,21 @@ fun ListFavoritesScreen(
 
   if (uiState.value.showMultiDeletionPrompt) {
     MelateSorteoActionDialog(
-      { viewModel.showMultideletionPrompt(false) },
-      {
-        viewModel.deleteSelected {
-          multiselectState = !multiselectState
-          viewModel.showMultideletionPrompt(false)
-        }
-      },
+      { viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog) },
+      { viewModel.sendEvent(ListFavUiEvent.DeleteMultipleFavs) },
       R.string.txt_title_aviso,
       "Se eliminaran los sorteos seleccionados.",
       R.string.txt_action_delete,
     )
+  }
+
+  if (uiState.value.multideleteCompleted) {
+    viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete)
+    viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog)
+  }
+
+  if (uiState.value.favTapped) {
+    onCreateClicked.invoke()
+    viewModel.sendEvent(ListFavUiEvent.ClearFlags)
   }
 }
