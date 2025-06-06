@@ -37,6 +37,8 @@ import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.melateRed
+import me.elmanss.melate.favorites.presentation.create.Clearable
+import me.elmanss.melate.favorites.presentation.create.CreateFavUiEvent
 import me.elmanss.melate.favorites.presentation.create.CreateFavoriteScreenViewModel
 
 @Composable
@@ -111,7 +113,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
       // 1st-row
       TextButton(
-        onClick = { viewModel.captureDigit("1") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("1")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(one) {
             bottom.linkTo(four.top)
@@ -127,7 +129,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = { viewModel.captureDigit("2") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("2")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(two) {
             bottom.linkTo(five.top)
@@ -143,7 +145,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = { viewModel.captureDigit("3") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("3")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(three) {
             bottom.linkTo(six.top)
@@ -160,7 +162,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
       // 2nd-row
       TextButton(
-        onClick = { viewModel.captureDigit("4") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("4")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(four) {
             bottom.linkTo(seven.top)
@@ -176,7 +178,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = { viewModel.captureDigit("5") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("5")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(five) {
             bottom.linkTo(eight.top)
@@ -192,7 +194,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = { viewModel.captureDigit("6") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("6")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(six) {
             bottom.linkTo(nine.top)
@@ -209,7 +211,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
       // 3rd-row
       TextButton(
-        onClick = { viewModel.captureDigit("7") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("7")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(seven) {
             bottom.linkTo(backspace.top)
@@ -225,7 +227,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = { viewModel.captureDigit("8") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("8")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(eight) {
             bottom.linkTo(zero.top)
@@ -241,7 +243,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = { viewModel.captureDigit("9") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("9")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(nine) {
             bottom.linkTo(ok.top)
@@ -258,7 +260,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
       // Bottom-row
       TextButton(
-        onClick = { viewModel.deleteDigit() },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDelete) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(backspace) {
             bottom.linkTo(parent.bottom)
@@ -270,7 +272,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = { viewModel.captureDigit("0") },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapDigit("0")) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(zero) {
             bottom.linkTo(parent.bottom)
@@ -286,7 +288,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
       }
 
       TextButton(
-        onClick = { viewModel.moveToNext() },
+        onClick = { viewModel.sendEvent(CreateFavUiEvent.TapNext) },
         modifier =
           Modifier.height(dimensionResource(R.dimen.key_size)).constrainAs(ok) {
             bottom.linkTo(parent.bottom)
@@ -302,10 +304,8 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
     if (uiState.value.sorteoCompleted.isNotEmpty()) {
       MelateSorteoActionDialog(
-        { viewModel.clearSorteoCompleted() },
-        {
-          viewModel.insertFavorite(uiState.value.sorteoCompleted) { viewModel.clearAfterStorage() }
-        },
+        { viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.SORTEO_COMPLETED)) },
+        { viewModel.sendEvent(CreateFavUiEvent.InsertFavorite(uiState.value.sorteoCompleted)) },
         R.string.txt_sorteo_dialog_title,
         stringResource(R.string.txt_sorteo_dialog_msg, uiState.value.sorteoCompleted),
         R.string.txt_action_add,
@@ -321,7 +321,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
           )
         when (result) {
           SnackbarResult.Dismissed -> {
-            viewModel.clearError()
+            viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.ERROR))
           }
 
           SnackbarResult.ActionPerformed -> {}
@@ -335,7 +335,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
         val result = snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
         when (result) {
           SnackbarResult.Dismissed -> {
-            viewModel.showMessage(false)
+            viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.MESSAGE))
           }
 
           SnackbarResult.ActionPerformed -> {}
@@ -345,7 +345,11 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
     if (uiState.value.navigateBack) {
       onBackPressedDispatcher?.onBackPressed()
-      viewModel.clearBackNavigation()
+      viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.BACK_NAVIGATION))
+    }
+
+    if (uiState.value.sorteoInserted) {
+      viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.AFTER_STORAGE))
     }
   }
 }

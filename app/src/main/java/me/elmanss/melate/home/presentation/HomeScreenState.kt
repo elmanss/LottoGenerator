@@ -7,4 +7,15 @@ data class HomeScreenState(
   val isWarningShown: Boolean = false,
   val clickedSorteo: SorteoModel? = null,
   val showStorageSuccess: Boolean = false,
-)
+  val onGoToFav: Boolean = false,
+  val multiSelectMode: Boolean = false,
+) {
+  fun clearFlags() =
+    this.copy(
+      isWarningShown = false,
+      clickedSorteo = null,
+      showStorageSuccess = false,
+      onGoToFav = false,
+      multiSelectMode = false,
+    )
+}

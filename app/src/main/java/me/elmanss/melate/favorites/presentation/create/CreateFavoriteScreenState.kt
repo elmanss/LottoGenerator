@@ -5,9 +5,21 @@ data class CreateFavoriteScreenState(
   val captureError: String = "",
   val numbers: List<String> = emptyList(),
   val sorteoCompleted: List<String> = emptyList(),
+  val sorteoInserted: Boolean = false,
   val sorteoStored: Boolean = false,
   val navigateBack: Boolean = false,
-)
+) {
+  fun clearFlags() =
+    this.copy(
+      captureError = "",
+      keyboardInput = "",
+      numbers = emptyList(),
+      sorteoCompleted = emptyList(),
+      sorteoStored = false,
+      sorteoInserted = false,
+      navigateBack = false,
+    )
+}
 
 /*
    Input can store two numeric characters max.

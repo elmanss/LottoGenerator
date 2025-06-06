@@ -3,6 +3,7 @@ package me.elmanss.melate.favorites.presentation.list
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import javax.inject.Inject
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -17,7 +18,34 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
-import javax.inject.Inject
+
+sealed class ListFavUiEvent {
+  data object FetchFavs : ListFavUiEvent()
+
+  data class ShowDeleteFavDialog(val fav: FavoritoModel) : ListFavUiEvent()
+
+  data class DeleteFav(val fav: FavoritoModel) : ListFavUiEvent()
+
+  data object HideDeleteFavDialog : ListFavUiEvent()
+
+  data class EnableMultiDelete(val fav: FavoritoModel, val index: Int) : ListFavUiEvent()
+
+  data object DisableMultiDelete : ListFavUiEvent()
+
+  data class SelectFav(val fav: FavoritoModel, val index: Int) : ListFavUiEvent()
+
+  data object ShowMultiDeleteFavDialog : ListFavUiEvent()
+
+  data object HideMultiDeleteFavDialog : ListFavUiEvent()
+
+  data object GoToCreate : ListFavUiEvent()
+
+  data object ClearFlags : ListFavUiEvent()
+
+  data object DeleteMultipleFavs : ListFavUiEvent()
+
+  data object HideSuccessMessage : ListFavUiEvent()
+}
 
 @HiltViewModel
 class ListFavoritesScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
@@ -32,7 +60,52 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
     launchFetchFavorites()
   }
 
-  fun deleteFavs(model: FavoritoModel) {
+  fun sendEvent(event: ListFavUiEvent) {
+    when (event) {
+      ListFavUiEvent.ClearFlags -> {
+        _state.update { state -> state.clearFlags() }
+      }
+      is ListFavUiEvent.DeleteFav -> {
+        deleteFavs(event.fav)
+      }
+      ListFavUiEvent.DisableMultiDelete -> {
+        clearSelected()
+      }
+      is ListFavUiEvent.EnableMultiDelete -> {
+        markItemAsSelected(event.fav, event.index)
+        _state.update { state -> state.copy(multiselectEnabled = true) }
+      }
+      ListFavUiEvent.FetchFavs -> {
+        launchFetchFavorites()
+      }
+      ListFavUiEvent.GoToCreate -> {
+        _state.update { state -> state.copy(favTapped = true) }
+      }
+      ListFavUiEvent.HideDeleteFavDialog -> {
+        showWarning()
+      }
+      is ListFavUiEvent.SelectFav -> {
+        markItemAsSelected(event.fav, event.index)
+      }
+      is ListFavUiEvent.ShowDeleteFavDialog -> {
+        showWarning(event.fav)
+      }
+      is ListFavUiEvent.ShowMultiDeleteFavDialog -> {
+        showMultideletionPrompt(true)
+      }
+      is ListFavUiEvent.HideMultiDeleteFavDialog -> {
+        showMultideletionPrompt(false)
+      }
+      ListFavUiEvent.DeleteMultipleFavs -> {
+        deleteSelected()
+      }
+      ListFavUiEvent.HideSuccessMessage -> {
+        showDeletionMessage(false)
+      }
+    }
+  }
+
+  private fun deleteFavs(model: FavoritoModel) {
     viewModelScope.launch {
       useCases.deleteFavorite(model)
       delay(250)
@@ -51,34 +124,32 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
         .launchIn(viewModelScope)
   }
 
-  fun showWarning(sorteo: FavoritoModel? = null) {
+  private fun showWarning(sorteo: FavoritoModel? = null) {
     logcat { "clicked fav" }
     _state.update { state -> state.copy(favToDelete = sorteo) }
   }
 
-  fun dismissWarning() {
+  private fun dismissWarning() {
     _state.update { state -> state.copy(favToDelete = null) }
   }
 
-  fun showDeletionMessage(show: Boolean = false) {
+  private fun showDeletionMessage(show: Boolean = false) {
     _state.update { state -> state.copy(showDeletionSuccess = show) }
-  }
-
-  fun clearNotifications() {
-    dismissWarning()
-    showDeletionMessage()
   }
 
   fun formatDate(favModel: FavoritoModel) =
     useCases.formatFavoriteCreationDate.invoke(favModel.createdAt)
 
-  fun markItemAsSelected(fav: FavoritoModel, index: Int) {
+  private fun markItemAsSelected(fav: FavoritoModel, index: Int) {
     val currentFavsMutable = state.value.favs.toMutableList()
+    logcat { "Current favs: ${currentFavsMutable}" }
+    logcat { "Tapped index: $index" }
+
     currentFavsMutable[index] = fav
     _state.update { state -> state.copy(favs = currentFavsMutable) }
   }
 
-  fun deleteSelected(onFinished: () -> Unit) {
+  private fun deleteSelected() {
     viewModelScope.launch {
       val selectedFavs = state.value.favs.filter { it.selected }
       logcat { "Selected favs: $selectedFavs" }
@@ -86,18 +157,18 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
         .forEach { useCases.deleteFavorite(it) }
         .also {
           clearSelected()
-          onFinished.invoke()
+          _state.update { state -> state.copy(multideleteCompleted = true) }
         }
     }
   }
 
-  fun clearSelected() {
-    val clearedFavs = state.value.favs.onEach { if (it.selected) it.selected = false }
+  private fun clearSelected() {
+    val clearedFavs = state.value.favs.onEach { it.selected = false }
     logcat { "Cleared favs: ${clearedFavs}" }
-    _state.update { state -> state.copy(favs = clearedFavs) }
+    _state.update { state -> state.copy(favs = clearedFavs, multiselectEnabled = false) }
   }
 
-  fun showMultideletionPrompt(show: Boolean = false) {
+  private fun showMultideletionPrompt(show: Boolean = false) {
     _state.update { state -> state.copy(showMultiDeletionPrompt = show) }
   }
 }

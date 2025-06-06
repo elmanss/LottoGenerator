@@ -47,7 +47,7 @@ class HomeScreenFragment :
     if (binding.root.isRefreshing) {
       logcat { "Sorteos are being refreshed" }
     } else {
-      showWarning(pos).also { viewModel.showWarning() }
+      showWarning(pos).also { viewModel.sendEvent(HomeUiEvent.HideSaveSorteoDialog) }
     }
   }
 
@@ -93,13 +93,13 @@ class HomeScreenFragment :
         .setTitle(getString(R.string.txt_title_aviso))
         .setMessage(getString(R.string.txt_msg_add_to_fav))
         .setPositiveButton(getString(R.string.txt_action_yes)) { d, _ ->
-          viewModel.launchSaveToFavorites(adapter.getItem(pos))
-          viewModel.dismissWarning()
+          viewModel.sendEvent(HomeUiEvent.ConfirmSaveSorteo(adapter.getItem(pos)))
+          viewModel.sendEvent(HomeUiEvent.HideSaveSorteoDialog)
           Toast.makeText(c, "Sorteo agregado a tus favoritos", Toast.LENGTH_SHORT).show()
           d.dismiss()
         }
-        .setOnDismissListener { viewModel.dismissWarning() }
-        .setOnCancelListener { viewModel.dismissWarning() }
+        .setOnDismissListener { viewModel.sendEvent(HomeUiEvent.HideSaveSorteoDialog) }
+        .setOnCancelListener { viewModel.sendEvent(HomeUiEvent.HideSaveSorteoDialog) }
         .show()
     }
   }
@@ -113,7 +113,7 @@ class HomeScreenFragment :
       adapter.clear()
       delay(this@launchOnRefresh)
       binding.root.isRefreshing = false
-      viewModel.launchFetchSorteos()
+      viewModel.sendEvent(HomeUiEvent.RefreshSorteos)
     }
   }
 }
