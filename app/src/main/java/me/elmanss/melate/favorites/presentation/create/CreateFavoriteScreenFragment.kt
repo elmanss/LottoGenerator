@@ -58,29 +58,49 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
   }
 
   private fun configKeyboard() {
-    binding.bKeyboardOne.setOnClickListener { viewModel.captureDigit(ONE) }
+    binding.bKeyboardOne.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((ONE)))
+    }
 
-    binding.bKeyboardTwo.setOnClickListener { viewModel.captureDigit(TWO) }
+    binding.bKeyboardTwo.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((TWO)))
+    }
 
-    binding.bKeyboardThree.setOnClickListener { viewModel.captureDigit(THREE) }
+    binding.bKeyboardThree.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((THREE)))
+    }
 
-    binding.bKeyboardFour.setOnClickListener { viewModel.captureDigit(FOUR) }
+    binding.bKeyboardFour.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((FOUR)))
+    }
 
-    binding.bKeyboardFive.setOnClickListener { viewModel.captureDigit(FIVE) }
+    binding.bKeyboardFive.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((FIVE)))
+    }
 
-    binding.bKeyboardSix.setOnClickListener { viewModel.captureDigit(SIX) }
+    binding.bKeyboardSix.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((SIX)))
+    }
 
-    binding.bKeyboardSeven.setOnClickListener { viewModel.captureDigit(SEVEN) }
+    binding.bKeyboardSeven.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((SEVEN)))
+    }
 
-    binding.bKeyboardEight.setOnClickListener { viewModel.captureDigit(EIGHT) }
+    binding.bKeyboardEight.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((EIGHT)))
+    }
 
-    binding.bKeyboardNine.setOnClickListener { viewModel.captureDigit(NINE) }
+    binding.bKeyboardNine.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((NINE)))
+    }
 
-    binding.bKeyboardBack.setOnClickListener { viewModel.deleteDigit() }
+    binding.bKeyboardBack.setOnClickListener { viewModel.sendEvent(CreateFavUiEvent.TapDelete) }
 
-    binding.bKeyboardZero.setOnClickListener { viewModel.captureDigit(ZERO) }
+    binding.bKeyboardZero.setOnClickListener {
+      viewModel.sendEvent(CreateFavUiEvent.TapDigit((ZERO)))
+    }
 
-    binding.bKeyboardNext.setOnClickListener { viewModel.moveToNext() }
+    binding.bKeyboardNext.setOnClickListener { viewModel.sendEvent(CreateFavUiEvent.TapNext) }
 
     binding.bKeyboardZero.isEnabled = false
   }
@@ -114,6 +134,12 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
           Toast.makeText(context, it.captureError, Toast.LENGTH_SHORT).show()
           viewModel.clearError()
         }
+
+        if (it.sorteoInserted) {
+          logcat { "Favorito agregado con exito" }
+          binding.root.findNavController().navigateUp()
+          viewModel.clearAfterStorage()
+        }
       }
     }
   }
@@ -134,9 +160,6 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
 
   //
   private fun saveToFavs(sorteo: List<String>) {
-    viewModel.insertFavorite(sorteo) {
-      logcat { "Favorito agregado con exito" }
-      binding.root.findNavController().navigateUp()
-    }
+    viewModel.sendEvent(CreateFavUiEvent.InsertFavorite(sorteo))
   }
 }

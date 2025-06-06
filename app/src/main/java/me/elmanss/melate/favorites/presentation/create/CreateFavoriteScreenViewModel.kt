@@ -18,6 +18,18 @@ import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
+sealed class CreateFavUiEvent {
+  data class TapDigit(val digit: String) : CreateFavUiEvent()
+
+  data object TapNext : CreateFavUiEvent()
+
+  data object TapDelete : CreateFavUiEvent()
+
+  data class InsertFavorite(val sorteo: List<String>) : CreateFavUiEvent()
+
+  data object NavigateBack : CreateFavUiEvent()
+}
+
 @HiltViewModel
 class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
   ViewModel() {
@@ -37,7 +49,29 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       .asStateFlow()
       .stateIn(viewModelScope, SharingStarted.Eagerly, CreateFavoriteScreenState())
 
-  fun deleteDigit() {
+  fun sendEvent(event: CreateFavUiEvent) {
+    when (event) {
+      CreateFavUiEvent.TapNext -> {
+        moveToNext()
+      }
+      CreateFavUiEvent.TapDelete -> {
+        deleteDigit()
+      }
+      is CreateFavUiEvent.TapDigit -> {
+        captureDigit(event.digit)
+      }
+
+      is CreateFavUiEvent.InsertFavorite -> {
+        insertFavorite(event.sorteo)
+      }
+
+      CreateFavUiEvent.NavigateBack -> {
+        launchBackNavigation()
+      }
+    }
+  }
+
+  private fun deleteDigit() {
     val currentInput = state.value.keyboardInput
     if (currentInput.isEmpty()) {
       val currentNumbers = state.value.numbers
@@ -72,18 +106,10 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
   }
 
   fun clearAfterStorage() {
-    _state.update { state ->
-      state.copy(
-        captureError = "",
-        keyboardInput = "",
-        numbers = emptyList(),
-        sorteoCompleted = emptyList(),
-        sorteoStored = true,
-      )
-    }
+    _state.update { state -> state.clearFlags().copy(sorteoStored = true) }
   }
 
-  fun moveToNext() {
+  private fun moveToNext() {
     val currentInput = state.value.keyboardInput
     val currentNumbers = state.value.numbers
     if (currentNumbers.size == MAX_LEN) {
@@ -104,7 +130,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     }
   }
 
-  fun captureDigit(digit: String) {
+  private fun captureDigit(digit: String) {
     logcat { "Capturing digit: $digit" }
     val numbersSize = state.value.numbers.size
     var currentInput = state.value.keyboardInput
@@ -119,7 +145,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     }
   }
 
-  fun insertFavorite(sorteo: List<String>, onInserted: () -> Unit) {
+  private fun insertFavorite(sorteo: List<String>, onInserted: () -> Unit = {}) {
     viewModelScope.launch {
       val map = sorteo.map { it.toInt() }.sorted().map { it.toString() }
       val model =
@@ -129,8 +155,9 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
           FavOrigin.Manual,
           ZonedDateTime.now().toInstant().toEpochMilli(),
         )
-      useCases.addFavorite(model)
-      onInserted.invoke()
+      useCases.addFavorite(model).also {
+        _state.update { state -> state.copy(sorteoInserted = true) }
+      }
     }
   }
 
@@ -150,5 +177,9 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
 
   private fun isNumberInSorteo(number: String): Boolean {
     return state.value.numbers.contains(number)
+  }
+
+  private fun launchBackNavigation() {
+    _state.update { state -> state.copy(navigateBack = true) }
   }
 }
