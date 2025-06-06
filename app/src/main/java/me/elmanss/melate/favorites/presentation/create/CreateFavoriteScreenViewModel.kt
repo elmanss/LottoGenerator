@@ -18,6 +18,15 @@ import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
+enum class Clearable {
+  BACK_NAVIGATION,
+  SORTEO_COMPLETED,
+  CAPTURE_NUMBER,
+  ERROR,
+  AFTER_STORAGE,
+  MESSAGE,
+}
+
 sealed class CreateFavUiEvent {
   data class TapDigit(val digit: String) : CreateFavUiEvent()
 
@@ -28,6 +37,10 @@ sealed class CreateFavUiEvent {
   data class InsertFavorite(val sorteo: List<String>) : CreateFavUiEvent()
 
   data object NavigateBack : CreateFavUiEvent()
+
+  data class ClearEvent(val clearable: Clearable) : CreateFavUiEvent()
+
+  data object ShowMessage : CreateFavUiEvent()
 }
 
 @HiltViewModel
@@ -68,6 +81,20 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       CreateFavUiEvent.NavigateBack -> {
         launchBackNavigation()
       }
+
+      is CreateFavUiEvent.ClearEvent -> clear(event.clearable)
+      is CreateFavUiEvent.ShowMessage -> showMessage(true)
+    }
+  }
+
+  private fun clear(clearable: Clearable) {
+    when (clearable) {
+      Clearable.BACK_NAVIGATION -> clearBackNavigation()
+      Clearable.SORTEO_COMPLETED -> clearSorteoCompleted()
+      Clearable.CAPTURE_NUMBER -> clearCaptureNumber()
+      Clearable.ERROR -> clearError()
+      Clearable.AFTER_STORAGE -> clearAfterStorage()
+      Clearable.MESSAGE -> showMessage(false)
     }
   }
 
@@ -89,23 +116,23 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     }
   }
 
-  fun clearBackNavigation() {
+  private fun clearBackNavigation() {
     _state.update { state -> state.copy(navigateBack = false) }
   }
 
-  fun clearSorteoCompleted() {
+  private fun clearSorteoCompleted() {
     _state.update { state -> state.copy(sorteoCompleted = emptyList()) }
   }
 
-  fun clearCaptureNumber() {
+  private fun clearCaptureNumber() {
     _state.update { state -> state.copy(keyboardInput = "") }
   }
 
-  fun clearError() {
+  private fun clearError() {
     _state.update { state -> state.copy(captureError = "") }
   }
 
-  fun clearAfterStorage() {
+  private fun clearAfterStorage() {
     _state.update { state -> state.clearFlags().copy(sorteoStored = true) }
   }
 
@@ -145,7 +172,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     }
   }
 
-  private fun insertFavorite(sorteo: List<String>, onInserted: () -> Unit = {}) {
+  private fun insertFavorite(sorteo: List<String>) {
     viewModelScope.launch {
       val map = sorteo.map { it.toInt() }.sorted().map { it.toString() }
       val model =
@@ -161,7 +188,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     }
   }
 
-  fun showMessage(show: Boolean) {
+  private fun showMessage(show: Boolean) {
     _state.update { state -> state.copy(sorteoStored = show) }
   }
 

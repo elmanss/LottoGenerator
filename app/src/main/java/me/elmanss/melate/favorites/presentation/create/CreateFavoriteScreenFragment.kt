@@ -118,7 +118,7 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
         if (it.sorteoCompleted.isNotEmpty()) {
           logcat { "Sorteo complete, notified sorteo: $it" }
           showSaveDialog(it.sorteoCompleted)
-          viewModel.clearSorteoCompleted()
+          viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.SORTEO_COMPLETED))
         }
 
         if (it.keyboardInput.isNotEmpty()) {
@@ -126,19 +126,19 @@ class CreateFavoriteScreenFragment : Fragment(R.layout.fragment_add_to_fav) {
           setKeyboardEnabled(it.keyboardInput.length < 2)
           binding.bKeyboardZero.isEnabled = (it.keyboardInput.length == 1)
           binding.tvCaptureNumber.text = it.keyboardInput
-          viewModel.clearCaptureNumber()
+          viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.CAPTURE_NUMBER))
         }
 
         if (it.captureError.isNotEmpty()) {
           logcat { "Error thrown while capturing digit" }
           Toast.makeText(context, it.captureError, Toast.LENGTH_SHORT).show()
-          viewModel.clearError()
+          viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.ERROR))
         }
 
         if (it.sorteoInserted) {
           logcat { "Favorito agregado con exito" }
           binding.root.findNavController().navigateUp()
-          viewModel.clearAfterStorage()
+          viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.AFTER_STORAGE))
         }
       }
     }

@@ -37,6 +37,7 @@ import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.melateRed
+import me.elmanss.melate.favorites.presentation.create.Clearable
 import me.elmanss.melate.favorites.presentation.create.CreateFavUiEvent
 import me.elmanss.melate.favorites.presentation.create.CreateFavoriteScreenViewModel
 
@@ -303,7 +304,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
     if (uiState.value.sorteoCompleted.isNotEmpty()) {
       MelateSorteoActionDialog(
-        { viewModel.clearSorteoCompleted() },
+        { viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.SORTEO_COMPLETED)) },
         { viewModel.sendEvent(CreateFavUiEvent.InsertFavorite(uiState.value.sorteoCompleted)) },
         R.string.txt_sorteo_dialog_title,
         stringResource(R.string.txt_sorteo_dialog_msg, uiState.value.sorteoCompleted),
@@ -320,7 +321,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
           )
         when (result) {
           SnackbarResult.Dismissed -> {
-            viewModel.clearError()
+            viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.ERROR))
           }
 
           SnackbarResult.ActionPerformed -> {}
@@ -334,7 +335,7 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
         val result = snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
         when (result) {
           SnackbarResult.Dismissed -> {
-            viewModel.showMessage(false)
+            viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.MESSAGE))
           }
 
           SnackbarResult.ActionPerformed -> {}
@@ -344,11 +345,11 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
 
     if (uiState.value.navigateBack) {
       onBackPressedDispatcher?.onBackPressed()
-      viewModel.clearBackNavigation()
+      viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.BACK_NAVIGATION))
     }
 
     if (uiState.value.sorteoInserted) {
-      viewModel.clearAfterStorage()
+      viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.AFTER_STORAGE))
     }
   }
 }
