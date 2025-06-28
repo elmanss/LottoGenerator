@@ -79,6 +79,9 @@ dependencies {
   implementation(libs.hilt.navigation.compose)
   implementation(libs.navigation.compose)
   implementation(libs.constraintlayout.compose)
+
+  implementation(libs.retrofit)
+  implementation(libs.retrofit.converter.moshi)
 }
 
 sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }

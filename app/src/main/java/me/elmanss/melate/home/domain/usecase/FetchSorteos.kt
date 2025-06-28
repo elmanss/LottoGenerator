@@ -8,7 +8,7 @@ import me.elmanss.melate.home.domain.model.SorteoModel
 import javax.inject.Inject
 
 class FetchSorteos @Inject constructor(private val repository: SorteoRepository) {
-  operator fun invoke(): Flow<List<SorteoModel>> {
+  suspend operator fun invoke(): Flow<List<SorteoModel>> {
     val sorteos = mutableListOf<List<Int>>()
     repeat(30) { sorteos.add(repository.fetchSorteos()) }
 

@@ -1,21 +1,22 @@
-package me.elmanss.melate.home.data.datasource.remote
+package me.elmanss.melate.common.data.local
 
-import logcat.LogPriority
-import logcat.logcat
-import me.elmanss.melate.common.util.takeRandom
 import java.util.Random
 import javax.inject.Inject
+import logcat.LogPriority
+import logcat.logcat
+import me.elmanss.melate.common.domain.datasource.SorteoDataSource
+import me.elmanss.melate.common.util.takeRandom
 
-class SorteoApiImpl
+class SorteoLocalDataSource
 @Inject
-constructor(private val random: Random, private val sorteoRange: IntRange) : SorteoApi {
-  override fun fetchSorteos(): List<Int> {
+constructor(private val random: Random, private val sorteoRange: IntRange) : SorteoDataSource {
+  override suspend fun fetchSorteos(): Result<List<Int>> {
     val mutableRandomDraw = mutableSetOf<Int>()
     val shuffledElements = sorteoRange.shuffled(random).toMutableList()
     logcat { "draw starting" }
     fillSet(shuffledElements, mutableRandomDraw, random.nextLong())
     logcat { "draw completed" }
-    return mutableRandomDraw.sorted()
+    return Result.success(mutableRandomDraw.sorted())
   }
 
   private fun fillSet(origin: MutableList<Int>, destinationSet: MutableSet<Int>, seed: Long) {
