@@ -10,6 +10,7 @@ data class ListFavoritesScreenState(
   val multiselectEnabled: Boolean = false,
   val multideleteCompleted: Boolean = false,
   val favTapped: Boolean = false,
+  val isLoading: Boolean = false,
 ) {
   fun clearFlags() =
     this.copy(
@@ -19,5 +20,6 @@ data class ListFavoritesScreenState(
       multiselectEnabled = false,
       multideleteCompleted = false,
       favTapped = false,
+      isLoading = false,
     )
 }

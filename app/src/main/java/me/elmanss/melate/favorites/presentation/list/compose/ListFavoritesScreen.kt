@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -16,6 +17,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -65,12 +67,17 @@ fun ListFavoritesScreen(
 
   Scaffold(
     topBar = {
-      MelateActionTopBar(title = R.string.txt_mis_sorteos) {
-        if (multiselectState) {
-          IconButton(onClick = { viewModel.sendEvent(ListFavUiEvent.ShowMultiDeleteFavDialog) }) {
-            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+      Column {
+        MelateActionTopBar(title = R.string.txt_mis_sorteos) {
+          if (multiselectState) {
+            IconButton(onClick = { viewModel.sendEvent(ListFavUiEvent.ShowMultiDeleteFavDialog) }) {
+              Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+            }
           }
         }
+
+        if (!multiselectState && uiState.value.isLoading)
+          LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
       }
     },
     floatingActionButton = {
@@ -78,8 +85,8 @@ fun ListFavoritesScreen(
         MelateActionExtendedFab(
           actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
           onActionOneClicked = {
+            viewModel.sendEvent(ListFavUiEvent.ShowLoader)
             viewModel.sendEvent(ListFavUiEvent.FetchFavFromNetwork)
-            viewModel.sendEvent(ListFavUiEvent.ClearFlags)
           },
           actionTwoIcon = ImageVector.vectorResource(R.drawable.human_edit),
         ) {
@@ -181,7 +188,6 @@ fun ListFavoritesScreen(
   }
 
   if (uiState.value.favTapped) {
-    viewModel.sendEvent(ListFavUiEvent.FetchFavFromNetwork)
     onCreateClicked.invoke()
     viewModel.sendEvent(ListFavUiEvent.ClearFlags)
   }

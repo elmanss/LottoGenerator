@@ -20,6 +20,7 @@ import logcat.logcat
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
 import javax.inject.Inject
+import kotlin.time.Duration.Companion.seconds
 
 sealed class ListFavUiEvent {
   data object FetchFavs : ListFavUiEvent()
@@ -49,6 +50,10 @@ sealed class ListFavUiEvent {
   data object DeleteMultipleFavs : ListFavUiEvent()
 
   data object HideSuccessMessage : ListFavUiEvent()
+
+  data object ShowLoader : ListFavUiEvent()
+
+  data object HideLoader : ListFavUiEvent()
 }
 
 @HiltViewModel
@@ -110,7 +115,23 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
       ListFavUiEvent.FetchFavFromNetwork -> {
         fetchFavFromNetwork()
       }
+
+      ListFavUiEvent.HideLoader -> {
+        hideLoader()
+      }
+
+      ListFavUiEvent.ShowLoader -> {
+        showLoader()
+      }
     }
+  }
+
+  private fun showLoader() {
+    _state.update { state -> state.copy(isLoading = true) }
+  }
+
+  private fun hideLoader() {
+    _state.update { state -> state.copy(isLoading = false) }
   }
 
   private fun deleteFavs(model: FavoritoModel) {
@@ -182,11 +203,15 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
 
   private fun fetchFavFromNetwork() {
     viewModelScope.launch {
+      delay(1.seconds)
       useCases
         .fetchFavoriteFromNetwork()
         .filter { it.isSuccess }
         .filter { it.getOrNull() != null }
-        .collectLatest { useCases.addFavorite(it.getOrNull()!!) }
+        .collectLatest {
+          useCases.addFavorite(it.getOrNull()!!)
+          sendEvent(ListFavUiEvent.ClearFlags)
+        }
     }
   }
 }
