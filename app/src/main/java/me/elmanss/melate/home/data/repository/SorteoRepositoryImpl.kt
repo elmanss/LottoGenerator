@@ -1,12 +1,12 @@
 package me.elmanss.melate.home.data.repository
 
-import me.elmanss.melate.common.domain.datasource.SorteoDataSource
 import javax.inject.Inject
+import me.elmanss.melate.common.domain.datasource.SorteoDataSource
 
-class SorteoRepositoryImpl @Inject constructor(private val localDS: SorteoDataSource) :
+class SorteoRepositoryImpl @Inject constructor(private val dataSource: SorteoDataSource) :
   SorteoRepository {
-  override suspend fun fetchSorteos(): List<Int> {
-    val result = localDS.fetchSorteos()
-    return if (result.isSuccess) result.getOrNull() ?: emptyList() else emptyList()
+  override suspend fun fetchSorteos(): Result<List<Int>> {
+    val result = dataSource.fetchSorteos()
+    return result
   }
 }

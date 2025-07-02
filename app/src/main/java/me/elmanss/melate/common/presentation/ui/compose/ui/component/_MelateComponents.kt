@@ -2,8 +2,12 @@ package me.elmanss.melate.common.presentation.ui.compose.ui.component
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -11,9 +15,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Create
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -21,11 +31,18 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
@@ -85,6 +102,86 @@ fun MelateFab(
     ) {
       Text(stringResource(text), modifier = modifier.padding(horizontal = 4.dp))
     }
+  }
+}
+
+@Composable
+fun MelateActionExtendedFab(
+  modifier: Modifier = Modifier,
+  mainIcon: ImageVector = Icons.Filled.Add,
+  mainText: String = "Crear Sorteo",
+  actionOneIcon: ImageVector = Icons.Filled.ArrowDropDown,
+  actionOneText: String = "Descargar",
+  onActionOneClicked: () -> Unit,
+  actionTwoIcon: ImageVector = Icons.Filled.Create,
+  actionTwoText: String = "Crear manualmente",
+  onActionTwoClicked: () -> Unit,
+) {
+  var isExpanded by remember { mutableStateOf(false) }
+
+  val rotationAngle by
+    animateFloatAsState(targetValue = if (isExpanded) 45f else 0f, label = "FabRotation")
+
+  Column(
+    modifier = modifier,
+    horizontalAlignment = Alignment.End,
+    verticalArrangement = Arrangement.spacedBy(16.dp), // Spacing between FABs
+  ) {
+    // AnimatedVisibility for the secondary actions
+    AnimatedVisibility(visible = isExpanded, enter = fadeIn(), exit = fadeOut()) {
+      Column(
+        horizontalAlignment = Alignment.End,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+      ) {
+        FloatingActionButton(
+          onClick = {
+            onActionOneClicked()
+            isExpanded = false // Collapse after action
+          },
+          containerColor = MaterialTheme.colorScheme.secondaryContainer,
+          contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        ) {
+          Icon(imageVector = actionOneIcon, contentDescription = actionOneText)
+        }
+
+        FloatingActionButton(
+          onClick = {
+            onActionTwoClicked()
+            isExpanded = false // Collapse after action
+          },
+          containerColor = MaterialTheme.colorScheme.secondaryContainer,
+          contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+        ) {
+          Icon(imageVector = actionTwoIcon, contentDescription = actionTwoText)
+        }
+      }
+    }
+
+    // Main ExtendedFloatingActionButton
+    ExtendedFloatingActionButton(
+      onClick = { isExpanded = !isExpanded },
+      icon = {
+        Icon(
+          imageVector = mainIcon,
+          contentDescription = mainText,
+          modifier = Modifier.rotate(rotationAngle),
+        )
+      },
+      text = { Text(text = mainText) },
+      expanded = true, // Keep the main FAB text always visible or control with another state
+    )
+  }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun MultiActionExtendedFabPreview() {
+  MaterialTheme {
+    MelateActionExtendedFab(
+      modifier = Modifier.padding(16.dp),
+      onActionOneClicked = {},
+      onActionTwoClicked = {},
+    )
   }
 }
 

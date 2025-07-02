@@ -10,7 +10,12 @@ import javax.inject.Inject
 class FetchSorteos @Inject constructor(private val repository: SorteoRepository) {
   suspend operator fun invoke(): Flow<List<SorteoModel>> {
     val sorteos = mutableListOf<List<Int>>()
-    repeat(30) { sorteos.add(repository.fetchSorteos()) }
+    repeat(30) {
+      val result = repository.fetchSorteos()
+      if (result.isSuccess && result.getOrNull() != null) {
+        sorteos.add(result.getOrNull()!!)
+      }
+    }
 
     return flowOf(sorteos).map { it.map { SorteoModel(it) } }
   }

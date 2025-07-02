@@ -5,9 +5,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
+import me.elmanss.melate.common.data.local.SorteoLocalDataSource
 import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.domain.datasource.SorteoDataSource
-import me.elmanss.melate.common.data.local.SorteoLocalDataSource
 import me.elmanss.melate.home.data.repository.SorteoRepository
 import me.elmanss.melate.home.data.repository.SorteoRepositoryImpl
 import me.elmanss.melate.home.domain.usecase.FetchSorteos

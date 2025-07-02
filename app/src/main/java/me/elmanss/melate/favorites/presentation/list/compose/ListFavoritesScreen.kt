@@ -31,17 +31,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import me.elmanss.melate.R
+import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionExtendedFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
-import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.Gray
 import me.elmanss.melate.favorites.presentation.list.ListFavUiEvent
@@ -73,11 +75,16 @@ fun ListFavoritesScreen(
     },
     floatingActionButton = {
       if (!multiselectState) {
-        MelateFab(
-          listState = sorteoState,
-          action = { viewModel.sendEvent(ListFavUiEvent.GoToCreate) },
-          text = R.string.txt_button_mis_favs_create,
-        )
+        MelateActionExtendedFab(
+          actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
+          onActionOneClicked = {
+            viewModel.sendEvent(ListFavUiEvent.FetchFavFromNetwork)
+            viewModel.sendEvent(ListFavUiEvent.ClearFlags)
+          },
+          actionTwoIcon = ImageVector.vectorResource(R.drawable.human_edit),
+        ) {
+          viewModel.sendEvent(ListFavUiEvent.GoToCreate)
+        }
       }
     },
     snackbarHost = { SnackbarHost(snackbarState) },
@@ -170,9 +177,11 @@ fun ListFavoritesScreen(
   if (uiState.value.multideleteCompleted) {
     viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete)
     viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog)
+    viewModel.sendEvent(ListFavUiEvent.ClearFlags)
   }
 
   if (uiState.value.favTapped) {
+    viewModel.sendEvent(ListFavUiEvent.FetchFavFromNetwork)
     onCreateClicked.invoke()
     viewModel.sendEvent(ListFavUiEvent.ClearFlags)
   }

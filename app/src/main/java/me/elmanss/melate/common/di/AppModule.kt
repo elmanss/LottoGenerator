@@ -3,19 +3,24 @@ package me.elmanss.melate.common.di
 import android.app.Application
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import com.google.gson.Strictness
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import java.time.Duration
-import javax.inject.Singleton
+import logcat.logcat
 import me.elmanss.melate.Database
 import me.elmanss.melate.common.data.network.api.SorteoApi
 import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.data.repository.FavoritosRepositoryImpl
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.moshi.MoshiConverterFactory
+import retrofit2.converter.gson.GsonConverterFactory
+import java.time.Duration
+import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -43,16 +48,25 @@ object AppModule {
         writeTimeout(Duration.ofMinutes(1))
         callTimeout(Duration.ofMinutes(2))
       }
+      .addInterceptor(
+        HttpLoggingInterceptor(logger = { logcat { it } }).apply {
+          this.level = HttpLoggingInterceptor.Level.BODY
+        }
+      )
       .build()
   }
 
   @Provides
   @Singleton
-  fun provideRetrofit(client: OkHttpClient): Retrofit {
+  fun provideGson(): Gson = GsonBuilder().setStrictness(Strictness.LENIENT).create()
+
+  @Provides
+  @Singleton
+  fun provideRetrofit(client: OkHttpClient, gson: Gson): Retrofit {
     return Retrofit.Builder()
       .client(client)
       .baseUrl(SorteoApi.URL)
-      .addConverterFactory(MoshiConverterFactory.create())
+      .addConverterFactory(GsonConverterFactory.create(gson))
       .build()
   }
 
