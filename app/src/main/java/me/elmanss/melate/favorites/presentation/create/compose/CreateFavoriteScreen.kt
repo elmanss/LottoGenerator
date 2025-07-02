@@ -307,7 +307,10 @@ fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewMode
         { viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.SORTEO_COMPLETED)) },
         { viewModel.sendEvent(CreateFavUiEvent.InsertFavorite(uiState.value.sorteoCompleted)) },
         R.string.txt_sorteo_dialog_title,
-        stringResource(R.string.txt_sorteo_dialog_msg, uiState.value.sorteoCompleted),
+        stringResource(
+          R.string.txt_sorteo_dialog_msg,
+          uiState.value.sorteoCompleted.joinToString(),
+        ),
         R.string.txt_action_add,
       )
     }

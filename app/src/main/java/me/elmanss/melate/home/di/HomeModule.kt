@@ -5,9 +5,9 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
+import me.elmanss.melate.common.data.local.SorteoLocalDataSource
 import me.elmanss.melate.common.data.repository.FavoritosRepository
-import me.elmanss.melate.home.data.datasource.remote.SorteoApi
-import me.elmanss.melate.home.data.datasource.remote.SorteoApiImpl
+import me.elmanss.melate.common.domain.datasource.SorteoDataSource
 import me.elmanss.melate.home.data.repository.SorteoRepository
 import me.elmanss.melate.home.data.repository.SorteoRepositoryImpl
 import me.elmanss.melate.home.domain.usecase.FetchSorteos
@@ -27,12 +27,12 @@ object HomeModule {
 
   @Provides
   @ViewModelScoped
-  fun provideApi(randomGenerator: Random, sorteoRange: IntRange): SorteoApi =
-    SorteoApiImpl(random = randomGenerator, sorteoRange = sorteoRange)
+  fun provideApi(randomGenerator: Random, sorteoRange: IntRange): SorteoDataSource =
+    SorteoLocalDataSource(random = randomGenerator, sorteoRange = sorteoRange)
 
   @Provides
   @ViewModelScoped
-  fun provideSorteoRepository(api: SorteoApi): SorteoRepository = SorteoRepositoryImpl(api)
+  fun provideSorteoRepository(api: SorteoDataSource): SorteoRepository = SorteoRepositoryImpl(api)
 
   @Provides
   @ViewModelScoped

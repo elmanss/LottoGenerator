@@ -1,3 +1,6 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
+
 plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
@@ -10,12 +13,12 @@ plugins {
 }
 
 android {
-  compileSdk = 35
+  compileSdk = 36
   defaultConfig {
     applicationId = "me.elmanss.melate"
     minSdk = 28
     //noinspection EditedTargetSdkVersion
-    targetSdk = 35
+    targetSdk = 36
     versionCode = 1
     versionName = "1.0"
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -37,7 +40,13 @@ android {
     sourceCompatibility = JavaVersion.VERSION_21
     targetCompatibility = JavaVersion.VERSION_21
   }
-  kotlinOptions { jvmTarget = "21" }
+
+  tasks.withType<KotlinJvmCompile>().configureEach {
+    compilerOptions {
+      jvmTarget.set(JvmTarget.JVM_21)
+      freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
+    }
+  }
 
   namespace = "me.elmanss.melate"
 }
@@ -79,6 +88,10 @@ dependencies {
   implementation(libs.hilt.navigation.compose)
   implementation(libs.navigation.compose)
   implementation(libs.constraintlayout.compose)
+
+  implementation(libs.retrofit)
+  implementation(libs.retrofit.converter.gson)
+  implementation(libs.logging.interceptor)
 }
 
 sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }

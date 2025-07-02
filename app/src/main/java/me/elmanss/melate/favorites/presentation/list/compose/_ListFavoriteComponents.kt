@@ -79,8 +79,11 @@ fun ListFavoriteItem(
           Image(
             painter =
               painterResource(
-                if (favorite.origin == FavOrigin.Random) R.drawable.cellphone
-                else R.drawable.human_edit
+                when (favorite.origin) {
+                  FavOrigin.Random -> R.drawable.cellphone
+                  FavOrigin.Network -> R.drawable.cloud
+                  else -> R.drawable.human_edit
+                }
               ),
             contentDescription = "Origin icon",
           )
@@ -93,3 +96,4 @@ fun ListFavoriteItem(
     }
   }
 }
+
