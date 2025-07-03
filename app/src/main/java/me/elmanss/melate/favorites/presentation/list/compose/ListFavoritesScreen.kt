@@ -83,6 +83,7 @@ fun ListFavoritesScreen(
     floatingActionButton = {
       if (!multiselectState) {
         MelateActionExtendedFab(
+          listState = sorteoState,
           actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
           onActionOneClicked = {
             viewModel.sendEvent(ListFavUiEvent.ShowLoader)

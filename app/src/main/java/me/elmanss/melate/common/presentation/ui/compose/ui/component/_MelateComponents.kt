@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -110,6 +111,7 @@ fun MelateActionExtendedFab(
   modifier: Modifier = Modifier,
   mainIcon: ImageVector = Icons.Filled.Add,
   mainText: String = "Crear Sorteo",
+  listState: LazyListState,
   actionOneIcon: ImageVector = Icons.Filled.ArrowDropDown,
   actionOneText: String = "Descargar",
   onActionOneClicked: () -> Unit,
@@ -128,7 +130,7 @@ fun MelateActionExtendedFab(
     verticalArrangement = Arrangement.spacedBy(16.dp), // Spacing between FABs
   ) {
     // AnimatedVisibility for the secondary actions
-    AnimatedVisibility(visible = isExpanded, enter = fadeIn(), exit = fadeOut()) {
+    AnimatedVisibility(visible = isExpanded && listState.isScrollingUp().value, enter = fadeIn(), exit = fadeOut()) {
       Column(
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(16.dp),
@@ -157,19 +159,22 @@ fun MelateActionExtendedFab(
       }
     }
 
-    // Main ExtendedFloatingActionButton
-    ExtendedFloatingActionButton(
-      onClick = { isExpanded = !isExpanded },
-      icon = {
-        Icon(
-          imageVector = mainIcon,
-          contentDescription = mainText,
-          modifier = Modifier.rotate(rotationAngle),
-        )
-      },
-      text = { Text(text = mainText) },
-      expanded = true, // Keep the main FAB text always visible or control with another state
-    )
+    AnimatedVisibility(visible = listState.isScrollingUp().value) {
+
+      // Main ExtendedFloatingActionButton
+      ExtendedFloatingActionButton(
+        onClick = { isExpanded = !isExpanded },
+        icon = {
+          Icon(
+            imageVector = mainIcon,
+            contentDescription = mainText,
+            modifier = Modifier.rotate(rotationAngle),
+          )
+        },
+        text = { Text(text = mainText) },
+        expanded = true, // Keep the main FAB text always visible or control with another state
+      )
+    }
   }
 }
 
@@ -181,6 +186,7 @@ fun MultiActionExtendedFabPreview() {
       modifier = Modifier.padding(16.dp),
       onActionOneClicked = {},
       onActionTwoClicked = {},
+      listState = rememberLazyListState(),
     )
   }
 }
