@@ -15,6 +15,7 @@ import me.elmanss.melate.Database
 import me.elmanss.melate.common.data.network.api.SorteoApi
 import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.data.repository.FavoritosRepositoryImpl
+import me.elmanss.melate.common.util.NetworkConnectivityObserver
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -30,6 +31,10 @@ object AppModule {
   @Singleton
   fun provideDriver(app: Application): SqlDriver =
     AndroidSqliteDriver(Database.Schema, app.applicationContext, "favoritos.db")
+
+  @Provides
+  @Singleton
+  fun provideConnectivityObserver(app: Application) = NetworkConnectivityObserver(app)
 
   @Provides
   @Singleton

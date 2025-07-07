@@ -48,6 +48,7 @@ import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActio
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.Gray
+import me.elmanss.melate.common.util.NetworkStatus
 import me.elmanss.melate.favorites.presentation.list.ListFavUiEvent
 import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewModel
 
@@ -59,6 +60,7 @@ fun ListFavoritesScreen(
 ) {
 
   val uiState = viewModel.state.collectAsState()
+  val connectivityState by viewModel.connectivity.collectAsState(NetworkStatus.Unavailable)
   val sorteoState = rememberLazyListState()
   val snackbarState = remember { SnackbarHostState() }
   var multiselectState by remember { mutableStateOf(false) }
@@ -86,8 +88,12 @@ fun ListFavoritesScreen(
           listState = sorteoState,
           actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
           onActionOneClicked = {
-            viewModel.sendEvent(ListFavUiEvent.ShowLoader)
-            viewModel.sendEvent(ListFavUiEvent.FetchFavFromNetwork)
+            if (connectivityState == NetworkStatus.Available) {
+              viewModel.sendEvent(ListFavUiEvent.ShowLoader)
+              viewModel.sendEvent(ListFavUiEvent.FetchFavFromNetwork)
+            } else {
+              viewModel.sendEvent(ListFavUiEvent.ShowConnectivityMessage(true))
+            }
           },
           actionTwoIcon = ImageVector.vectorResource(R.drawable.human_edit),
         ) {
@@ -156,8 +162,11 @@ fun ListFavoritesScreen(
       )
     }
 
-    if (uiState.value.showDeletionSuccess) {
-      val successMsg = stringResource(R.string.txt_fav_deletion_success)
+    if (uiState.value.showDeletionSuccess.first) {
+      val successMsg =
+        uiState.value.showDeletionSuccess.second.ifEmpty {
+          stringResource(R.string.txt_fav_deletion_success)
+        }
       LaunchedEffect(true) {
         val result =
           snackbarState.showSnackbar(message = successMsg, duration = SnackbarDuration.Short)

@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
+import me.elmanss.melate.common.util.NetworkConnectivityObserver
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
 import javax.inject.Inject
@@ -54,14 +55,22 @@ sealed class ListFavUiEvent {
   data object ShowLoader : ListFavUiEvent()
 
   data object HideLoader : ListFavUiEvent()
+
+  data class ShowConnectivityMessage(val show: Boolean) : ListFavUiEvent()
 }
 
 @HiltViewModel
-class ListFavoritesScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
-  ViewModel() {
+class ListFavoritesScreenViewModel
+@Inject
+constructor(
+  private val useCases: FavoritesUseCases,
+  connectivityObserver: NetworkConnectivityObserver,
+) : ViewModel() {
   private val _state = MutableStateFlow(ListFavoritesScreenState())
   val state =
     _state.asStateFlow().stateIn(viewModelScope, SharingStarted.Eagerly, ListFavoritesScreenState())
+
+  val connectivity = connectivityObserver.networkStatus
 
   private var fetchJob: Job? = null
 
@@ -123,6 +132,10 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
       ListFavUiEvent.ShowLoader -> {
         showLoader()
       }
+
+      is ListFavUiEvent.ShowConnectivityMessage -> {
+        showDeletionMessage(true, "Verifica tu conexion a internet.")
+      }
     }
   }
 
@@ -162,8 +175,8 @@ class ListFavoritesScreenViewModel @Inject constructor(private val useCases: Fav
     _state.update { state -> state.copy(favToDelete = null) }
   }
 
-  private fun showDeletionMessage(show: Boolean = false) {
-    _state.update { state -> state.copy(showDeletionSuccess = show) }
+  private fun showDeletionMessage(show: Boolean = false, msg: String = "") {
+    _state.update { state -> state.copy(showDeletionSuccess = Pair(show, msg)) }
   }
 
   fun formatDate(favModel: FavoritoModel) =
