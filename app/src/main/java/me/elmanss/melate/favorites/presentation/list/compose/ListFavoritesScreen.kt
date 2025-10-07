@@ -73,7 +73,7 @@ fun ListFavoritesScreen(
         MelateActionTopBar(title = R.string.txt_mis_sorteos) {
           if (multiselectState) {
             IconButton(onClick = { viewModel.sendEvent(ListFavUiEvent.ShowMultiDeleteFavDialog) }) {
-              Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete")
+              Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete")
             }
           }
         }
