@@ -31,7 +31,7 @@ import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import logcat.logcat
 import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
@@ -42,7 +42,9 @@ import me.elmanss.melate.favorites.presentation.create.CreateFavUiEvent
 import me.elmanss.melate.favorites.presentation.create.CreateFavoriteScreenViewModel
 
 @Composable
-fun CreateFavoriteScreen(viewModel: CreateFavoriteScreenViewModel = hiltViewModel()) {
+fun CreateFavoriteScreen(
+  viewModel: CreateFavoriteScreenViewModel = hiltViewModel<CreateFavoriteScreenViewModel>()
+) {
 
   val uiState = viewModel.state.collectAsState()
   val snackbarState = remember { SnackbarHostState() }

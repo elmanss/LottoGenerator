@@ -42,7 +42,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionExtendedFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
@@ -56,7 +56,7 @@ import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewMode
 @Composable
 fun ListFavoritesScreen(
   onCreateClicked: () -> Unit,
-  viewModel: ListFavoritesScreenViewModel = hiltViewModel(),
+  viewModel: ListFavoritesScreenViewModel = hiltViewModel<ListFavoritesScreenViewModel>(),
 ) {
 
   val uiState = viewModel.state.collectAsState()
