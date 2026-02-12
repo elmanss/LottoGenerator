@@ -54,10 +54,8 @@ android {
 dependencies {
   implementation(libs.appcompat)
   implementation(libs.material)
-  implementation(libs.swiperefreshlayout)
   implementation(libs.core.ktx)
   implementation(libs.fragment.ktx)
-  implementation(libs.constraintlayout)
   implementation(libs.android.driver)
   implementation(libs.coroutines.extensions)
   implementation(libs.logcat)
