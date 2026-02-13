@@ -10,10 +10,10 @@ import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.domain.datasource.SorteoDataSource
 import me.elmanss.melate.home.data.repository.SorteoRepository
 import me.elmanss.melate.home.data.repository.SorteoRepositoryImpl
-import me.elmanss.melate.home.domain.usecase.FetchSorteos
-import me.elmanss.melate.home.domain.usecase.GetListId
 import me.elmanss.melate.home.domain.usecase.HomeUseCases
-import me.elmanss.melate.home.domain.usecase.SaveToFavorites
+import me.elmanss.melate.home.domain.usecase.impl.FetchSorteosUseCase
+import me.elmanss.melate.home.domain.usecase.impl.GetListIdUseCase
+import me.elmanss.melate.home.domain.usecase.impl.SaveToFavoritesUseCase
 import java.util.Random
 import java.util.concurrent.ThreadLocalRandom
 
@@ -42,8 +42,8 @@ object HomeModule {
     randomGenerator: Random,
   ): HomeUseCases =
     HomeUseCases(
-      FetchSorteos(sorteoRepository),
-      SaveToFavorites(favoritosRepository),
-      GetListId(randomGenerator),
+      FetchSorteosUseCase(sorteoRepository),
+      SaveToFavoritesUseCase(favoritosRepository),
+      GetListIdUseCase(randomGenerator),
     )
 }
