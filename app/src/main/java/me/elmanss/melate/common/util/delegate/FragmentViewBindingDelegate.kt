@@ -20,6 +20,7 @@ import kotlin.reflect.KProperty
 inline fun <reified T : ViewBinding> Fragment.viewBinding() =
   FragmentViewBindingDelegate(T::class.java, this)
 
+@Suppress("DEPRECATION", "RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class FragmentViewBindingDelegate<T : ViewBinding>(
   private val bindingClass: Class<T>,
   val fragment: Fragment,

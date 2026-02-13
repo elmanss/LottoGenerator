@@ -25,6 +25,7 @@ import kotlin.reflect.KProperty
 inline fun <reified T : ViewBinding> AppCompatActivity.viewBinding() =
   ActivityViewBindingDelegate(T::class.java, this)
 
+@Suppress("RECEIVER_NULLABILITY_MISMATCH_BASED_ON_JAVA_ANNOTATIONS")
 class ActivityViewBindingDelegate<T : ViewBinding>(
   bindingClass: Class<T>,
   val activity: AppCompatActivity,

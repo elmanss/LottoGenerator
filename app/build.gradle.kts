@@ -6,7 +6,8 @@ plugins {
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.cash.sqldelight)
   alias(libs.plugins.safeargs.kotlin)
-  alias(libs.plugins.kotlin.kapt)
+  //alias(libs.plugins.kotlin.kapt)
+  alias(libs.plugins.ksp)
   alias(libs.plugins.hilt.plugin)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.kotlin.serialization)
@@ -54,10 +55,8 @@ android {
 dependencies {
   implementation(libs.appcompat)
   implementation(libs.material)
-  implementation(libs.swiperefreshlayout)
   implementation(libs.core.ktx)
   implementation(libs.fragment.ktx)
-  implementation(libs.constraintlayout)
   implementation(libs.android.driver)
   implementation(libs.coroutines.extensions)
   implementation(libs.logcat)
@@ -84,7 +83,7 @@ dependencies {
   androidTestImplementation(libs.ui.test.junit4)
   debugImplementation(libs.ui.tooling)
   debugImplementation(libs.ui.test.manifest)
-  kapt(libs.hilt.compiler)
+  ksp(libs.hilt.compiler)
   // https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
   implementation(libs.hilt.navigation.compose)
   implementation(libs.navigation.compose)
@@ -97,4 +96,4 @@ dependencies {
 
 sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }
 
-kapt { correctErrorTypes = true }
+//kapt { correctErrorTypes = true }
