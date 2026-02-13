@@ -6,7 +6,7 @@ plugins {
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.cash.sqldelight)
   alias(libs.plugins.safeargs.kotlin)
-  //alias(libs.plugins.kotlin.kapt)
+  // alias(libs.plugins.kotlin.kapt)
   alias(libs.plugins.ksp)
   alias(libs.plugins.hilt.plugin)
   alias(libs.plugins.kotlin.compose)
@@ -88,12 +88,15 @@ dependencies {
   implementation(libs.hilt.navigation.compose)
   implementation(libs.navigation.compose)
   implementation(libs.constraintlayout.compose)
+  implementation(libs.androidx.navigation3.ui)
 
   implementation(libs.retrofit)
   implementation(libs.retrofit.converter.gson)
   implementation(libs.logging.interceptor)
 }
 
-sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }
+sqldelight {
+  databases { create("Database") { packageName.set("me.elmanss.melate") } }
+}
 
-//kapt { correctErrorTypes = true }
+// kapt { correctErrorTypes = true }
