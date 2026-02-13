@@ -7,7 +7,6 @@ loggingInterceptor = "5.3.2"
 sqldelight = "2.2.1"
 ksp = "2.3.5"
 hiltPlugin = "2.57.2"
-navigation = "2.9.7"
 appcompat = "1.7.1"
 coreKtx = "1.17.0"
 coroutinesExtensions = "2.2.1"
@@ -45,9 +44,6 @@ junit = { module = "junit:junit", version.ref = "junit" }
 logging-interceptor = { module = "com.squareup.okhttp3:logging-interceptor", version.ref = "loggingInterceptor" }
 material = { module = "com.google.android.material:material", version.ref = "material" }
 materialIconsExtended = { module = "androidx.compose.material:material-icons-extended-android", version.ref = "materialIconsExtended" }
-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation" }
-navigation-fragment-ktx = { module = "androidx.navigation:navigation-fragment-ktx", version.ref = "navigation" }
-navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigation" }
 lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
@@ -67,7 +63,6 @@ androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 cash-sqldelight = { id = "app.cash.sqldelight", version.ref = "sqldelight" }
-safeargs-kotlin = { id = "androidx.navigation.safeargs.kotlin", version.ref = "navigation" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 hilt-plugin = { id = "com.google.dagger.hilt.android", version.ref = "hiltPlugin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }

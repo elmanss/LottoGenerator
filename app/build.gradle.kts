@@ -5,7 +5,6 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.cash.sqldelight)
-  alias(libs.plugins.safeargs.kotlin)
   // alias(libs.plugins.kotlin.kapt)
   alias(libs.plugins.ksp)
   alias(libs.plugins.hilt.plugin)
@@ -73,9 +72,7 @@ dependencies {
   androidTestImplementation(libs.espresso.core)
 
   // Android Jetpack
-  implementation(libs.navigation.fragment.ktx)
   // For Kotlin use navigation-fragment-ktx
-  implementation(libs.navigation.ui.ktx)
   // For Kotlin use navigation-ui-ktx
 
   implementation(libs.hilt.android)
@@ -86,7 +83,6 @@ dependencies {
   ksp(libs.hilt.compiler)
   // https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
   implementation(libs.hilt.navigation.compose)
-  implementation(libs.navigation.compose)
   implementation(libs.constraintlayout.compose)
   implementation(libs.androidx.navigation3.ui)
 
