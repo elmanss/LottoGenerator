@@ -7,7 +7,7 @@ import retrofit2.http.Query
 
 interface SorteoApi {
   companion object {
-    val URL = "https://www.randomnumberapi.com/api/"
+    const val URL = "https://www.randomnumberapi.com/api/"
   }
 
   @GET("{version}/random")
