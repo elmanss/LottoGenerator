@@ -7,8 +7,8 @@ import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
 import me.elmanss.melate.common.data.network.api.SorteoApi
 import me.elmanss.melate.common.data.network.datasource.SorteoRemoteDataSource
-import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.domain.datasource.SorteoDataSource
+import me.elmanss.melate.common.domain.repository.FavoritosRepository
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
 import me.elmanss.melate.favorites.domain.usecase.impl.AddFavoriteUseCase
 import me.elmanss.melate.favorites.domain.usecase.impl.DeleteFavoriteUseCase

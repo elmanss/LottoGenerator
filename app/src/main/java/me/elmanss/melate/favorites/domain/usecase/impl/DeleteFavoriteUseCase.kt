@@ -1,6 +1,6 @@
 package me.elmanss.melate.favorites.domain.usecase.impl
 
-import me.elmanss.melate.common.data.repository.FavoritosRepository
+import me.elmanss.melate.common.domain.repository.FavoritosRepository
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import javax.inject.Inject
 

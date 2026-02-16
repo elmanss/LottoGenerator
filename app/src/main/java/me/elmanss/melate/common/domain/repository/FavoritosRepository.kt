@@ -1,4 +1,4 @@
-package me.elmanss.melate.common.data.repository
+package me.elmanss.melate.common.domain.repository
 
 import app.cash.sqldelight.Query
 import kotlinx.coroutines.flow.Flow

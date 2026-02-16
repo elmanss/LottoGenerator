@@ -2,7 +2,7 @@ package me.elmanss.melate.favorites.domain.usecase.impl
 
 import kotlinx.coroutines.flow.map
 import me.elmanss.melate.common.data.local.FavOrigin
-import me.elmanss.melate.common.data.repository.FavoritosRepository
+import me.elmanss.melate.common.domain.repository.FavoritosRepository
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import javax.inject.Inject
 
