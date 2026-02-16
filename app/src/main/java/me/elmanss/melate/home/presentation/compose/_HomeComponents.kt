@@ -3,7 +3,6 @@ package me.elmanss.melate.home.presentation.compose
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -48,7 +47,7 @@ fun HomeListItem(
     if (selectableMode) {
       Checkbox(
         modifier =
-          modifier.wrapContentWidth().constrainAs(check) {
+          modifier.constrainAs(check) {
             end.linkTo(parent.end)
             top.linkTo(parent.top)
             bottom.linkTo(parent.bottom)
@@ -73,6 +72,11 @@ fun HomeListItem(
           start.linkTo(parent.start)
           top.linkTo(parent.top)
           bottom.linkTo(parent.bottom)
+          if (selectableMode) {
+            end.linkTo(check.start, margin = 8.dp)
+          } else {
+            end.linkTo(parent.end)
+          }
           width = Dimension.fillToConstraints
           height = Dimension.wrapContent
         },
