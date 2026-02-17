@@ -15,10 +15,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults.Indicator
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
@@ -33,17 +31,24 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import logcat.logcat
 import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.home.presentation.HomeScreenViewModel
-import me.elmanss.melate.home.presentation.HomeUiEvent
+import me.elmanss.melate.home.presentation.entities.HomeScreenSideEffect
+import me.elmanss.melate.home.presentation.entities.HomeUiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -51,6 +56,8 @@ fun HomeScreen(
   onNavigateToFavs: () -> Unit,
   viewModel: HomeScreenViewModel = hiltViewModel<HomeScreenViewModel>(),
 ) {
+
+  val lifecycleOwner = LocalLifecycleOwner.current
 
   val uiState = viewModel.state.collectAsState()
   val sorteoState = rememberLazyListState()
@@ -60,13 +67,36 @@ fun HomeScreen(
   val coroutineScope = rememberCoroutineScope()
   var multiselectState by rememberSaveable { mutableStateOf(false) }
 
-  BackHandler(enabled = multiselectState) { viewModel.sendEvent(HomeUiEvent.ExitMultiSelect) }
+  LaunchedEffect(key1 = Unit) {
+    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+      withContext(Dispatchers.Main.immediate) {
+        viewModel.sideEffect.collectLatest { sideEffect ->
+          logcat("HomeScreen") { sideEffect?.toString() ?: "Side-effect null" }
+          when (sideEffect) {
+            HomeScreenSideEffect.GoToFavs -> {
+              onNavigateToFavs.invoke()
+            }
+
+            is HomeScreenSideEffect.ShowSnackBar -> {
+              snackbarState.showSnackbar(sideEffect.message)
+            }
+
+            null -> {}
+          }
+        }
+      }
+    }
+  }
+
+  BackHandler(enabled = multiselectState) {
+    viewModel.sendEvent(HomeUiEvent.DisableMultiSelectEvent)
+  }
 
   Scaffold(
     topBar = {
       MelateActionTopBar(title = R.string.app_name) {
         if (multiselectState) {
-          IconButton(onClick = { viewModel.sendEvent(HomeUiEvent.ConfirmMultiSelect) }) {
+          IconButton(onClick = { viewModel.sendEvent(HomeUiEvent.ClickConfirmMultiSelectEvent) }) {
             Icon(imageVector = Icons.Default.Check, contentDescription = "Save")
           }
         }
@@ -75,7 +105,7 @@ fun HomeScreen(
     floatingActionButton = {
       MelateFab(
         listState = sorteoState,
-        action = { viewModel.sendEvent(HomeUiEvent.GoToFavs) },
+        action = { viewModel.sendEvent(HomeUiEvent.ClickGoToFavsEvent) },
         text = R.string.txt_button_mis_favs,
       )
     },
@@ -91,7 +121,7 @@ fun HomeScreen(
           isRefreshing = true
           coroutineScope.launch {
             delay(1500)
-            viewModel.sendEvent(HomeUiEvent.RefreshSorteos)
+            viewModel.sendEvent(HomeUiEvent.RefreshSorteosEvent)
             isRefreshing = false
           }
         },
@@ -112,15 +142,15 @@ fun HomeScreen(
             HomeListItem(
               selectableMode = multiselectState,
               sorteo = sorteo,
-              onChecked = { s -> HomeUiEvent.SelectSorteo(s, index) },
+              onChecked = { s -> HomeUiEvent.SelectSorteoEvent(s, index) },
               onClick = { s ->
                 if (!multiselectState) {
-                  viewModel.sendEvent(HomeUiEvent.ShowSaveSorteoDialog(s))
+                  viewModel.sendEvent(HomeUiEvent.ClickSorteoEvent(s))
                 }
               },
             ) { s ->
               if (!multiselectState) {
-                viewModel.sendEvent(HomeUiEvent.EnableSorteoMultiSelect(s, index))
+                viewModel.sendEvent(HomeUiEvent.EnableMultiSelectEvent(s, index))
               }
             }
 
@@ -131,35 +161,15 @@ fun HomeScreen(
         }
       }
 
-      uiState.value.clickedSorteo?.let { sorteo ->
+      uiState.value.saveFaveDialogDisplayed?.let { sorteo ->
         MelateSorteoActionDialog(
-          { viewModel.sendEvent(HomeUiEvent.HideSaveSorteoDialog) },
-          { viewModel.sendEvent(HomeUiEvent.ConfirmSaveSorteo(sorteo)) },
+          { viewModel.sendEvent(HomeUiEvent.DismissAddSorteoEvent) },
+          { viewModel.sendEvent(HomeUiEvent.ClickAddSorteoEvent(sorteo)) },
           R.string.txt_title_aviso,
           R.string.txt_msg_add_to_fav,
           R.string.txt_action_add,
         )
       }
-
-      if (uiState.value.showStorageSuccess) {
-        val successMsg = stringResource(R.string.txt_sorteo_success)
-        LaunchedEffect(true) {
-          val result =
-            snackbarState.showSnackbar(message = successMsg, duration = SnackbarDuration.Short)
-          when (result) {
-            SnackbarResult.Dismissed -> {
-              viewModel.sendEvent(HomeUiEvent.DisplaySuccessMessage(visible = true))
-            }
-
-            SnackbarResult.ActionPerformed -> {}
-          }
-        }
-      }
     }
-  }
-
-  if (uiState.value.onGoToFav) {
-    onNavigateToFavs.invoke()
-    viewModel.sendEvent(HomeUiEvent.ClearFlags)
   }
 }

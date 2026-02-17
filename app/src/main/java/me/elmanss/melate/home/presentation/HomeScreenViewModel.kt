@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
@@ -15,82 +18,67 @@ import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.home.domain.model.SorteoModel
 import me.elmanss.melate.home.domain.usecase.HomeUseCases
+import me.elmanss.melate.home.presentation.entities.HomeScreenSideEffect
+import me.elmanss.melate.home.presentation.entities.HomeScreenState
+import me.elmanss.melate.home.presentation.entities.HomeUiEvent
 import java.time.ZonedDateTime
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.milliseconds
-
-sealed class HomeUiEvent {
-  data object RefreshSorteos : HomeUiEvent()
-
-  data class ShowSaveSorteoDialog(val sorteo: SorteoModel) : HomeUiEvent()
-
-  data object HideSaveSorteoDialog : HomeUiEvent()
-
-  data class ConfirmSaveSorteo(val sorteo: SorteoModel) : HomeUiEvent()
-
-  data class EnableSorteoMultiSelect(val sorteo: SorteoModel, val index: Int) : HomeUiEvent()
-
-  data class SelectSorteo(val sorteo: SorteoModel, val index: Int) : HomeUiEvent()
-
-  data object ConfirmMultiSelect : HomeUiEvent()
-
-  data object GoToFavs : HomeUiEvent()
-
-  object ExitMultiSelect : HomeUiEvent()
-
-  data class DisplaySuccessMessage(val visible: Boolean) : HomeUiEvent()
-
-  object ClearFlags : HomeUiEvent()
-}
 
 @HiltViewModel
 class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases) : ViewModel() {
   private val _state = MutableStateFlow(HomeScreenState())
   val state = _state.asStateFlow().stateIn(viewModelScope, SharingStarted.Lazily, HomeScreenState())
+
+  private val _sideEffect: MutableSharedFlow<HomeScreenSideEffect?> =
+    MutableSharedFlow(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+  val sideEffect = _sideEffect.asSharedFlow()
+
   private var fetchJob: Job? = null
   private var clearJob: Job? = null
 
   fun sendEvent(event: HomeUiEvent) {
+    logcat("HomeScreenVm") { event.toString() }
     when (event) {
-      HomeUiEvent.RefreshSorteos -> {
+      HomeUiEvent.RefreshSorteosEvent -> {
         launchFetchSorteos()
       }
 
-      HomeUiEvent.GoToFavs -> {
-        _state.update { state -> state.copy(onGoToFav = true) }
+      HomeUiEvent.ClickGoToFavsEvent -> {
+        viewModelScope.launch {
+          _state.update { state -> state.copy(multiSelectMode = false) }
+          _sideEffect.emit(HomeScreenSideEffect.GoToFavs)
+        }
       }
 
-      HomeUiEvent.ConfirmMultiSelect -> {
+      HomeUiEvent.ClickConfirmMultiSelectEvent -> {
         saveSelected()
-      }
-
-      is HomeUiEvent.DisplaySuccessMessage -> {
-        showSuccessMsg(event.visible)
-      }
-      is HomeUiEvent.ShowSaveSorteoDialog -> {
-        showWarning(event.sorteo)
-      }
-      HomeUiEvent.HideSaveSorteoDialog -> {
-        showWarning()
-      }
-      is HomeUiEvent.ConfirmSaveSorteo -> {
-        launchSaveToFavorites(event.sorteo)
-      }
-      is HomeUiEvent.EnableSorteoMultiSelect -> {
-        markItemAsSelected(event.sorteo, event.index)
-        _state.update { state -> state.copy(multiSelectMode = true) }
-      }
-
-      is HomeUiEvent.SelectSorteo -> {
-        markItemAsSelected(event.sorteo, event.index)
-      }
-
-      HomeUiEvent.ExitMultiSelect -> {
-        launchExitMultiselect()
       }
 
       HomeUiEvent.ClearFlags -> {
         _state.update { state -> state.clearFlags() }
+      }
+
+      HomeUiEvent.DisableMultiSelectEvent -> {
+        launchExitMultiselect()
+      }
+
+      is HomeUiEvent.ClickSorteoEvent -> {
+        _state.update { state -> state.copy(saveFaveDialogDisplayed = event.sorteo) }
+      }
+      is HomeUiEvent.ClickAddSorteoEvent -> {
+        launchSaveToFavorites(event.sorteo)
+      }
+      is HomeUiEvent.DismissAddSorteoEvent -> {
+        _state.update { state -> state.copy(saveFaveDialogDisplayed = null) }
+      }
+      is HomeUiEvent.EnableMultiSelectEvent -> {
+        markItemAsSelected(event.sorteo, event.index)
+        _state.update { state -> state.copy(multiSelectMode = true) }
+      }
+
+      is HomeUiEvent.SelectSorteoEvent -> {
+        markItemAsSelected(event.sorteo, event.index)
       }
     }
   }
@@ -115,22 +103,9 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
     viewModelScope.launch {
       useCases.saveToFavorites(sorteoModel, ZonedDateTime.now().toInstant().toEpochMilli())
       delay(250)
-      dismissWarning()
-      showSuccessMsg(true)
+      sendEvent(HomeUiEvent.DismissAddSorteoEvent)
+      _sideEffect.emit(HomeScreenSideEffect.ShowSnackBar("Sorteo guardado en favoritos"))
     }
-  }
-
-  private fun showWarning(sorteo: SorteoModel? = null) {
-    logcat { "clicked sorteo" }
-    _state.update { state -> state.copy(isWarningShown = true, clickedSorteo = sorteo) }
-  }
-
-  private fun dismissWarning() {
-    _state.update { state -> state.copy(isWarningShown = false, clickedSorteo = null) }
-  }
-
-  private fun showSuccessMsg(show: Boolean) {
-    _state.update { state -> state.copy(showStorageSuccess = show) }
   }
 
   private fun markItemAsSelected(sorteo: SorteoModel, index: Int) {
@@ -148,6 +123,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
         .also {
           clearSelected()
           _state.update { state -> state.copy(multiSelectMode = false) }
+          _sideEffect.emit(HomeScreenSideEffect.ShowSnackBar("Sorteos almacenados exitosamente."))
         }
     }
   }
@@ -165,7 +141,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
 
   private fun clearSelected() {
     val clearedSorteos = state.value.sorteos.onEach { if (it.selected) it.selected = false }
-    logcat { "Cleared sorteos: ${clearedSorteos}" }
+    logcat { "Cleared sorteos: $clearedSorteos" }
     _state.update { state -> state.copy(sorteos = clearedSorteos) }
   }
 }
