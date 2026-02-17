@@ -111,7 +111,7 @@ fun HomeScreen(
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
-    multiselectState = uiState.value.multiSelectMode
+    multiselectState = uiState.value.multiSelectModeEnabled
 
     Column(modifier = Modifier.fillMaxWidth().padding(it)) {
       val sorteos = uiState.value.sorteos

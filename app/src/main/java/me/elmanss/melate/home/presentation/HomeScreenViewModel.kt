@@ -46,17 +46,13 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
 
       HomeUiEvent.ClickGoToFavsEvent -> {
         viewModelScope.launch {
-          _state.update { state -> state.copy(multiSelectMode = false) }
+          _state.update { state -> state.copy(multiSelectModeEnabled = false) }
           _sideEffect.emit(HomeScreenSideEffect.GoToFavs)
         }
       }
 
       HomeUiEvent.ClickConfirmMultiSelectEvent -> {
         saveSelected()
-      }
-
-      HomeUiEvent.ClearFlags -> {
-        _state.update { state -> state.clearFlags() }
       }
 
       HomeUiEvent.DisableMultiSelectEvent -> {
@@ -74,7 +70,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
       }
       is HomeUiEvent.EnableMultiSelectEvent -> {
         markItemAsSelected(event.sorteo, event.index)
-        _state.update { state -> state.copy(multiSelectMode = true) }
+        _state.update { state -> state.copy(multiSelectModeEnabled = true) }
       }
 
       is HomeUiEvent.SelectSorteoEvent -> {
@@ -122,7 +118,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
         .forEach { useCases.saveToFavorites(it, ZonedDateTime.now().toInstant().toEpochMilli()) }
         .also {
           clearSelected()
-          _state.update { state -> state.copy(multiSelectMode = false) }
+          _state.update { state -> state.copy(multiSelectModeEnabled = false) }
           _sideEffect.emit(HomeScreenSideEffect.ShowSnackBar("Sorteos almacenados exitosamente."))
         }
     }
@@ -136,7 +132,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
   private suspend fun exitMultiSelect() {
     clearSelected()
     delay(100.milliseconds)
-    _state.update { state -> state.copy(multiSelectMode = false) }
+    _state.update { state -> state.copy(multiSelectModeEnabled = false) }
   }
 
   private fun clearSelected() {

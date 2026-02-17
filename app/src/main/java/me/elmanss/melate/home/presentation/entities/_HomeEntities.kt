@@ -20,8 +20,6 @@ sealed class HomeUiEvent {
   data object ClickConfirmMultiSelectEvent : HomeUiEvent()
 
   data object ClickGoToFavsEvent : HomeUiEvent()
-
-  object ClearFlags : HomeUiEvent()
 }
 
 sealed class HomeScreenSideEffect {
@@ -33,7 +31,5 @@ sealed class HomeScreenSideEffect {
 data class HomeScreenState(
   val sorteos: List<SorteoModel> = emptyList(),
   val saveFaveDialogDisplayed: SorteoModel? = null,
-  val multiSelectMode: Boolean = false,
-) {
-  fun clearFlags() = this.copy(saveFaveDialogDisplayed = null, multiSelectMode = false)
-}
+  val multiSelectModeEnabled: Boolean = false,
+) {}
