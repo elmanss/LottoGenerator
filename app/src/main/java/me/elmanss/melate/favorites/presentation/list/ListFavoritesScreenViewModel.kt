@@ -4,9 +4,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filter
@@ -20,44 +23,11 @@ import logcat.logcat
 import me.elmanss.melate.common.util.NetworkConnectivityObserver
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
+import me.elmanss.melate.favorites.presentation.list.entities.ListFavUiEvent
+import me.elmanss.melate.favorites.presentation.list.entities.ListFavoritesScreenState
+import me.elmanss.melate.favorites.presentation.list.entities.ListFavoritesSideEffect
 import javax.inject.Inject
 import kotlin.time.Duration.Companion.seconds
-
-sealed class ListFavUiEvent {
-  data object FetchFavs : ListFavUiEvent()
-
-  data object FetchFavFromNetwork : ListFavUiEvent()
-
-  data class ShowDeleteFavDialog(val fav: FavoritoModel) : ListFavUiEvent()
-
-  data class DeleteFav(val fav: FavoritoModel) : ListFavUiEvent()
-
-  data object HideDeleteFavDialog : ListFavUiEvent()
-
-  data class EnableMultiDelete(val fav: FavoritoModel, val index: Int) : ListFavUiEvent()
-
-  data object DisableMultiDelete : ListFavUiEvent()
-
-  data class SelectFav(val fav: FavoritoModel, val index: Int) : ListFavUiEvent()
-
-  data object ShowMultiDeleteFavDialog : ListFavUiEvent()
-
-  data object HideMultiDeleteFavDialog : ListFavUiEvent()
-
-  data object GoToCreate : ListFavUiEvent()
-
-  data object ClearFlags : ListFavUiEvent()
-
-  data object DeleteMultipleFavs : ListFavUiEvent()
-
-  data object HideSuccessMessage : ListFavUiEvent()
-
-  data object ShowLoader : ListFavUiEvent()
-
-  data object HideLoader : ListFavUiEvent()
-
-  data class ShowConnectivityMessage(val show: Boolean) : ListFavUiEvent()
-}
 
 @HiltViewModel
 class ListFavoritesScreenViewModel
@@ -70,6 +40,10 @@ constructor(
   val state =
     _state.asStateFlow().stateIn(viewModelScope, SharingStarted.Eagerly, ListFavoritesScreenState())
 
+  private val _sideEffect: MutableSharedFlow<ListFavoritesSideEffect?> =
+    MutableSharedFlow(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+  val sideEffect = _sideEffect.asSharedFlow()
   val connectivity = connectivityObserver.networkStatus
 
   private var fetchJob: Job? = null
@@ -83,32 +57,30 @@ constructor(
       ListFavUiEvent.ClearFlags -> {
         _state.update { state -> state.clearFlags() }
       }
-      is ListFavUiEvent.DeleteFav -> {
+      is ListFavUiEvent.ClickDeleteFavEvent -> {
         deleteFavs(event.fav)
       }
       ListFavUiEvent.DisableMultiDelete -> {
         clearSelected()
       }
-      is ListFavUiEvent.EnableMultiDelete -> {
+      is ListFavUiEvent.LongClickFavEvent -> {
         markItemAsSelected(event.fav, event.index)
         _state.update { state -> state.copy(multiselectEnabled = true) }
       }
-      ListFavUiEvent.FetchFavs -> {
-        launchFetchFavorites()
-      }
-      ListFavUiEvent.GoToCreate -> {
-        _state.update { state -> state.copy(favTapped = true) }
+
+      ListFavUiEvent.ClickCreateEvent -> {
+        viewModelScope.launch { _sideEffect.emit(ListFavoritesSideEffect.LaunchCreateScreen) }
       }
       ListFavUiEvent.HideDeleteFavDialog -> {
         showWarning()
       }
-      is ListFavUiEvent.SelectFav -> {
+      is ListFavUiEvent.SelectFavEvent -> {
         markItemAsSelected(event.fav, event.index)
       }
-      is ListFavUiEvent.ShowDeleteFavDialog -> {
+      is ListFavUiEvent.ClickFavEvent -> {
         showWarning(event.fav)
       }
-      is ListFavUiEvent.ShowMultiDeleteFavDialog -> {
+      is ListFavUiEvent.ClickConfirmMultiDeleteEvent -> {
         showMultideletionPrompt(true)
       }
       is ListFavUiEvent.HideMultiDeleteFavDialog -> {
@@ -118,33 +90,17 @@ constructor(
         deleteSelected()
       }
       ListFavUiEvent.HideSuccessMessage -> {
-        showDeletionMessage(false)
+        showDeletionMessage()
       }
 
-      ListFavUiEvent.FetchFavFromNetwork -> {
+      ListFavUiEvent.ClickMultiDeleteEvent -> {
         fetchFavFromNetwork()
       }
 
-      ListFavUiEvent.HideLoader -> {
-        hideLoader()
-      }
-
-      ListFavUiEvent.ShowLoader -> {
-        showLoader()
-      }
-
       is ListFavUiEvent.ShowConnectivityMessage -> {
-        showDeletionMessage(true, "Verifica tu conexion a internet.")
+        showDeletionMessage("Verifica tu conexion a internet.")
       }
     }
-  }
-
-  private fun showLoader() {
-    _state.update { state -> state.copy(isLoading = true) }
-  }
-
-  private fun hideLoader() {
-    _state.update { state -> state.copy(isLoading = false) }
   }
 
   private fun deleteFavs(model: FavoritoModel) {
@@ -152,7 +108,7 @@ constructor(
       useCases.deleteFavorite(model)
       delay(250)
       dismissWarning()
-      showDeletionMessage(true)
+      showDeletionMessage()
     }
   }
 
@@ -168,15 +124,15 @@ constructor(
 
   private fun showWarning(sorteo: FavoritoModel? = null) {
     logcat { "clicked fav" }
-    _state.update { state -> state.copy(favToDelete = sorteo) }
+    _state.update { state -> state.copy(clickedFav = sorteo) }
   }
 
   private fun dismissWarning() {
-    _state.update { state -> state.copy(favToDelete = null) }
+    _state.update { state -> state.copy(clickedFav = null) }
   }
 
-  private fun showDeletionMessage(show: Boolean = false, msg: String = "") {
-    _state.update { state -> state.copy(showDeletionSuccess = Pair(show, msg)) }
+  private fun showDeletionMessage(msg: String = "") {
+    viewModelScope.launch { _sideEffect.emit(ListFavoritesSideEffect.ShowSnackBar(msg)) }
   }
 
   fun formatDate(favModel: FavoritoModel) =
@@ -184,7 +140,7 @@ constructor(
 
   private fun markItemAsSelected(fav: FavoritoModel, index: Int) {
     val currentFavsMutable = state.value.favs.toMutableList()
-    logcat { "Current favs: ${currentFavsMutable}" }
+    logcat { "Current favs: $currentFavsMutable" }
     logcat { "Tapped index: $index" }
 
     currentFavsMutable[index] = fav
@@ -199,14 +155,14 @@ constructor(
         .forEach { useCases.deleteFavorite(it) }
         .also {
           clearSelected()
-          _state.update { state -> state.copy(multideleteCompleted = true) }
+          _sideEffect.emit(ListFavoritesSideEffect.OnMultiDeleteCompleted)
         }
     }
   }
 
   private fun clearSelected() {
     val clearedFavs = state.value.favs.onEach { it.selected = false }
-    logcat { "Cleared favs: ${clearedFavs}" }
+    logcat { "Cleared favs: $clearedFavs" }
     _state.update { state -> state.copy(favs = clearedFavs, multiselectEnabled = false) }
   }
 
@@ -215,6 +171,7 @@ constructor(
   }
 
   private fun fetchFavFromNetwork() {
+    _state.update { state -> state.copy(isLoading = true) }
     viewModelScope.launch {
       delay(1.seconds)
       useCases
