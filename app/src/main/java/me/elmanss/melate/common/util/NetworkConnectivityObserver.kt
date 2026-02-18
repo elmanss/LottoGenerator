@@ -18,6 +18,22 @@ enum class NetworkStatus {
   Unavailable,
 }
 
+/**
+ * Observes the network connectivity status of the device.
+ *
+ * This class uses Android's [ConnectivityManager] to monitor changes in the network
+ * connection. It provides a [Flow] of [NetworkStatus] that emits a new value whenever
+ * the connectivity status changes (e.g., from available to unavailable).
+ *
+ * It checks for internet capability across common transport types like Wi-Fi, Cellular, and Ethernet.
+ * The implementation uses `callbackFlow` to bridge the callback-based [ConnectivityManager.NetworkCallback]
+ * into a modern coroutine-based Flow, ensuring proper resource cleanup.
+ *
+ * The exposed `networkStatus` flow is debounced with `distinctUntilChanged` to avoid emitting
+ * redundant status updates.
+ *
+ * @param context The application context, used to get the system's [ConnectivityManager].
+ */
 class NetworkConnectivityObserver @Inject constructor(context: Context) {
 
   private val connectivityManager =
