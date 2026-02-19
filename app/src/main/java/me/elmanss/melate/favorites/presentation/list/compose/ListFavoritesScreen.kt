@@ -28,9 +28,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -71,11 +69,10 @@ fun ListFavoritesScreen(
 ) {
   val lifecycleOwner = LocalLifecycleOwner.current
   val context = LocalContext.current
-  val uiState = viewModel.state.collectAsState()
+  val uiState by viewModel.state.collectAsState()
   val connectivityState by viewModel.connectivity.collectAsState(NetworkStatus.Unavailable)
   val sorteoState = rememberLazyListState()
   val snackbarState = remember { SnackbarHostState() }
-  var multiselectState by remember { mutableStateOf(false) }
 
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -83,12 +80,6 @@ fun ListFavoritesScreen(
         viewModel.sideEffect.filterNotNull().collectLatest { sideEffect ->
           logcat("ListFavoritesScreen") { sideEffect.toString() }
           when (sideEffect) {
-            ListFavoritesSideEffect.OnMultiDeleteCompleted -> {
-              viewModel.sendEvent(ListFavUiEvent.ExitMultiDelete)
-              viewModel.sendEvent(ListFavUiEvent.DismissMultiDeleteFavDialog)
-              viewModel.sendEvent(ListFavUiEvent.ClearFlags)
-            }
-
             ListFavoritesSideEffect.LaunchCreateScreen -> {
               onCreateClicked.invoke()
               viewModel.sendEvent(ListFavUiEvent.ClearFlags)
@@ -106,13 +97,15 @@ fun ListFavoritesScreen(
     }
   }
 
-  BackHandler(enabled = multiselectState) { viewModel.sendEvent(ListFavUiEvent.ExitMultiDelete) }
+  BackHandler(enabled = uiState.multiselectEnabled) {
+    viewModel.sendEvent(ListFavUiEvent.ExitMultiDelete)
+  }
 
   Scaffold(
     topBar = {
       Column {
         MelateActionTopBar(title = R.string.txt_mis_sorteos) {
-          if (multiselectState) {
+          if (uiState.multiselectEnabled) {
             IconButton(
               onClick = { viewModel.sendEvent(ListFavUiEvent.TapConfirmMultiDeleteEvent) }
             ) {
@@ -121,12 +114,12 @@ fun ListFavoritesScreen(
           }
         }
 
-        if (!multiselectState && uiState.value.isLoading)
+        if (!uiState.multiselectEnabled && uiState.isLoading)
           LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
       }
     },
     floatingActionButton = {
-      if (!multiselectState) {
+      if (!uiState.multiselectEnabled) {
         MelateActionExtendedFab(
           listState = sorteoState,
           actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
@@ -145,8 +138,7 @@ fun ListFavoritesScreen(
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
-    multiselectState = uiState.value.multiselectEnabled
-    val favs = uiState.value.favs
+    val favs = uiState.favs
     if (favs.isEmpty()) {
       Column(
         modifier = Modifier.fillMaxSize().padding(it).padding(16F.dp),
@@ -171,19 +163,19 @@ fun ListFavoritesScreen(
         LazyColumn(state = sorteoState) {
           itemsIndexed(favs) { index, fav ->
             ListFavoriteItem(
-              editableState = multiselectState,
+              editableState = uiState.multiselectEnabled,
               favorite = fav,
               formatter = { viewModel.formatDate(fav) },
               onChecked = { f ->
                 viewModel.sendEvent(ListFavUiEvent.ToggleFavCheckEvent(fav, index))
               },
               onLongClick = { f ->
-                if (!multiselectState) {
+                if (!uiState.multiselectEnabled) {
                   viewModel.sendEvent(ListFavUiEvent.LongTapFavEvent(fav, index))
                 }
               },
             ) {
-              if (!multiselectState) {
+              if (!uiState.multiselectEnabled) {
                 viewModel.sendEvent(ListFavUiEvent.TapFavEvent(fav))
               }
             }
@@ -196,7 +188,7 @@ fun ListFavoritesScreen(
       }
     }
 
-    uiState.value.clickedFav?.let { sorteo ->
+    uiState.clickedFav?.let { sorteo ->
       MelateSorteoActionDialog(
         { viewModel.sendEvent(ListFavUiEvent.DismissDeleteFavDialog) },
         { viewModel.sendEvent(ListFavUiEvent.TapDeleteFavEvent(sorteo)) },
@@ -207,12 +199,12 @@ fun ListFavoritesScreen(
     }
   }
 
-  if (uiState.value.showMultiDeletionPrompt) {
+  if (uiState.showMultiDeletionPrompt) {
     MelateSorteoActionDialog(
       { viewModel.sendEvent(ListFavUiEvent.DismissMultiDeleteFavDialog) },
       { viewModel.sendEvent(ListFavUiEvent.TapDeleteMultipleFavs) },
       R.string.txt_title_aviso,
-      "Se eliminaran los sorteos seleccionados.",
+      R.string.txt_msg_delete_multiple_favs,
       R.string.txt_action_delete,
     )
   }

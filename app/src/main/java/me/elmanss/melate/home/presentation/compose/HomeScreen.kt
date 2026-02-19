@@ -28,7 +28,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -64,13 +63,12 @@ fun HomeScreen(
   val lifecycleOwner = LocalLifecycleOwner.current
   val context = LocalContext.current
 
-  val uiState = viewModel.state.collectAsState()
+  val uiState by viewModel.state.collectAsState()
   val sorteoState = rememberLazyListState()
   val refreshState = rememberPullToRefreshState()
   var isRefreshing by remember { mutableStateOf(false) }
   val snackbarState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
-  var multiselectState by rememberSaveable { mutableStateOf(false) }
 
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -91,12 +89,14 @@ fun HomeScreen(
     }
   }
 
-  BackHandler(enabled = multiselectState) { viewModel.sendEvent(HomeUiEvent.ExitMultiSelectEvent) }
+  BackHandler(enabled = uiState.multiSelectModeEnabled) {
+    viewModel.sendEvent(HomeUiEvent.ExitMultiSelectEvent)
+  }
 
   Scaffold(
     topBar = {
       MelateActionTopBar(title = R.string.app_name) {
-        if (multiselectState) {
+        if (uiState.multiSelectModeEnabled) {
           IconButton(onClick = { viewModel.sendEvent(HomeUiEvent.TapConfirmMultiSelectEvent) }) {
             Icon(imageVector = Icons.Default.Check, contentDescription = "Save")
           }
@@ -112,10 +112,8 @@ fun HomeScreen(
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
-    multiselectState = uiState.value.multiSelectModeEnabled
-
     Column(modifier = Modifier.fillMaxWidth().padding(it)) {
-      val sorteos = uiState.value.sorteos
+      val sorteos = uiState.sorteos
       PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
@@ -141,16 +139,18 @@ fun HomeScreen(
           itemsIndexed(items = sorteos, key = { index, _ -> index.toHexString() }) { index, sorteo
             ->
             HomeListItem(
-              selectableMode = multiselectState,
+              selectableMode = uiState.multiSelectModeEnabled,
               sorteo = sorteo,
-              onChecked = { s -> HomeUiEvent.ToggleSorteoCheckEvent(s, index) },
+              onChecked = { s ->
+                viewModel.sendEvent(HomeUiEvent.ToggleSorteoCheckEvent(s, index))
+              },
               onClick = { s ->
-                if (!multiselectState) {
+                if (!uiState.multiSelectModeEnabled) {
                   viewModel.sendEvent(HomeUiEvent.TapSorteoEvent(s))
                 }
               },
             ) { s ->
-              if (!multiselectState) {
+              if (!uiState.multiSelectModeEnabled) {
                 viewModel.sendEvent(HomeUiEvent.LongTapSorteoEvent(s, index))
               }
             }
@@ -162,7 +162,7 @@ fun HomeScreen(
         }
       }
 
-      uiState.value.saveFaveDialogDisplayed?.let { sorteo ->
+      uiState.saveFaveDialogDisplayed?.let { sorteo ->
         MelateSorteoActionDialog(
           { viewModel.sendEvent(HomeUiEvent.DismissAddSorteoEvent) },
           { viewModel.sendEvent(HomeUiEvent.TapAddSorteoEvent(sorteo)) },

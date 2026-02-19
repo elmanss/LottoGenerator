@@ -154,7 +154,8 @@ constructor(
         .forEach { useCases.deleteFavorite(it) }
         .also {
           clearSelected()
-          _sideEffect.emit(ListFavoritesSideEffect.OnMultiDeleteCompleted)
+          showMultideletionPrompt(false)
+          showMessage(R.string.txt_fav_multi_deletion_success)
         }
     }
   }

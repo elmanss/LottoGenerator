@@ -20,9 +20,6 @@ data class ListFavoritesScreenState(
 }
 
 sealed interface ListFavoritesSideEffect {
-
-  data object OnMultiDeleteCompleted : ListFavoritesSideEffect
-
   data object LaunchCreateScreen : ListFavoritesSideEffect
 
   data class ShowSnackBar(@param:StringRes val messageId: Int) : ListFavoritesSideEffect
