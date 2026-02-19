@@ -18,31 +18,6 @@ import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
-enum class Clearable {
-  BACK_NAVIGATION,
-  SORTEO_COMPLETED,
-  CAPTURE_NUMBER,
-  ERROR,
-  AFTER_STORAGE,
-  MESSAGE,
-}
-
-sealed class CreateFavUiEvent {
-  data class TapDigit(val digit: String) : CreateFavUiEvent()
-
-  data object TapNext : CreateFavUiEvent()
-
-  data object TapDelete : CreateFavUiEvent()
-
-  data class InsertFavorite(val sorteo: List<String>) : CreateFavUiEvent()
-
-  data object NavigateBack : CreateFavUiEvent()
-
-  data class ClearEvent(val clearable: Clearable) : CreateFavUiEvent()
-
-  data object ShowMessage : CreateFavUiEvent()
-}
-
 @HiltViewModel
 class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
   ViewModel() {

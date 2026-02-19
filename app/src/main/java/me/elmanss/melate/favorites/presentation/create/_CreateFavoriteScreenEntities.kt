@@ -32,3 +32,27 @@ data class CreateFavoriteScreenState(
        if input has one char, clear input
        if input is empty, remove last item in numbers
 */
+enum class Clearable {
+  BACK_NAVIGATION,
+  SORTEO_COMPLETED,
+  CAPTURE_NUMBER,
+  ERROR,
+  AFTER_STORAGE,
+  MESSAGE,
+}
+
+sealed class CreateFavUiEvent {
+  data class TapDigit(val digit: String) : CreateFavUiEvent()
+
+  data object TapNext : CreateFavUiEvent()
+
+  data object TapDelete : CreateFavUiEvent()
+
+  data class InsertFavorite(val sorteo: List<String>) : CreateFavUiEvent()
+
+  data object NavigateBack : CreateFavUiEvent()
+
+  data class ClearEvent(val clearable: Clearable) : CreateFavUiEvent()
+
+  data object ShowMessage : CreateFavUiEvent()
+}
