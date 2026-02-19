@@ -2,23 +2,10 @@ package me.elmanss.melate.favorites.presentation.create
 
 data class CreateFavoriteScreenState(
   val keyboardInput: String = "", // max 2 digits, 1 - 56
-  val captureError: String = "",
   val numbers: List<String> = emptyList(),
   val sorteoCompleted: List<String> = emptyList(),
-  val sorteoInserted: Boolean = false,
-  val sorteoStored: Boolean = false,
-  val navigateBack: Boolean = false,
 ) {
-  fun clearFlags() =
-    this.copy(
-      captureError = "",
-      keyboardInput = "",
-      numbers = emptyList(),
-      sorteoCompleted = emptyList(),
-      sorteoStored = false,
-      sorteoInserted = false,
-      navigateBack = false,
-    )
+  fun clear() = this.copy(keyboardInput = "", numbers = emptyList(), sorteoCompleted = emptyList())
 }
 
 /*
@@ -33,12 +20,8 @@ data class CreateFavoriteScreenState(
        if input is empty, remove last item in numbers
 */
 enum class Clearable {
-  BACK_NAVIGATION,
   SORTEO_COMPLETED,
   CAPTURE_NUMBER,
-  ERROR,
-  AFTER_STORAGE,
-  MESSAGE,
 }
 
 sealed class CreateFavUiEvent {
@@ -50,9 +33,12 @@ sealed class CreateFavUiEvent {
 
   data class InsertFavorite(val sorteo: List<String>) : CreateFavUiEvent()
 
-  data object NavigateBack : CreateFavUiEvent()
-
   data class ClearEvent(val clearable: Clearable) : CreateFavUiEvent()
+}
 
-  data object ShowMessage : CreateFavUiEvent()
+sealed interface CreateFavSideEffect {
+
+  data object NavigateBack : CreateFavSideEffect
+
+  data class ShowSnackbar(val message: String, val isError: Boolean) : CreateFavSideEffect
 }

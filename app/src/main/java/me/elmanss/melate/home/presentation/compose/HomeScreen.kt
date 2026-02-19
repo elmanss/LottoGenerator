@@ -39,6 +39,7 @@ import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import logcat.logcat
@@ -70,8 +71,8 @@ fun HomeScreen(
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
       withContext(Dispatchers.Main.immediate) {
-        viewModel.sideEffect.collectLatest { sideEffect ->
-          logcat("HomeScreen") { sideEffect?.toString() ?: "Side-effect null" }
+        viewModel.sideEffect.filterNotNull().collectLatest { sideEffect ->
+          logcat("HomeScreen") { sideEffect.toString() }
           when (sideEffect) {
             HomeScreenSideEffect.GoToFavs -> {
               onNavigateToFavs.invoke()
@@ -80,8 +81,6 @@ fun HomeScreen(
             is HomeScreenSideEffect.ShowSnackBar -> {
               snackbarState.showSnackbar(sideEffect.message)
             }
-
-            null -> {}
           }
         }
       }

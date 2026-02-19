@@ -45,8 +45,6 @@ sealed interface ListFavUiEvent {
 
   data object DeleteMultipleFavs : ListFavUiEvent
 
-  data object HideSuccessMessage : ListFavUiEvent
-
   data class ClickFavEvent(val fav: FavoritoModel) : ListFavUiEvent
 
   data class ClickDeleteFavEvent(val fav: FavoritoModel) : ListFavUiEvent

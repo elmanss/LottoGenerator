@@ -89,9 +89,6 @@ constructor(
       ListFavUiEvent.DeleteMultipleFavs -> {
         deleteSelected()
       }
-      ListFavUiEvent.HideSuccessMessage -> {
-        showDeletionMessage()
-      }
 
       ListFavUiEvent.ClickMultiDeleteEvent -> {
         fetchFavFromNetwork()

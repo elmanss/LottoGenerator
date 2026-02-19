@@ -22,7 +22,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -49,6 +48,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.withContext
 import logcat.logcat
 import me.elmanss.melate.R
@@ -78,34 +78,24 @@ fun ListFavoritesScreen(
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
       withContext(Dispatchers.Main.immediate) {
-        viewModel.sideEffect.collectLatest { nSideEffect ->
-          nSideEffect?.let { sideEffect ->
-            logcat("HomeScreen") { sideEffect.toString() }
-            when (sideEffect) {
-              ListFavoritesSideEffect.OnMultiDeleteCompleted -> {
-                viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete)
-                viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog)
-                viewModel.sendEvent(ListFavUiEvent.ClearFlags)
-              }
+        viewModel.sideEffect.filterNotNull().collectLatest { sideEffect ->
+          logcat("ListFavoritesScreen") { sideEffect.toString() }
+          when (sideEffect) {
+            ListFavoritesSideEffect.OnMultiDeleteCompleted -> {
+              viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete)
+              viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog)
+              viewModel.sendEvent(ListFavUiEvent.ClearFlags)
+            }
 
-              ListFavoritesSideEffect.LaunchCreateScreen -> {
-                onCreateClicked.invoke()
-                viewModel.sendEvent(ListFavUiEvent.ClearFlags)
-              }
+            ListFavoritesSideEffect.LaunchCreateScreen -> {
+              onCreateClicked.invoke()
+              viewModel.sendEvent(ListFavUiEvent.ClearFlags)
+            }
 
-              is ListFavoritesSideEffect.ShowSnackBar -> {
-                val msg =
-                  sideEffect.message.ifEmpty { res.getString(R.string.txt_fav_deletion_success) }
-                val result =
-                  snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
-                when (result) {
-                  SnackbarResult.Dismissed -> {
-                    viewModel.sendEvent(ListFavUiEvent.HideSuccessMessage)
-                  }
-
-                  SnackbarResult.ActionPerformed -> {}
-                }
-              }
+            is ListFavoritesSideEffect.ShowSnackBar -> {
+              val msg =
+                sideEffect.message.ifEmpty { res.getString(R.string.txt_fav_deletion_success) }
+              snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
             }
           }
         }

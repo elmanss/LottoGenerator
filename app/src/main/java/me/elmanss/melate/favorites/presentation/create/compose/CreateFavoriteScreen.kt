@@ -13,15 +13,16 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalResources
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -32,12 +33,20 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.withContext
 import logcat.logcat
 import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.melateRed
 import me.elmanss.melate.favorites.presentation.create.Clearable
+import me.elmanss.melate.favorites.presentation.create.CreateFavSideEffect
 import me.elmanss.melate.favorites.presentation.create.CreateFavUiEvent
 import me.elmanss.melate.favorites.presentation.create.CreateFavoriteScreenViewModel
 
@@ -46,10 +55,34 @@ fun CreateFavoriteScreen(
   viewModel: CreateFavoriteScreenViewModel = hiltViewModel<CreateFavoriteScreenViewModel>()
 ) {
 
-  val uiState = viewModel.state.collectAsState()
+  val uiState by viewModel.state.collectAsState()
   val snackbarState = remember { SnackbarHostState() }
 
   val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
+  val lifecycleOwner = LocalLifecycleOwner.current
+  val res = LocalResources.current
+
+  LaunchedEffect(key1 = Unit) {
+    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+      withContext(Dispatchers.Main.immediate) {
+        viewModel.sideEffect.filterNotNull().collectLatest { sideEffect ->
+          logcat("CreateFavoriteScreen") { sideEffect.toString() }
+          when (sideEffect) {
+            CreateFavSideEffect.NavigateBack -> {
+              onBackPressedDispatcher?.onBackPressed()
+            }
+
+            is CreateFavSideEffect.ShowSnackbar -> {
+              val msg =
+                if (sideEffect.isError) sideEffect.message
+                else res.getString(R.string.txt_sorteo_success)
+              snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
+            }
+          }
+        }
+      }
+    }
+  }
 
   Scaffold(
     topBar = { MelateTopBar(R.string.txt_title_fav_create) },
@@ -83,13 +116,11 @@ fun CreateFavoriteScreen(
           },
         contentAlignment = Alignment.Center,
       ) {
-        uiState.value.keyboardInput.let {
-          Text(
-            it,
-            fontSize = dimensionResource(R.dimen.key_number_font_size).value.sp,
-            color = melateRed(),
-          )
-        }
+        Text(
+          uiState.keyboardInput,
+          fontSize = dimensionResource(R.dimen.key_number_font_size).value.sp,
+          color = melateRed(),
+        )
       }
 
       Box(
@@ -101,11 +132,11 @@ fun CreateFavoriteScreen(
           },
         contentAlignment = Alignment.Center,
       ) {
-        logcat { "Added: ${uiState.value.numbers.joinToString()}" }
-        if (uiState.value.numbers.isNotEmpty()) {
+        logcat { "Added: ${uiState.numbers.joinToString()}" }
+        if (uiState.numbers.isNotEmpty()) {
           Text(
             modifier = Modifier.wrapContentHeight().fillMaxWidth(),
-            text = uiState.value.numbers.joinToString(),
+            text = uiState.numbers.joinToString(),
             color = melateRed(),
             fontSize = TextUnit(20F, TextUnitType.Sp),
             textAlign = TextAlign.Center,
@@ -298,63 +329,19 @@ fun CreateFavoriteScreen(
             start.linkTo(zero.end)
           },
       ) {
-        val img =
-          if (uiState.value.numbers.size == 6) R.drawable.check_bold else R.drawable.chevron_right
+        val img = if (uiState.numbers.size == 6) R.drawable.check_bold else R.drawable.chevron_right
         Image(painterResource(img), "Next")
       }
     }
 
-    if (uiState.value.sorteoCompleted.isNotEmpty()) {
+    if (uiState.sorteoCompleted.isNotEmpty()) {
       MelateSorteoActionDialog(
         { viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.SORTEO_COMPLETED)) },
-        { viewModel.sendEvent(CreateFavUiEvent.InsertFavorite(uiState.value.sorteoCompleted)) },
+        { viewModel.sendEvent(CreateFavUiEvent.InsertFavorite(uiState.sorteoCompleted)) },
         R.string.txt_sorteo_dialog_title,
-        stringResource(
-          R.string.txt_sorteo_dialog_msg,
-          uiState.value.sorteoCompleted.joinToString(),
-        ),
+        stringResource(R.string.txt_sorteo_dialog_msg, uiState.sorteoCompleted.joinToString()),
         R.string.txt_action_add,
       )
-    }
-
-    if (uiState.value.captureError.isNotEmpty()) {
-      LaunchedEffect(true) {
-        val result =
-          snackbarState.showSnackbar(
-            message = uiState.value.captureError,
-            duration = SnackbarDuration.Short,
-          )
-        when (result) {
-          SnackbarResult.Dismissed -> {
-            viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.ERROR))
-          }
-
-          SnackbarResult.ActionPerformed -> {}
-        }
-      }
-    }
-
-    if (uiState.value.sorteoStored) {
-      val msg = stringResource(R.string.txt_sorteo_success)
-      LaunchedEffect(true) {
-        val result = snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
-        when (result) {
-          SnackbarResult.Dismissed -> {
-            viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.MESSAGE))
-          }
-
-          SnackbarResult.ActionPerformed -> {}
-        }
-      }
-    }
-
-    if (uiState.value.navigateBack) {
-      onBackPressedDispatcher?.onBackPressed()
-      viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.BACK_NAVIGATION))
-    }
-
-    if (uiState.value.sorteoInserted) {
-      viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.AFTER_STORAGE))
     }
   }
 }
