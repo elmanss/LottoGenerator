@@ -14,10 +14,14 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
+import me.elmanss.melate.R
 import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.util.prettyPrint
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
+import me.elmanss.melate.favorites.presentation.create.entities.CreateFavSideEffect
+import me.elmanss.melate.favorites.presentation.create.entities.CreateFavUiEvent
+import me.elmanss.melate.favorites.presentation.create.entities.CreateFavoriteScreenState
 import java.time.ZonedDateTime
 import javax.inject.Inject
 
@@ -27,13 +31,6 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
   companion object {
     const val MIN_LEN = 0
     const val MAX_LEN = 6
-    private const val ERROR_EMPTY_INPUT = "Ingresa un numero."
-    private const val ERROR_ONLY_DIGITS = "Solo se permite ingresar numeros."
-    private const val ERROR_INPUT_ABOVE_56 = "Solo se permiten numeros hasta 56."
-    private const val ERROR_ALREADY_ADDED = "Numero agregado previamente."
-    private const val MSG_COMPLETED_DRAW = "El sorteo esta completo, presiona \u2713 para guardarlo"
-
-    private const val SUCCESS = "OK"
   }
 
   private val _state = MutableStateFlow(CreateFavoriteScreenState())
@@ -59,10 +56,12 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
         captureDigit(event.digit)
       }
 
-      is CreateFavUiEvent.InsertFavorite -> {
+      is CreateFavUiEvent.TapConfirmAdd -> {
         insertFavorite(event.sorteo)
       }
-      is CreateFavUiEvent.ClearEvent -> clear(event.clearable)
+      is CreateFavUiEvent.DismissCreationDialog -> {
+        clearSorteoCompleted()
+      }
     }
   }
 
@@ -75,13 +74,6 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
    */
   private fun notifySideEffect(sideEffect: CreateFavSideEffect) {
     viewModelScope.launch { _sideEffect.emit(sideEffect) }
-  }
-
-  private fun clear(clearable: Clearable) {
-    when (clearable) {
-      Clearable.SORTEO_COMPLETED -> clearSorteoCompleted()
-      Clearable.CAPTURE_NUMBER -> clearCaptureNumber()
-    }
   }
 
   private fun deleteDigit() {
@@ -106,10 +98,6 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     _state.update { state -> state.copy(sorteoCompleted = emptyList()) }
   }
 
-  private fun clearCaptureNumber() {
-    _state.update { state -> state.copy(keyboardInput = "") }
-  }
-
   private fun moveToNext() {
     val currentInput = state.value.keyboardInput
     val currentNumbers = state.value.numbers
@@ -118,21 +106,21 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       _state.update { state -> state.copy(sorteoCompleted = currentNumbers) }
     } else {
       val error = getError(currentInput)
-      if (error != SUCCESS) {
-        notifySideEffect(CreateFavSideEffect.ShowSnackbar(error, isError = true))
+      if (error != R.string.txt_sorteo_success) {
+        notifySideEffect(CreateFavSideEffect.ShowSnackbar(error))
       } else {
         addNumberToSorteo(currentInput)
       }
     }
   }
 
-  private fun getError(currentInput: String): String {
+  private fun getError(currentInput: String): Int {
     return when {
-      currentInput.isBlank() -> ERROR_EMPTY_INPUT
-      !currentInput.isDigitsOnly() -> ERROR_ONLY_DIGITS
-      currentInput.toInt() > 56 -> ERROR_INPUT_ABOVE_56
-      isNumberInSorteo(currentInput) -> ERROR_ALREADY_ADDED
-      else -> SUCCESS
+      currentInput.isBlank() -> R.string.txt_error_empty_input
+      !currentInput.isDigitsOnly() -> R.string.txt_error_only_digits
+      currentInput.toInt() > 56 -> R.string.txt_error_input_above_56
+      isNumberInSorteo(currentInput) -> R.string.txt_error_already_added
+      else -> R.string.txt_sorteo_success
     }
   }
 
@@ -144,7 +132,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       if (numbersSize < MAX_LEN) {
         currentInput += digit
       } else {
-        notifySideEffect(CreateFavSideEffect.ShowSnackbar(MSG_COMPLETED_DRAW, isError = true))
+        notifySideEffect(CreateFavSideEffect.ShowSnackbar(R.string.txt_msg_completed_draw))
         currentInput = ""
       }
       _state.update { state -> state.copy(keyboardInput = currentInput) }
@@ -163,7 +151,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
         )
       useCases.addFavorite(model).also {
         _state.update { state -> state.clear() }
-        notifySideEffect(CreateFavSideEffect.ShowSnackbar(SUCCESS, false))
+        notifySideEffect(CreateFavSideEffect.ShowSnackbar(R.string.txt_sorteo_success))
       }
     }
   }

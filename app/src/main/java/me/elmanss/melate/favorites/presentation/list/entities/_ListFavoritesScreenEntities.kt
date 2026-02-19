@@ -1,5 +1,6 @@
 package me.elmanss.melate.favorites.presentation.list.entities
 
+import androidx.annotation.StringRes
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 
 data class ListFavoritesScreenState(
@@ -24,34 +25,34 @@ sealed interface ListFavoritesSideEffect {
 
   data object LaunchCreateScreen : ListFavoritesSideEffect
 
-  data class ShowSnackBar(val message: String) : ListFavoritesSideEffect
+  data class ShowSnackBar(@param:StringRes val messageId: Int) : ListFavoritesSideEffect
 }
 
 sealed interface ListFavUiEvent {
 
-  data object ClickMultiDeleteEvent : ListFavUiEvent
+  data object TapMultiDeleteEvent : ListFavUiEvent
 
-  data object HideDeleteFavDialog : ListFavUiEvent
+  data object DismissDeleteFavDialog : ListFavUiEvent
 
-  data object DisableMultiDelete : ListFavUiEvent
+  data object ExitMultiDelete : ListFavUiEvent
 
-  data object ClickConfirmMultiDeleteEvent : ListFavUiEvent
+  data object TapConfirmMultiDeleteEvent : ListFavUiEvent
 
-  data object HideMultiDeleteFavDialog : ListFavUiEvent
+  data object DismissMultiDeleteFavDialog : ListFavUiEvent
 
-  data object ClickCreateEvent : ListFavUiEvent
+  data object TapCreateEvent : ListFavUiEvent
 
   data object ClearFlags : ListFavUiEvent
 
-  data object DeleteMultipleFavs : ListFavUiEvent
+  data object TapDeleteMultipleFavs : ListFavUiEvent
 
-  data class ClickFavEvent(val fav: FavoritoModel) : ListFavUiEvent
+  data class TapFavEvent(val fav: FavoritoModel) : ListFavUiEvent
 
-  data class ClickDeleteFavEvent(val fav: FavoritoModel) : ListFavUiEvent
+  data class TapDeleteFavEvent(val fav: FavoritoModel) : ListFavUiEvent
 
-  data class LongClickFavEvent(val fav: FavoritoModel, val index: Int) : ListFavUiEvent
+  data class LongTapFavEvent(val fav: FavoritoModel, val index: Int) : ListFavUiEvent
 
-  data class SelectFavEvent(val fav: FavoritoModel, val index: Int) : ListFavUiEvent
+  data class ToggleFavCheckEvent(val fav: FavoritoModel, val index: Int) : ListFavUiEvent
 
   data class ShowConnectivityMessage(val show: Boolean) : ListFavUiEvent
 }

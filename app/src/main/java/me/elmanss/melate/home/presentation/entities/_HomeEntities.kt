@@ -1,31 +1,32 @@
 package me.elmanss.melate.home.presentation.entities
 
+import androidx.annotation.StringRes
 import me.elmanss.melate.home.domain.model.SorteoModel
 
 sealed class HomeUiEvent {
-  data object RefreshSorteosEvent : HomeUiEvent()
+  data object SwipeToRefreshSorteosEvent : HomeUiEvent()
 
   data object DismissAddSorteoEvent : HomeUiEvent()
 
-  data object DisableMultiSelectEvent : HomeUiEvent()
+  data object ExitMultiSelectEvent : HomeUiEvent()
 
-  data object ClickConfirmMultiSelectEvent : HomeUiEvent()
+  data object TapConfirmMultiSelectEvent : HomeUiEvent()
 
-  data object ClickGoToFavsEvent : HomeUiEvent()
+  data object TapGoToFavsEvent : HomeUiEvent()
 
-  data class ClickSorteoEvent(val sorteo: SorteoModel) : HomeUiEvent()
+  data class TapSorteoEvent(val sorteo: SorteoModel) : HomeUiEvent()
 
-  data class ClickAddSorteoEvent(val sorteo: SorteoModel) : HomeUiEvent()
+  data class TapAddSorteoEvent(val sorteo: SorteoModel) : HomeUiEvent()
 
-  data class EnableMultiSelectEvent(val sorteo: SorteoModel, val index: Int) : HomeUiEvent()
+  data class LongTapSorteoEvent(val sorteo: SorteoModel, val index: Int) : HomeUiEvent()
 
-  data class SelectSorteoEvent(val sorteo: SorteoModel, val index: Int) : HomeUiEvent()
+  data class ToggleSorteoCheckEvent(val sorteo: SorteoModel, val index: Int) : HomeUiEvent()
 }
 
 sealed class HomeScreenSideEffect {
   data object GoToFavs : HomeScreenSideEffect()
 
-  data class ShowSnackBar(val message: String) : HomeScreenSideEffect()
+  data class ShowSnackBar(@param:StringRes val messageId: Int) : HomeScreenSideEffect()
 }
 
 data class HomeScreenState(

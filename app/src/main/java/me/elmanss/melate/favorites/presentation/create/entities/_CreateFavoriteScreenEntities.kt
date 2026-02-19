@@ -1,4 +1,6 @@
-package me.elmanss.melate.favorites.presentation.create
+package me.elmanss.melate.favorites.presentation.create.entities
+
+import androidx.annotation.StringRes
 
 data class CreateFavoriteScreenState(
   val keyboardInput: String = "", // max 2 digits, 1 - 56
@@ -19,10 +21,6 @@ data class CreateFavoriteScreenState(
        if input has one char, clear input
        if input is empty, remove last item in numbers
 */
-enum class Clearable {
-  SORTEO_COMPLETED,
-  CAPTURE_NUMBER,
-}
 
 sealed class CreateFavUiEvent {
   data class TapDigit(val digit: String) : CreateFavUiEvent()
@@ -31,14 +29,14 @@ sealed class CreateFavUiEvent {
 
   data object TapDelete : CreateFavUiEvent()
 
-  data class InsertFavorite(val sorteo: List<String>) : CreateFavUiEvent()
+  data class TapConfirmAdd(val sorteo: List<String>) : CreateFavUiEvent()
 
-  data class ClearEvent(val clearable: Clearable) : CreateFavUiEvent()
+  data object DismissCreationDialog : CreateFavUiEvent()
 }
 
 sealed interface CreateFavSideEffect {
 
   data object NavigateBack : CreateFavSideEffect
 
-  data class ShowSnackbar(val message: String, val isError: Boolean) : CreateFavSideEffect
+  data class ShowSnackbar(@param:StringRes val messageId: Int) : CreateFavSideEffect
 }

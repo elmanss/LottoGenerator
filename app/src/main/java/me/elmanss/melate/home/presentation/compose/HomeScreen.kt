@@ -1,5 +1,6 @@
 package me.elmanss.melate.home.presentation.compose
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -31,6 +32,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -51,6 +53,7 @@ import me.elmanss.melate.home.presentation.HomeScreenViewModel
 import me.elmanss.melate.home.presentation.entities.HomeScreenSideEffect
 import me.elmanss.melate.home.presentation.entities.HomeUiEvent
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
@@ -59,6 +62,7 @@ fun HomeScreen(
 ) {
 
   val lifecycleOwner = LocalLifecycleOwner.current
+  val context = LocalContext.current
 
   val uiState = viewModel.state.collectAsState()
   val sorteoState = rememberLazyListState()
@@ -79,7 +83,7 @@ fun HomeScreen(
             }
 
             is HomeScreenSideEffect.ShowSnackBar -> {
-              snackbarState.showSnackbar(sideEffect.message)
+              snackbarState.showSnackbar(context.getString(sideEffect.messageId))
             }
           }
         }
@@ -87,15 +91,13 @@ fun HomeScreen(
     }
   }
 
-  BackHandler(enabled = multiselectState) {
-    viewModel.sendEvent(HomeUiEvent.DisableMultiSelectEvent)
-  }
+  BackHandler(enabled = multiselectState) { viewModel.sendEvent(HomeUiEvent.ExitMultiSelectEvent) }
 
   Scaffold(
     topBar = {
       MelateActionTopBar(title = R.string.app_name) {
         if (multiselectState) {
-          IconButton(onClick = { viewModel.sendEvent(HomeUiEvent.ClickConfirmMultiSelectEvent) }) {
+          IconButton(onClick = { viewModel.sendEvent(HomeUiEvent.TapConfirmMultiSelectEvent) }) {
             Icon(imageVector = Icons.Default.Check, contentDescription = "Save")
           }
         }
@@ -104,7 +106,7 @@ fun HomeScreen(
     floatingActionButton = {
       MelateFab(
         listState = sorteoState,
-        action = { viewModel.sendEvent(HomeUiEvent.ClickGoToFavsEvent) },
+        action = { viewModel.sendEvent(HomeUiEvent.TapGoToFavsEvent) },
         text = R.string.txt_button_mis_favs,
       )
     },
@@ -120,7 +122,7 @@ fun HomeScreen(
           isRefreshing = true
           coroutineScope.launch {
             delay(1500)
-            viewModel.sendEvent(HomeUiEvent.RefreshSorteosEvent)
+            viewModel.sendEvent(HomeUiEvent.SwipeToRefreshSorteosEvent)
             isRefreshing = false
           }
         },
@@ -141,15 +143,15 @@ fun HomeScreen(
             HomeListItem(
               selectableMode = multiselectState,
               sorteo = sorteo,
-              onChecked = { s -> HomeUiEvent.SelectSorteoEvent(s, index) },
+              onChecked = { s -> HomeUiEvent.ToggleSorteoCheckEvent(s, index) },
               onClick = { s ->
                 if (!multiselectState) {
-                  viewModel.sendEvent(HomeUiEvent.ClickSorteoEvent(s))
+                  viewModel.sendEvent(HomeUiEvent.TapSorteoEvent(s))
                 }
               },
             ) { s ->
               if (!multiselectState) {
-                viewModel.sendEvent(HomeUiEvent.EnableMultiSelectEvent(s, index))
+                viewModel.sendEvent(HomeUiEvent.LongTapSorteoEvent(s, index))
               }
             }
 
@@ -163,7 +165,7 @@ fun HomeScreen(
       uiState.value.saveFaveDialogDisplayed?.let { sorteo ->
         MelateSorteoActionDialog(
           { viewModel.sendEvent(HomeUiEvent.DismissAddSorteoEvent) },
-          { viewModel.sendEvent(HomeUiEvent.ClickAddSorteoEvent(sorteo)) },
+          { viewModel.sendEvent(HomeUiEvent.TapAddSorteoEvent(sorteo)) },
           R.string.txt_title_aviso,
           R.string.txt_msg_add_to_fav,
           R.string.txt_action_add,

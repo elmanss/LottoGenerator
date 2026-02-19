@@ -1,5 +1,6 @@
 package me.elmanss.melate.favorites.presentation.list
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -20,6 +21,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
+import me.elmanss.melate.R
 import me.elmanss.melate.common.util.NetworkConnectivityObserver
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
@@ -57,45 +59,45 @@ constructor(
       ListFavUiEvent.ClearFlags -> {
         _state.update { state -> state.clearFlags() }
       }
-      is ListFavUiEvent.ClickDeleteFavEvent -> {
+      is ListFavUiEvent.TapDeleteFavEvent -> {
         deleteFavs(event.fav)
       }
-      ListFavUiEvent.DisableMultiDelete -> {
+      ListFavUiEvent.ExitMultiDelete -> {
         clearSelected()
       }
-      is ListFavUiEvent.LongClickFavEvent -> {
+      is ListFavUiEvent.LongTapFavEvent -> {
         markItemAsSelected(event.fav, event.index)
         _state.update { state -> state.copy(multiselectEnabled = true) }
       }
 
-      ListFavUiEvent.ClickCreateEvent -> {
+      ListFavUiEvent.TapCreateEvent -> {
         viewModelScope.launch { _sideEffect.emit(ListFavoritesSideEffect.LaunchCreateScreen) }
       }
-      ListFavUiEvent.HideDeleteFavDialog -> {
+      ListFavUiEvent.DismissDeleteFavDialog -> {
         showWarning()
       }
-      is ListFavUiEvent.SelectFavEvent -> {
+      is ListFavUiEvent.ToggleFavCheckEvent -> {
         markItemAsSelected(event.fav, event.index)
       }
-      is ListFavUiEvent.ClickFavEvent -> {
+      is ListFavUiEvent.TapFavEvent -> {
         showWarning(event.fav)
       }
-      is ListFavUiEvent.ClickConfirmMultiDeleteEvent -> {
+      is ListFavUiEvent.TapConfirmMultiDeleteEvent -> {
         showMultideletionPrompt(true)
       }
-      is ListFavUiEvent.HideMultiDeleteFavDialog -> {
+      is ListFavUiEvent.DismissMultiDeleteFavDialog -> {
         showMultideletionPrompt(false)
       }
-      ListFavUiEvent.DeleteMultipleFavs -> {
+      ListFavUiEvent.TapDeleteMultipleFavs -> {
         deleteSelected()
       }
 
-      ListFavUiEvent.ClickMultiDeleteEvent -> {
+      ListFavUiEvent.TapMultiDeleteEvent -> {
         fetchFavFromNetwork()
       }
 
       is ListFavUiEvent.ShowConnectivityMessage -> {
-        showDeletionMessage("Verifica tu conexion a internet.")
+        showMessage(R.string.txt_error_connectivity)
       }
     }
   }
@@ -105,7 +107,7 @@ constructor(
       useCases.deleteFavorite(model)
       delay(250)
       dismissWarning()
-      showDeletionMessage()
+      showMessage(R.string.txt_fav_deletion_success)
     }
   }
 
@@ -128,8 +130,8 @@ constructor(
     _state.update { state -> state.copy(clickedFav = null) }
   }
 
-  private fun showDeletionMessage(msg: String = "") {
-    viewModelScope.launch { _sideEffect.emit(ListFavoritesSideEffect.ShowSnackBar(msg)) }
+  private fun showMessage(@StringRes messageId: Int) {
+    viewModelScope.launch { _sideEffect.emit(ListFavoritesSideEffect.ShowSnackBar(messageId)) }
   }
 
   fun formatDate(favModel: FavoritoModel) =

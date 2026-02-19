@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
+import me.elmanss.melate.R
 import me.elmanss.melate.home.domain.model.SorteoModel
 import me.elmanss.melate.home.domain.usecase.HomeUseCases
 import me.elmanss.melate.home.presentation.entities.HomeScreenSideEffect
@@ -40,40 +41,40 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
   fun sendEvent(event: HomeUiEvent) {
     logcat("HomeScreenVm") { event.toString() }
     when (event) {
-      HomeUiEvent.RefreshSorteosEvent -> {
+      HomeUiEvent.SwipeToRefreshSorteosEvent -> {
         launchFetchSorteos()
       }
 
-      HomeUiEvent.ClickGoToFavsEvent -> {
+      HomeUiEvent.TapGoToFavsEvent -> {
         viewModelScope.launch {
           _state.update { state -> state.copy(multiSelectModeEnabled = false) }
           _sideEffect.emit(HomeScreenSideEffect.GoToFavs)
         }
       }
 
-      HomeUiEvent.ClickConfirmMultiSelectEvent -> {
+      HomeUiEvent.TapConfirmMultiSelectEvent -> {
         saveSelected()
       }
 
-      HomeUiEvent.DisableMultiSelectEvent -> {
+      HomeUiEvent.ExitMultiSelectEvent -> {
         launchExitMultiselect()
       }
 
-      is HomeUiEvent.ClickSorteoEvent -> {
+      is HomeUiEvent.TapSorteoEvent -> {
         _state.update { state -> state.copy(saveFaveDialogDisplayed = event.sorteo) }
       }
-      is HomeUiEvent.ClickAddSorteoEvent -> {
+      is HomeUiEvent.TapAddSorteoEvent -> {
         launchSaveToFavorites(event.sorteo)
       }
       is HomeUiEvent.DismissAddSorteoEvent -> {
         _state.update { state -> state.copy(saveFaveDialogDisplayed = null) }
       }
-      is HomeUiEvent.EnableMultiSelectEvent -> {
+      is HomeUiEvent.LongTapSorteoEvent -> {
         markItemAsSelected(event.sorteo, event.index)
         _state.update { state -> state.copy(multiSelectModeEnabled = true) }
       }
 
-      is HomeUiEvent.SelectSorteoEvent -> {
+      is HomeUiEvent.ToggleSorteoCheckEvent -> {
         markItemAsSelected(event.sorteo, event.index)
       }
     }
@@ -100,7 +101,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
       useCases.saveToFavorites(sorteoModel, ZonedDateTime.now().toInstant().toEpochMilli())
       delay(250)
       sendEvent(HomeUiEvent.DismissAddSorteoEvent)
-      _sideEffect.emit(HomeScreenSideEffect.ShowSnackBar("Sorteo guardado en favoritos"))
+      _sideEffect.emit(HomeScreenSideEffect.ShowSnackBar(R.string.txt_sorteo_success))
     }
   }
 
@@ -119,7 +120,7 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
         .also {
           clearSelected()
           _state.update { state -> state.copy(multiSelectModeEnabled = false) }
-          _sideEffect.emit(HomeScreenSideEffect.ShowSnackBar("Sorteos almacenados exitosamente."))
+          _sideEffect.emit(HomeScreenSideEffect.ShowSnackBar(R.string.txt_sorteo_multi_success))
         }
     }
   }

@@ -1,5 +1,6 @@
 package me.elmanss.melate.favorites.presentation.list.compose
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -33,7 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -61,6 +62,7 @@ import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewMode
 import me.elmanss.melate.favorites.presentation.list.entities.ListFavUiEvent
 import me.elmanss.melate.favorites.presentation.list.entities.ListFavoritesSideEffect
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListFavoritesScreen(
@@ -68,7 +70,7 @@ fun ListFavoritesScreen(
   viewModel: ListFavoritesScreenViewModel = hiltViewModel<ListFavoritesScreenViewModel>(),
 ) {
   val lifecycleOwner = LocalLifecycleOwner.current
-  val res = LocalResources.current
+  val context = LocalContext.current
   val uiState = viewModel.state.collectAsState()
   val connectivityState by viewModel.connectivity.collectAsState(NetworkStatus.Unavailable)
   val sorteoState = rememberLazyListState()
@@ -82,8 +84,8 @@ fun ListFavoritesScreen(
           logcat("ListFavoritesScreen") { sideEffect.toString() }
           when (sideEffect) {
             ListFavoritesSideEffect.OnMultiDeleteCompleted -> {
-              viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete)
-              viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog)
+              viewModel.sendEvent(ListFavUiEvent.ExitMultiDelete)
+              viewModel.sendEvent(ListFavUiEvent.DismissMultiDeleteFavDialog)
               viewModel.sendEvent(ListFavUiEvent.ClearFlags)
             }
 
@@ -93,9 +95,10 @@ fun ListFavoritesScreen(
             }
 
             is ListFavoritesSideEffect.ShowSnackBar -> {
-              val msg =
-                sideEffect.message.ifEmpty { res.getString(R.string.txt_fav_deletion_success) }
-              snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
+              snackbarState.showSnackbar(
+                message = context.getString(sideEffect.messageId),
+                duration = SnackbarDuration.Short,
+              )
             }
           }
         }
@@ -103,7 +106,7 @@ fun ListFavoritesScreen(
     }
   }
 
-  BackHandler(enabled = multiselectState) { viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete) }
+  BackHandler(enabled = multiselectState) { viewModel.sendEvent(ListFavUiEvent.ExitMultiDelete) }
 
   Scaffold(
     topBar = {
@@ -111,7 +114,7 @@ fun ListFavoritesScreen(
         MelateActionTopBar(title = R.string.txt_mis_sorteos) {
           if (multiselectState) {
             IconButton(
-              onClick = { viewModel.sendEvent(ListFavUiEvent.ClickConfirmMultiDeleteEvent) }
+              onClick = { viewModel.sendEvent(ListFavUiEvent.TapConfirmMultiDeleteEvent) }
             ) {
               Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete")
             }
@@ -129,14 +132,14 @@ fun ListFavoritesScreen(
           actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
           onActionOneClicked = {
             if (connectivityState == NetworkStatus.Available) {
-              viewModel.sendEvent(ListFavUiEvent.ClickMultiDeleteEvent)
+              viewModel.sendEvent(ListFavUiEvent.TapMultiDeleteEvent)
             } else {
               viewModel.sendEvent(ListFavUiEvent.ShowConnectivityMessage(true))
             }
           },
           actionTwoIcon = ImageVector.vectorResource(R.drawable.human_edit),
         ) {
-          viewModel.sendEvent(ListFavUiEvent.ClickCreateEvent)
+          viewModel.sendEvent(ListFavUiEvent.TapCreateEvent)
         }
       }
     },
@@ -171,15 +174,17 @@ fun ListFavoritesScreen(
               editableState = multiselectState,
               favorite = fav,
               formatter = { viewModel.formatDate(fav) },
-              onChecked = { f -> viewModel.sendEvent(ListFavUiEvent.SelectFavEvent(fav, index)) },
+              onChecked = { f ->
+                viewModel.sendEvent(ListFavUiEvent.ToggleFavCheckEvent(fav, index))
+              },
               onLongClick = { f ->
                 if (!multiselectState) {
-                  viewModel.sendEvent(ListFavUiEvent.LongClickFavEvent(fav, index))
+                  viewModel.sendEvent(ListFavUiEvent.LongTapFavEvent(fav, index))
                 }
               },
             ) {
               if (!multiselectState) {
-                viewModel.sendEvent(ListFavUiEvent.ClickFavEvent(fav))
+                viewModel.sendEvent(ListFavUiEvent.TapFavEvent(fav))
               }
             }
 
@@ -193,8 +198,8 @@ fun ListFavoritesScreen(
 
     uiState.value.clickedFav?.let { sorteo ->
       MelateSorteoActionDialog(
-        { viewModel.sendEvent(ListFavUiEvent.HideDeleteFavDialog) },
-        { viewModel.sendEvent(ListFavUiEvent.ClickDeleteFavEvent(sorteo)) },
+        { viewModel.sendEvent(ListFavUiEvent.DismissDeleteFavDialog) },
+        { viewModel.sendEvent(ListFavUiEvent.TapDeleteFavEvent(sorteo)) },
         R.string.txt_title_aviso,
         R.string.txt_msg_delete_fav,
         R.string.txt_action_delete,
@@ -204,8 +209,8 @@ fun ListFavoritesScreen(
 
   if (uiState.value.showMultiDeletionPrompt) {
     MelateSorteoActionDialog(
-      { viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog) },
-      { viewModel.sendEvent(ListFavUiEvent.DeleteMultipleFavs) },
+      { viewModel.sendEvent(ListFavUiEvent.DismissMultiDeleteFavDialog) },
+      { viewModel.sendEvent(ListFavUiEvent.TapDeleteMultipleFavs) },
       R.string.txt_title_aviso,
       "Se eliminaran los sorteos seleccionados.",
       R.string.txt_action_delete,

@@ -1,5 +1,6 @@
 package me.elmanss.melate.favorites.presentation.create.compose
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.LocalOnBackPressedDispatcherOwner
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
@@ -22,7 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalResources
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -45,11 +46,11 @@ import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.melateRed
-import me.elmanss.melate.favorites.presentation.create.Clearable
-import me.elmanss.melate.favorites.presentation.create.CreateFavSideEffect
-import me.elmanss.melate.favorites.presentation.create.CreateFavUiEvent
 import me.elmanss.melate.favorites.presentation.create.CreateFavoriteScreenViewModel
+import me.elmanss.melate.favorites.presentation.create.entities.CreateFavSideEffect
+import me.elmanss.melate.favorites.presentation.create.entities.CreateFavUiEvent
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @Composable
 fun CreateFavoriteScreen(
   viewModel: CreateFavoriteScreenViewModel = hiltViewModel<CreateFavoriteScreenViewModel>()
@@ -57,10 +58,10 @@ fun CreateFavoriteScreen(
 
   val uiState by viewModel.state.collectAsState()
   val snackbarState = remember { SnackbarHostState() }
+  val context = LocalContext.current
 
   val onBackPressedDispatcher = LocalOnBackPressedDispatcherOwner.current?.onBackPressedDispatcher
   val lifecycleOwner = LocalLifecycleOwner.current
-  val res = LocalResources.current
 
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -73,10 +74,10 @@ fun CreateFavoriteScreen(
             }
 
             is CreateFavSideEffect.ShowSnackbar -> {
-              val msg =
-                if (sideEffect.isError) sideEffect.message
-                else res.getString(R.string.txt_sorteo_success)
-              snackbarState.showSnackbar(message = msg, duration = SnackbarDuration.Short)
+              snackbarState.showSnackbar(
+                message = context.getString(sideEffect.messageId),
+                duration = SnackbarDuration.Short,
+              )
             }
           }
         }
@@ -336,8 +337,8 @@ fun CreateFavoriteScreen(
 
     if (uiState.sorteoCompleted.isNotEmpty()) {
       MelateSorteoActionDialog(
-        { viewModel.sendEvent(CreateFavUiEvent.ClearEvent(Clearable.SORTEO_COMPLETED)) },
-        { viewModel.sendEvent(CreateFavUiEvent.InsertFavorite(uiState.sorteoCompleted)) },
+        { viewModel.sendEvent(CreateFavUiEvent.DismissCreationDialog) },
+        { viewModel.sendEvent(CreateFavUiEvent.TapConfirmAdd(uiState.sorteoCompleted)) },
         R.string.txt_sorteo_dialog_title,
         stringResource(R.string.txt_sorteo_dialog_msg, uiState.sorteoCompleted.joinToString()),
         R.string.txt_action_add,
