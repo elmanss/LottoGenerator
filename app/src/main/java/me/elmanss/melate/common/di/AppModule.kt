@@ -13,8 +13,8 @@ import dagger.hilt.components.SingletonComponent
 import logcat.logcat
 import me.elmanss.melate.Database
 import me.elmanss.melate.common.data.network.api.SorteoApi
-import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.data.repository.FavoritosRepositoryImpl
+import me.elmanss.melate.common.domain.repository.FavoritosRepository
 import me.elmanss.melate.common.util.NetworkConnectivityObserver
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor

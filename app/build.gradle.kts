@@ -5,8 +5,7 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.cash.sqldelight)
-  alias(libs.plugins.safeargs.kotlin)
-  //alias(libs.plugins.kotlin.kapt)
+  // alias(libs.plugins.kotlin.kapt)
   alias(libs.plugins.ksp)
   alias(libs.plugins.hilt.plugin)
   alias(libs.plugins.kotlin.compose)
@@ -27,13 +26,13 @@ android {
 
   buildTypes {
     release {
-      isMinifyEnabled = false
+      isMinifyEnabled = true
+      isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
     }
   }
 
   buildFeatures {
-    viewBinding = true
     compose = true
   }
 
@@ -73,9 +72,7 @@ dependencies {
   androidTestImplementation(libs.espresso.core)
 
   // Android Jetpack
-  implementation(libs.navigation.fragment.ktx)
   // For Kotlin use navigation-fragment-ktx
-  implementation(libs.navigation.ui.ktx)
   // For Kotlin use navigation-ui-ktx
 
   implementation(libs.hilt.android)
@@ -86,14 +83,16 @@ dependencies {
   ksp(libs.hilt.compiler)
   // https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
   implementation(libs.hilt.navigation.compose)
-  implementation(libs.navigation.compose)
   implementation(libs.constraintlayout.compose)
+  implementation(libs.androidx.navigation3.ui)
 
   implementation(libs.retrofit)
   implementation(libs.retrofit.converter.gson)
   implementation(libs.logging.interceptor)
 }
 
-sqldelight { databases { create("Database") { packageName.set("me.elmanss.melate") } } }
+sqldelight {
+  databases { create("Database") { packageName.set("me.elmanss.melate") } }
+}
 
-//kapt { correctErrorTypes = true }
+// kapt { correctErrorTypes = true }

@@ -86,6 +86,7 @@ private fun getTopBarColors(isDark: Boolean) =
     navigationIconContentColor = White,
     titleContentColor = White,
     actionIconContentColor = White,
+    subtitleContentColor = White,
   )
 
 @Composable
@@ -130,7 +131,11 @@ fun MelateActionExtendedFab(
     verticalArrangement = Arrangement.spacedBy(16.dp), // Spacing between FABs
   ) {
     // AnimatedVisibility for the secondary actions
-    AnimatedVisibility(visible = isExpanded && listState.isScrollingUp().value, enter = fadeIn(), exit = fadeOut()) {
+    AnimatedVisibility(
+      visible = isExpanded && listState.isScrollingUp().value,
+      enter = fadeIn(),
+      exit = fadeOut(),
+    ) {
       Column(
         horizontalAlignment = Alignment.End,
         verticalArrangement = Arrangement.spacedBy(16.dp),

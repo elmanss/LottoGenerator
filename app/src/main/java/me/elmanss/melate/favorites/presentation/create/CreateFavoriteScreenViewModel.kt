@@ -4,44 +4,26 @@ import androidx.core.text.isDigitsOnly
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.channels.BufferOverflow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
+import me.elmanss.melate.R
 import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.util.prettyPrint
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
+import me.elmanss.melate.favorites.presentation.create.entities.CreateFavSideEffect
+import me.elmanss.melate.favorites.presentation.create.entities.CreateFavUiEvent
+import me.elmanss.melate.favorites.presentation.create.entities.CreateFavoriteScreenState
 import java.time.ZonedDateTime
 import javax.inject.Inject
-
-enum class Clearable {
-  BACK_NAVIGATION,
-  SORTEO_COMPLETED,
-  CAPTURE_NUMBER,
-  ERROR,
-  AFTER_STORAGE,
-  MESSAGE,
-}
-
-sealed class CreateFavUiEvent {
-  data class TapDigit(val digit: String) : CreateFavUiEvent()
-
-  data object TapNext : CreateFavUiEvent()
-
-  data object TapDelete : CreateFavUiEvent()
-
-  data class InsertFavorite(val sorteo: List<String>) : CreateFavUiEvent()
-
-  data object NavigateBack : CreateFavUiEvent()
-
-  data class ClearEvent(val clearable: Clearable) : CreateFavUiEvent()
-
-  data object ShowMessage : CreateFavUiEvent()
-}
 
 @HiltViewModel
 class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: FavoritesUseCases) :
@@ -49,11 +31,6 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
   companion object {
     const val MIN_LEN = 0
     const val MAX_LEN = 6
-    private const val ERROR_EMPTY_INPUT = "Ingresa un numero."
-    private const val ERROR_ONLY_DIGITS = "Solo se permite ingresar numeros."
-    private const val ERROR_INPUT_ABOVE_56 = "Solo se permiten numeros hasta 56."
-    private const val ERROR_ALREADY_ADDED = "Numero agregado previamente."
-    private const val MSG_COMPLETED_DRAW = "El sorteo esta completo, presiona \u2713 para guardarlo"
   }
 
   private val _state = MutableStateFlow(CreateFavoriteScreenState())
@@ -61,6 +38,11 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     _state
       .asStateFlow()
       .stateIn(viewModelScope, SharingStarted.Eagerly, CreateFavoriteScreenState())
+
+  private val _sideEffect: MutableSharedFlow<CreateFavSideEffect?> =
+    MutableSharedFlow(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
+
+  val sideEffect = _sideEffect.asSharedFlow()
 
   fun sendEvent(event: CreateFavUiEvent) {
     when (event) {
@@ -74,28 +56,24 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
         captureDigit(event.digit)
       }
 
-      is CreateFavUiEvent.InsertFavorite -> {
+      is CreateFavUiEvent.TapConfirmAdd -> {
         insertFavorite(event.sorteo)
       }
-
-      CreateFavUiEvent.NavigateBack -> {
-        launchBackNavigation()
+      is CreateFavUiEvent.DismissCreationDialog -> {
+        clearSorteoCompleted()
       }
-
-      is CreateFavUiEvent.ClearEvent -> clear(event.clearable)
-      is CreateFavUiEvent.ShowMessage -> showMessage(true)
     }
   }
 
-  private fun clear(clearable: Clearable) {
-    when (clearable) {
-      Clearable.BACK_NAVIGATION -> clearBackNavigation()
-      Clearable.SORTEO_COMPLETED -> clearSorteoCompleted()
-      Clearable.CAPTURE_NUMBER -> clearCaptureNumber()
-      Clearable.ERROR -> clearError()
-      Clearable.AFTER_STORAGE -> clearAfterStorage()
-      Clearable.MESSAGE -> showMessage(false)
-    }
+  /**
+   * Emits a [CreateFavSideEffect] to the UI layer. This is used to trigger one-time events like
+   * navigation or showing a snackbar. The operation is launched in the `viewModelScope` to ensure
+   * it's lifecycle-aware.
+   *
+   * @param sideEffect The side effect to be emitted.
+   */
+  private fun notifySideEffect(sideEffect: CreateFavSideEffect) {
+    viewModelScope.launch { _sideEffect.emit(sideEffect) }
   }
 
   private fun deleteDigit() {
@@ -105,7 +83,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       if (currentNumbers.isNotEmpty()) {
         _state.update { state -> state.copy(numbers = currentNumbers.dropLast(1)) }
       } else {
-        _state.update { state -> state.copy(navigateBack = true) }
+        notifySideEffect(CreateFavSideEffect.NavigateBack)
       }
     } else {
       if (currentInput.length == 1) {
@@ -116,24 +94,8 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
     }
   }
 
-  private fun clearBackNavigation() {
-    _state.update { state -> state.copy(navigateBack = false) }
-  }
-
   private fun clearSorteoCompleted() {
     _state.update { state -> state.copy(sorteoCompleted = emptyList()) }
-  }
-
-  private fun clearCaptureNumber() {
-    _state.update { state -> state.copy(keyboardInput = "") }
-  }
-
-  private fun clearError() {
-    _state.update { state -> state.copy(captureError = "") }
-  }
-
-  private fun clearAfterStorage() {
-    _state.update { state -> state.clearFlags().copy(sorteoStored = true) }
   }
 
   private fun moveToNext() {
@@ -143,17 +105,22 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       // show storage prompt
       _state.update { state -> state.copy(sorteoCompleted = currentNumbers) }
     } else {
-      when {
-        currentInput.isBlank() ->
-          _state.update { state -> state.copy(captureError = ERROR_EMPTY_INPUT) }
-        !currentInput.isDigitsOnly() ->
-          _state.update { state -> state.copy(captureError = ERROR_ONLY_DIGITS) }
-        currentInput.toInt() > 56 ->
-          _state.update { state -> state.copy(captureError = ERROR_INPUT_ABOVE_56) }
-        isNumberInSorteo(currentInput) ->
-          _state.update { state -> state.copy(captureError = ERROR_ALREADY_ADDED) }
-        else -> addNumberToSorteo(currentInput)
+      val error = getError(currentInput)
+      if (error != R.string.txt_sorteo_success) {
+        notifySideEffect(CreateFavSideEffect.ShowSnackbar(error))
+      } else {
+        addNumberToSorteo(currentInput)
       }
+    }
+  }
+
+  private fun getError(currentInput: String): Int {
+    return when {
+      currentInput.isBlank() -> R.string.txt_error_empty_input
+      !currentInput.isDigitsOnly() -> R.string.txt_error_only_digits
+      currentInput.toInt() > 56 -> R.string.txt_error_input_above_56
+      isNumberInSorteo(currentInput) -> R.string.txt_error_already_added
+      else -> R.string.txt_sorteo_success
     }
   }
 
@@ -165,7 +132,7 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
       if (numbersSize < MAX_LEN) {
         currentInput += digit
       } else {
-        _state.update { state -> state.copy(captureError = MSG_COMPLETED_DRAW) }
+        notifySideEffect(CreateFavSideEffect.ShowSnackbar(R.string.txt_msg_completed_draw))
         currentInput = ""
       }
       _state.update { state -> state.copy(keyboardInput = currentInput) }
@@ -174,22 +141,19 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
 
   private fun insertFavorite(sorteo: List<String>) {
     viewModelScope.launch {
-      val map = sorteo.map { it.toInt() }.sorted().map { it.toString() }
+      val sortedSorteoList = sorteo.map { it.toInt() }.sorted().map { it.toString() }
       val model =
         FavoritoModel(
-          0,
-          map.prettyPrint(),
-          FavOrigin.Manual,
-          ZonedDateTime.now().toInstant().toEpochMilli(),
+          id = 0,
+          sorteo = sortedSorteoList.prettyPrint(),
+          origin = FavOrigin.Manual,
+          createdAt = ZonedDateTime.now().toInstant().toEpochMilli(),
         )
       useCases.addFavorite(model).also {
-        _state.update { state -> state.copy(sorteoInserted = true) }
+        _state.update { state -> state.clear() }
+        notifySideEffect(CreateFavSideEffect.ShowSnackbar(R.string.txt_sorteo_success))
       }
     }
-  }
-
-  private fun showMessage(show: Boolean) {
-    _state.update { state -> state.copy(sorteoStored = show) }
   }
 
   private fun addNumberToSorteo(number: String) {
@@ -204,9 +168,5 @@ class CreateFavoriteScreenViewModel @Inject constructor(private val useCases: Fa
 
   private fun isNumberInSorteo(number: String): Boolean {
     return state.value.numbers.contains(number)
-  }
-
-  private fun launchBackNavigation() {
-    _state.update { state -> state.copy(navigateBack = true) }
   }
 }

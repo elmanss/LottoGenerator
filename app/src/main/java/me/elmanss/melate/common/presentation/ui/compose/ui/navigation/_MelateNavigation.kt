@@ -1,32 +1,77 @@
 package me.elmanss.melate.common.presentation.ui.compose.ui.navigation
 
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import kotlinx.serialization.Serializable
+import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.ui.NavDisplay
 import me.elmanss.melate.favorites.presentation.create.compose.CreateFavoriteScreen
 import me.elmanss.melate.favorites.presentation.list.compose.ListFavoritesScreen
 import me.elmanss.melate.home.presentation.compose.HomeScreen
 
-@Serializable object Home
+/**
+ * Represents the different screens available in the application's navigation graph. This sealed
+ * interface is used to define a type-safe set of navigation destinations.
+ */
+sealed interface Screen {
+  data object Home : Screen
 
-@Serializable object Favs
+  data object Favs : Screen
 
-@Serializable object Create
+  data object Create : Screen
+}
 
-// @Serializable object AddFav
-
+/**
+ * A composable that sets up the navigation display for the Lotto Generator application. It uses a
+ * custom `NavDisplay` to manage screen transitions based on a back stack.
+ *
+ * This function defines the navigation graph and the animations used when navigating between
+ * screens. The navigation is entirely managed by a [SnapshotStateList] of [Screen] objects, which
+ * acts as a simple, state-driven back stack.
+ *
+ * The screen transitions are vertical slides:
+ * - Pushing a new screen slides the new content up.
+ * - Popping a screen slides the old content up and the new content down.
+ *
+ * @param backStack A mutable list representing the navigation back stack. Changes to this list will
+ *   trigger navigation.
+ */
 @Composable
-fun MelateNavHost(
-  modifier: Modifier = Modifier,
-  navController: NavHostController = rememberNavController(),
-) {
-  NavHost(navController = navController, startDestination = Home, modifier = modifier) {
-    composable<Home> { HomeScreen(onNavigateToFavs = { navController.navigate(Favs) }) }
-    composable<Favs> { ListFavoritesScreen(onCreateClicked = { navController.navigate(Create) }) }
-    composable<Create> { CreateFavoriteScreen() }
-  }
+fun LottoGeneratorNavDisplay(backStack: SnapshotStateList<Screen>) {
+  NavDisplay(
+    transitionSpec = {
+      ContentTransform(
+        targetContentEnter =
+          slideIntoContainer(towards = AnimatedContentTransitionScope.SlideDirection.Up),
+        initialContentExit =
+          slideOutOfContainer(towards = AnimatedContentTransitionScope.SlideDirection.Down),
+      )
+    },
+    popTransitionSpec = {
+      ContentTransform(
+        targetContentEnter =
+          slideIntoContainer(towards = AnimatedContentTransitionScope.SlideDirection.Down),
+        initialContentExit =
+          slideOutOfContainer(towards = AnimatedContentTransitionScope.SlideDirection.Up),
+      )
+    },
+    backStack = backStack,
+    onBack = { backStack.removeLastOrNull() },
+    entryProvider = { route ->
+      when (route) {
+        is Screen.Home ->
+          NavEntry(key = route) {
+            HomeScreen(onNavigateToFavs = { backStack.add(element = Screen.Favs) })
+          }
+
+        is Screen.Favs ->
+          NavEntry(route) {
+            ListFavoritesScreen(onCreateClicked = { backStack.add(element = Screen.Create) })
+          }
+
+        is Screen.Create -> NavEntry(key = route) { CreateFavoriteScreen() }
+      }
+    },
+  )
 }

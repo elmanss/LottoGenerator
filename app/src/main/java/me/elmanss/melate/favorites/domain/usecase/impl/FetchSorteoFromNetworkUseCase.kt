@@ -1,4 +1,4 @@
-package me.elmanss.melate.favorites.domain.usecase
+package me.elmanss.melate.favorites.domain.usecase.impl
 
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
@@ -9,11 +9,9 @@ import javax.inject.Inject
 import kotlin.time.Clock
 import kotlin.time.ExperimentalTime
 
-class FetchSorteoFromNetwork
+class FetchSorteoFromNetworkUseCase
 @Inject
-constructor(
-  private val sorteoRepository: SorteoRepository,
-) {
+constructor(private val sorteoRepository: SorteoRepository) {
   @OptIn(ExperimentalTime::class)
   suspend operator fun invoke(): Flow<Result<FavoritoModel>> {
 

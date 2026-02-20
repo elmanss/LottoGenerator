@@ -7,14 +7,14 @@ import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
 import me.elmanss.melate.common.data.network.api.SorteoApi
 import me.elmanss.melate.common.data.network.datasource.SorteoRemoteDataSource
-import me.elmanss.melate.common.data.repository.FavoritosRepository
 import me.elmanss.melate.common.domain.datasource.SorteoDataSource
-import me.elmanss.melate.favorites.domain.usecase.AddFavorite
-import me.elmanss.melate.favorites.domain.usecase.DeleteFavorite
+import me.elmanss.melate.common.domain.repository.FavoritosRepository
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
-import me.elmanss.melate.favorites.domain.usecase.FetchSorteoFromNetwork
-import me.elmanss.melate.favorites.domain.usecase.FetchFavorites
-import me.elmanss.melate.favorites.domain.usecase.FormatFavCreationDate
+import me.elmanss.melate.favorites.domain.usecase.impl.AddFavoriteUseCase
+import me.elmanss.melate.favorites.domain.usecase.impl.DeleteFavoriteUseCase
+import me.elmanss.melate.favorites.domain.usecase.impl.FetchFavoritesUseCase
+import me.elmanss.melate.favorites.domain.usecase.impl.FetchSorteoFromNetworkUseCase
+import me.elmanss.melate.favorites.domain.usecase.impl.FormatFavCreationDateUseCase
 import me.elmanss.melate.home.data.repository.SorteoRepository
 import me.elmanss.melate.home.data.repository.SorteoRepositoryImpl
 import retrofit2.Retrofit
@@ -49,10 +49,10 @@ object FavoritesModule {
     @Named("remoteRepo") sorteoRepo: SorteoRepository,
   ): FavoritesUseCases =
     FavoritesUseCases(
-      AddFavorite(repository),
-      DeleteFavorite(repository),
-      FetchFavorites(repository),
-      FormatFavCreationDate(formatter),
-      FetchSorteoFromNetwork(sorteoRepo),
+      AddFavoriteUseCase(repository),
+      DeleteFavoriteUseCase(repository),
+      FetchFavoritesUseCase(repository),
+      FormatFavCreationDateUseCase(formatter),
+      FetchSorteoFromNetworkUseCase(sorteoRepo),
     )
 }

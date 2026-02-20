@@ -2,6 +2,7 @@ package me.elmanss.melate.common.data.repository
 
 import app.cash.sqldelight.coroutines.asFlow
 import me.elmanss.melate.common.data.local.FavOrigin
+import me.elmanss.melate.common.domain.repository.FavoritosRepository
 import me.elmanss.melate.data.FavoritoQueries
 import javax.inject.Inject
 

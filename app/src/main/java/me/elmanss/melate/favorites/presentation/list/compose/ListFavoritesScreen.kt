@@ -1,5 +1,6 @@
 package me.elmanss.melate.favorites.presentation.list.compose
 
+import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
@@ -22,7 +23,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -30,10 +30,12 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -43,68 +45,113 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.withContext
+import logcat.logcat
 import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionExtendedFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.Gray
 import me.elmanss.melate.common.util.NetworkStatus
-import me.elmanss.melate.favorites.presentation.list.ListFavUiEvent
+import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewModel
+import me.elmanss.melate.favorites.presentation.list.entities.ListFavUiEvent
+import me.elmanss.melate.favorites.presentation.list.entities.ListFavoritesSideEffect
 
+@SuppressLint("LocalContextGetResourceValueCall")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListFavoritesScreen(
   onCreateClicked: () -> Unit,
   viewModel: ListFavoritesScreenViewModel = hiltViewModel<ListFavoritesScreenViewModel>(),
 ) {
-
-  val uiState = viewModel.state.collectAsState()
+  val lifecycleOwner = LocalLifecycleOwner.current
+  val context = LocalContext.current
+  val uiState by viewModel.state.collectAsState()
   val connectivityState by viewModel.connectivity.collectAsState(NetworkStatus.Unavailable)
   val sorteoState = rememberLazyListState()
   val snackbarState = remember { SnackbarHostState() }
-  var multiselectState by remember { mutableStateOf(false) }
 
-  BackHandler(enabled = multiselectState) { viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete) }
+  var favToDelete by rememberSaveable { mutableStateOf<FavoritoModel?>(null) }
+  var showMultiDeleteDialog by rememberSaveable { mutableStateOf(false) }
+
+  LaunchedEffect(key1 = Unit) {
+    lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+      withContext(Dispatchers.Main.immediate) {
+        viewModel.sideEffect.filterNotNull().collectLatest { sideEffect ->
+          logcat("ListFavoritesScreen") { sideEffect.toString() }
+          when (sideEffect) {
+            ListFavoritesSideEffect.LaunchCreateScreen -> {
+              onCreateClicked.invoke()
+              viewModel.sendEvent(ListFavUiEvent.ClearFlags)
+            }
+
+            is ListFavoritesSideEffect.ShowSnackBar -> {
+              snackbarState.showSnackbar(
+                message = context.getString(sideEffect.messageId),
+                duration = SnackbarDuration.Short,
+              )
+            }
+            is ListFavoritesSideEffect.ShowDeleteDialog -> {
+              favToDelete = sideEffect.favorite
+            }
+            is ListFavoritesSideEffect.ShowMultiDeleteDialog -> {
+              showMultiDeleteDialog = true
+            }
+          }
+        }
+      }
+    }
+  }
+
+  BackHandler(enabled = uiState.multiselectEnabled) {
+    viewModel.sendEvent(ListFavUiEvent.ExitMultiDelete)
+  }
 
   Scaffold(
     topBar = {
       Column {
         MelateActionTopBar(title = R.string.txt_mis_sorteos) {
-          if (multiselectState) {
-            IconButton(onClick = { viewModel.sendEvent(ListFavUiEvent.ShowMultiDeleteFavDialog) }) {
+          if (uiState.multiselectEnabled) {
+            IconButton(
+              onClick = { viewModel.sendEvent(ListFavUiEvent.TapConfirmMultiDeleteEvent) }
+            ) {
               Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete")
             }
           }
         }
 
-        if (!multiselectState && uiState.value.isLoading)
+        if (!uiState.multiselectEnabled && uiState.isLoading)
           LinearProgressIndicator(modifier = Modifier.fillMaxWidth())
       }
     },
     floatingActionButton = {
-      if (!multiselectState) {
+      if (!uiState.multiselectEnabled) {
         MelateActionExtendedFab(
           listState = sorteoState,
           actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
           onActionOneClicked = {
             if (connectivityState == NetworkStatus.Available) {
-              viewModel.sendEvent(ListFavUiEvent.ShowLoader)
-              viewModel.sendEvent(ListFavUiEvent.FetchFavFromNetwork)
+              viewModel.sendEvent(ListFavUiEvent.TapMultiDeleteEvent)
             } else {
               viewModel.sendEvent(ListFavUiEvent.ShowConnectivityMessage(true))
             }
           },
           actionTwoIcon = ImageVector.vectorResource(R.drawable.human_edit),
         ) {
-          viewModel.sendEvent(ListFavUiEvent.GoToCreate)
+          viewModel.sendEvent(ListFavUiEvent.TapCreateEvent)
         }
       }
     },
     snackbarHost = { SnackbarHost(snackbarState) },
   ) {
-    multiselectState = uiState.value.multiselectEnabled
-    val favs = uiState.value.favs
+    val favs = uiState.favs
     if (favs.isEmpty()) {
       Column(
         modifier = Modifier.fillMaxSize().padding(it).padding(16F.dp),
@@ -129,18 +176,20 @@ fun ListFavoritesScreen(
         LazyColumn(state = sorteoState) {
           itemsIndexed(favs) { index, fav ->
             ListFavoriteItem(
-              editableState = multiselectState,
+              editableState = uiState.multiselectEnabled,
               favorite = fav,
               formatter = { viewModel.formatDate(fav) },
-              onChecked = { f -> viewModel.sendEvent(ListFavUiEvent.SelectFav(fav, index)) },
+              onChecked = { f ->
+                viewModel.sendEvent(ListFavUiEvent.ToggleFavCheckEvent(fav, index))
+              },
               onLongClick = { f ->
-                if (!multiselectState) {
-                  viewModel.sendEvent(ListFavUiEvent.EnableMultiDelete(fav, index))
+                if (!uiState.multiselectEnabled) {
+                  viewModel.sendEvent(ListFavUiEvent.LongTapFavEvent(fav, index))
                 }
               },
             ) {
-              if (!multiselectState) {
-                viewModel.sendEvent(ListFavUiEvent.ShowDeleteFavDialog(fav))
+              if (!uiState.multiselectEnabled) {
+                viewModel.sendEvent(ListFavUiEvent.TapFavEvent(fav))
               }
             }
 
@@ -152,53 +201,30 @@ fun ListFavoritesScreen(
       }
     }
 
-    uiState.value.favToDelete?.let { sorteo ->
+    favToDelete?.let { sorteo ->
       MelateSorteoActionDialog(
-        { viewModel.sendEvent(ListFavUiEvent.HideDeleteFavDialog) },
-        { viewModel.sendEvent(ListFavUiEvent.DeleteFav(sorteo)) },
+        { favToDelete = null },
+        {
+          viewModel.sendEvent(ListFavUiEvent.TapDeleteFavEvent(sorteo))
+          favToDelete = null
+        },
         R.string.txt_title_aviso,
         R.string.txt_msg_delete_fav,
         R.string.txt_action_delete,
       )
     }
-
-    if (uiState.value.showDeletionSuccess.first) {
-      val successMsg =
-        uiState.value.showDeletionSuccess.second.ifEmpty {
-          stringResource(R.string.txt_fav_deletion_success)
-        }
-      LaunchedEffect(true) {
-        val result =
-          snackbarState.showSnackbar(message = successMsg, duration = SnackbarDuration.Short)
-        when (result) {
-          SnackbarResult.Dismissed -> {
-            viewModel.sendEvent(ListFavUiEvent.HideSuccessMessage)
-          }
-
-          SnackbarResult.ActionPerformed -> {}
-        }
-      }
-    }
   }
 
-  if (uiState.value.showMultiDeletionPrompt) {
+  if (showMultiDeleteDialog) {
     MelateSorteoActionDialog(
-      { viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog) },
-      { viewModel.sendEvent(ListFavUiEvent.DeleteMultipleFavs) },
+      { showMultiDeleteDialog = false },
+      {
+        viewModel.sendEvent(ListFavUiEvent.TapDeleteMultipleFavs)
+        showMultiDeleteDialog = false
+      },
       R.string.txt_title_aviso,
-      "Se eliminaran los sorteos seleccionados.",
+      R.string.txt_msg_delete_multiple_favs,
       R.string.txt_action_delete,
     )
-  }
-
-  if (uiState.value.multideleteCompleted) {
-    viewModel.sendEvent(ListFavUiEvent.DisableMultiDelete)
-    viewModel.sendEvent(ListFavUiEvent.HideMultiDeleteFavDialog)
-    viewModel.sendEvent(ListFavUiEvent.ClearFlags)
-  }
-
-  if (uiState.value.favTapped) {
-    onCreateClicked.invoke()
-    viewModel.sendEvent(ListFavUiEvent.ClearFlags)
   }
 }
