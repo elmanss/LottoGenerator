@@ -42,8 +42,8 @@ object HomeModule {
     randomGenerator: Random,
   ): HomeUseCases =
     HomeUseCases(
-      FetchSorteosUseCase(sorteoRepository),
-      SaveToFavoritesUseCase(favoritosRepository),
-      GetListIdUseCase(randomGenerator),
+      fetchSorteos = FetchSorteosUseCase(sorteoRepository),
+      saveToFavorites = SaveToFavoritesUseCase(favoritosRepository),
+      getListId = GetListIdUseCase(randomGenerator),
     )
 }
