@@ -73,20 +73,16 @@ constructor(
       ListFavUiEvent.TapCreateEvent -> {
         viewModelScope.launch { _sideEffect.emit(ListFavoritesSideEffect.LaunchCreateScreen) }
       }
-      ListFavUiEvent.DismissDeleteFavDialog -> {
-        showWarning()
-      }
       is ListFavUiEvent.ToggleFavCheckEvent -> {
         markItemAsSelected(event.fav, event.index)
       }
       is ListFavUiEvent.TapFavEvent -> {
-        showWarning(event.fav)
+        viewModelScope.launch {
+          _sideEffect.emit(ListFavoritesSideEffect.ShowDeleteDialog(event.fav))
+        }
       }
       is ListFavUiEvent.TapConfirmMultiDeleteEvent -> {
-        showMultideletionPrompt(true)
-      }
-      is ListFavUiEvent.DismissMultiDeleteFavDialog -> {
-        showMultideletionPrompt(false)
+        viewModelScope.launch { _sideEffect.emit(ListFavoritesSideEffect.ShowMultiDeleteDialog) }
       }
       ListFavUiEvent.TapDeleteMultipleFavs -> {
         deleteSelected()
@@ -106,7 +102,6 @@ constructor(
     viewModelScope.launch {
       useCases.deleteFavorite(model)
       delay(250)
-      dismissWarning()
       showMessage(R.string.txt_fav_deletion_success)
     }
   }
@@ -119,15 +114,6 @@ constructor(
         .map { it }
         .onEach { _state.update { state -> state.copy(favs = it) } }
         .launchIn(viewModelScope)
-  }
-
-  private fun showWarning(sorteo: FavoritoModel? = null) {
-    logcat { "clicked fav" }
-    _state.update { state -> state.copy(clickedFav = sorteo) }
-  }
-
-  private fun dismissWarning() {
-    _state.update { state -> state.copy(clickedFav = null) }
   }
 
   private fun showMessage(@StringRes messageId: Int) {
@@ -154,8 +140,7 @@ constructor(
         .forEach { useCases.deleteFavorite(it) }
         .also {
           clearSelected()
-          showMultideletionPrompt(false)
-          showMessage(R.string.txt_fav_multi_deletion_success)
+          showMessage(R.string.txt_fav_deletion_success)
         }
     }
   }
@@ -164,10 +149,6 @@ constructor(
     val clearedFavs = state.value.favs.onEach { it.selected = false }
     logcat { "Cleared favs: $clearedFavs" }
     _state.update { state -> state.copy(favs = clearedFavs, multiselectEnabled = false) }
-  }
-
-  private fun showMultideletionPrompt(show: Boolean = false) {
-    _state.update { state -> state.copy(showMultiDeletionPrompt = show) }
   }
 
   private fun fetchFavFromNetwork() {

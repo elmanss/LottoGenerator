@@ -28,6 +28,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +49,7 @@ import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
+import me.elmanss.melate.home.domain.model.SorteoModel
 import me.elmanss.melate.home.presentation.HomeScreenViewModel
 import me.elmanss.melate.home.presentation.entities.HomeScreenSideEffect
 import me.elmanss.melate.home.presentation.entities.HomeUiEvent
@@ -69,6 +71,7 @@ fun HomeScreen(
   var isRefreshing by remember { mutableStateOf(false) }
   val snackbarState = remember { SnackbarHostState() }
   val coroutineScope = rememberCoroutineScope()
+  var sorteoToSave by rememberSaveable { mutableStateOf<SorteoModel?>(null) }
 
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -82,6 +85,10 @@ fun HomeScreen(
 
             is HomeScreenSideEffect.ShowSnackBar -> {
               snackbarState.showSnackbar(context.getString(sideEffect.messageId))
+            }
+
+            is HomeScreenSideEffect.ShowSaveFavoriteDialog -> {
+              sorteoToSave = sideEffect.sorteo
             }
           }
         }
@@ -162,10 +169,13 @@ fun HomeScreen(
         }
       }
 
-      uiState.saveFaveDialogDisplayed?.let { sorteo ->
+      sorteoToSave?.let { sorteo ->
         MelateSorteoActionDialog(
-          { viewModel.sendEvent(HomeUiEvent.DismissAddSorteoEvent) },
-          { viewModel.sendEvent(HomeUiEvent.TapAddSorteoEvent(sorteo)) },
+          { sorteoToSave = null },
+          {
+            viewModel.sendEvent(HomeUiEvent.TapAddSorteoEvent(sorteo))
+            sorteoToSave = null
+          },
           R.string.txt_title_aviso,
           R.string.txt_msg_add_to_fav,
           R.string.txt_action_add,

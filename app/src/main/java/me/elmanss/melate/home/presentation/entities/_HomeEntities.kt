@@ -6,8 +6,6 @@ import me.elmanss.melate.home.domain.model.SorteoModel
 sealed class HomeUiEvent {
   data object SwipeToRefreshSorteosEvent : HomeUiEvent()
 
-  data object DismissAddSorteoEvent : HomeUiEvent()
-
   data object ExitMultiSelectEvent : HomeUiEvent()
 
   data object TapConfirmMultiSelectEvent : HomeUiEvent()
@@ -27,10 +25,11 @@ sealed class HomeScreenSideEffect {
   data object GoToFavs : HomeScreenSideEffect()
 
   data class ShowSnackBar(@param:StringRes val messageId: Int) : HomeScreenSideEffect()
+
+  data class ShowSaveFavoriteDialog(val sorteo: SorteoModel) : HomeScreenSideEffect()
 }
 
 data class HomeScreenState(
   val sorteos: List<SorteoModel> = emptyList(),
-  val saveFaveDialogDisplayed: SorteoModel? = null,
   val multiSelectModeEnabled: Boolean = false,
 )

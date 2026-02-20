@@ -61,13 +61,12 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
       }
 
       is HomeUiEvent.TapSorteoEvent -> {
-        _state.update { state -> state.copy(saveFaveDialogDisplayed = event.sorteo) }
+        viewModelScope.launch {
+          _sideEffect.emit(HomeScreenSideEffect.ShowSaveFavoriteDialog(event.sorteo))
+        }
       }
       is HomeUiEvent.TapAddSorteoEvent -> {
         launchSaveToFavorites(event.sorteo)
-      }
-      is HomeUiEvent.DismissAddSorteoEvent -> {
-        _state.update { state -> state.copy(saveFaveDialogDisplayed = null) }
       }
       is HomeUiEvent.LongTapSorteoEvent -> {
         markItemAsSelected(event.sorteo, event.index)
@@ -100,7 +99,6 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
     viewModelScope.launch {
       useCases.saveToFavorites(sorteoModel, ZonedDateTime.now().toInstant().toEpochMilli())
       delay(250)
-      sendEvent(HomeUiEvent.DismissAddSorteoEvent)
       _sideEffect.emit(HomeScreenSideEffect.ShowSnackBar(R.string.txt_sorteo_success))
     }
   }
