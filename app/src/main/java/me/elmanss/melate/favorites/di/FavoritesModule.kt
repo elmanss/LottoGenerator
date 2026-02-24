@@ -7,6 +7,8 @@ import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
 import java.time.format.DateTimeFormatter
 import javax.inject.Named
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import me.elmanss.melate.common.data.network.api.SorteoApi
 import me.elmanss.melate.common.data.network.datasource.SorteoRemoteDataSource
 import me.elmanss.melate.common.domain.datasource.SorteoDataSource
@@ -41,6 +43,7 @@ object FavoritesModule {
   fun provideSorteoRepository(@Named("remoteDS") dataSource: SorteoDataSource): SorteoRepository =
     SorteoRepositoryImpl(dataSource)
 
+  @OptIn(ExperimentalTime::class)
   @Provides
   @ViewModelScoped
   fun provideUseCases(
@@ -53,6 +56,6 @@ object FavoritesModule {
       deleteFavorite = DeleteFavoriteUseCase(repository),
       fetchFavorites = FetchFavoritesUseCase(repository),
       formatFavoriteCreationDate = FormatFavCreationDateUseCase(formatter),
-      fetchFavoriteFromNetwork = FetchSorteoFromNetworkUseCase(sorteoRepo),
+      fetchFavoriteFromNetwork = FetchSorteoFromNetworkUseCase(sorteoRepo, Clock.System),
     )
 }
