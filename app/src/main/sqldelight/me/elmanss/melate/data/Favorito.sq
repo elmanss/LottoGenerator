@@ -4,16 +4,20 @@ CREATE TABLE favorito (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   sorteo TEXT NOT NULL UNIQUE,
   origin TEXT AS FavOrigin NOT NULL,
-  created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+  created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+  is_submitted INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE INDEX IF NOT EXISTS favorito_sorteo_idx ON favorito(sorteo);
 
 insertFav:
-INSERT OR IGNORE INTO favorito (sorteo, origin, created_at) VALUES (?, ?, ?);
+INSERT OR IGNORE INTO favorito (sorteo, origin, created_at, is_submitted) VALUES (?, ?, ?, ?);
 
 selectAll:
 SELECT * FROM favorito ORDER BY created_at DESC;
+
+updateSubmittedStatus:
+UPDATE favorito SET is_submitted = ? WHERE id = ?;
 
 deleteFav:
 DELETE FROM favorito WHERE id = ?;

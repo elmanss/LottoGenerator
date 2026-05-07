@@ -20,6 +20,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import logcat.logcat
 import me.elmanss.melate.R
+import me.elmanss.melate.common.util.NetworkStatus
 import me.elmanss.melate.common.util.NetworkConnectivityObserver
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.domain.usecase.FavoritesUseCases
@@ -93,6 +94,16 @@ constructor(
       is ListFavUiEvent.ShowConnectivityMessage -> {
         showMessage(R.string.txt_error_connectivity)
       }
+
+      is ListFavUiEvent.ToggleSubmittedEvent -> {
+        toggleSubmitted(event.fav)
+      }
+    }
+  }
+
+  private fun toggleSubmitted(model: FavoritoModel) {
+    viewModelScope.launch {
+      useCases.updateSubmittedStatus(model.id, !model.isSubmitted)
     }
   }
 

@@ -19,6 +19,7 @@ import me.elmanss.melate.favorites.domain.usecase.impl.DeleteFavoriteUseCase
 import me.elmanss.melate.favorites.domain.usecase.impl.FetchFavoritesUseCase
 import me.elmanss.melate.favorites.domain.usecase.impl.FetchSorteoFromNetworkUseCase
 import me.elmanss.melate.favorites.domain.usecase.impl.FormatFavCreationDateUseCase
+import me.elmanss.melate.favorites.domain.usecase.impl.UpdateSubmittedStatusUseCase
 import me.elmanss.melate.home.data.repository.SorteoRepository
 import me.elmanss.melate.home.data.repository.SorteoRepositoryImpl
 import retrofit2.Retrofit
@@ -57,5 +58,6 @@ object FavoritesModule {
       fetchFavorites = FetchFavoritesUseCase(repository),
       formatFavoriteCreationDate = FormatFavCreationDateUseCase(formatter),
       fetchFavoriteFromNetwork = FetchSorteoFromNetworkUseCase(sorteoRepo, Clock.System),
+      updateSubmittedStatus = UpdateSubmittedStatusUseCase(repository)
     )
 }
