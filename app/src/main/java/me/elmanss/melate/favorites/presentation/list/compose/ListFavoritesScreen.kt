@@ -138,7 +138,7 @@ fun ListFavoritesScreen(
           actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
           onActionOneClicked = {
             if (connectivityState == NetworkStatus.Available) {
-              viewModel.sendEvent(ListFavUiEvent.TapMultiDeleteEvent)
+              viewModel.sendEvent(ListFavUiEvent.TapFetchFronNetworkEvent)
             } else {
               viewModel.sendEvent(ListFavUiEvent.ShowConnectivityMessage(true))
             }

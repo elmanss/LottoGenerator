@@ -5,6 +5,10 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ViewModelComponent
 import dagger.hilt.android.scopes.ViewModelScoped
+import java.time.format.DateTimeFormatter
+import javax.inject.Named
+import kotlin.time.Clock
+import kotlin.time.ExperimentalTime
 import me.elmanss.melate.common.data.network.api.SorteoApi
 import me.elmanss.melate.common.data.network.datasource.SorteoRemoteDataSource
 import me.elmanss.melate.common.domain.datasource.SorteoDataSource
@@ -18,8 +22,6 @@ import me.elmanss.melate.favorites.domain.usecase.impl.FormatFavCreationDateUseC
 import me.elmanss.melate.home.data.repository.SorteoRepository
 import me.elmanss.melate.home.data.repository.SorteoRepositoryImpl
 import retrofit2.Retrofit
-import java.time.format.DateTimeFormatter
-import javax.inject.Named
 
 @Module
 @InstallIn(ViewModelComponent::class)
@@ -27,7 +29,7 @@ object FavoritesModule {
 
   @Provides
   @ViewModelScoped
-  fun provideDateFormatter() = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
+  fun provideDateFormatter(): DateTimeFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")
 
   @Provides
   @ViewModelScoped
@@ -41,6 +43,7 @@ object FavoritesModule {
   fun provideSorteoRepository(@Named("remoteDS") dataSource: SorteoDataSource): SorteoRepository =
     SorteoRepositoryImpl(dataSource)
 
+  @OptIn(ExperimentalTime::class)
   @Provides
   @ViewModelScoped
   fun provideUseCases(
@@ -49,10 +52,10 @@ object FavoritesModule {
     @Named("remoteRepo") sorteoRepo: SorteoRepository,
   ): FavoritesUseCases =
     FavoritesUseCases(
-      AddFavoriteUseCase(repository),
-      DeleteFavoriteUseCase(repository),
-      FetchFavoritesUseCase(repository),
-      FormatFavCreationDateUseCase(formatter),
-      FetchSorteoFromNetworkUseCase(sorteoRepo),
+      addFavorite = AddFavoriteUseCase(repository),
+      deleteFavorite = DeleteFavoriteUseCase(repository),
+      fetchFavorites = FetchFavoritesUseCase(repository),
+      formatFavoriteCreationDate = FormatFavCreationDateUseCase(formatter),
+      fetchFavoriteFromNetwork = FetchSorteoFromNetworkUseCase(sorteoRepo, Clock.System),
     )
 }

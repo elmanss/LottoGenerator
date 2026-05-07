@@ -12,8 +12,6 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onEach
@@ -88,8 +86,8 @@ constructor(
         deleteSelected()
       }
 
-      ListFavUiEvent.TapMultiDeleteEvent -> {
-        fetchFavFromNetwork()
+      ListFavUiEvent.TapFetchFronNetworkEvent -> {
+        viewModelScope.launch { fetchFavFromNetwork() }
       }
 
       is ListFavUiEvent.ShowConnectivityMessage -> {
@@ -151,18 +149,18 @@ constructor(
     _state.update { state -> state.copy(favs = clearedFavs, multiselectEnabled = false) }
   }
 
-  private fun fetchFavFromNetwork() {
+  private suspend fun fetchFavFromNetwork() {
     _state.update { state -> state.copy(isLoading = true) }
-    viewModelScope.launch {
-      delay(1.seconds)
-      useCases
-        .fetchFavoriteFromNetwork()
-        .filter { it.isSuccess }
-        .filter { it.getOrNull() != null }
-        .collectLatest {
-          useCases.addFavorite(it.getOrNull()!!)
-          sendEvent(ListFavUiEvent.ClearFlags)
-        }
-    }
+    delay(1.seconds)
+    val result = useCases.fetchFavoriteFromNetwork()
+    result
+      .onSuccess {
+        useCases.addFavorite(it)
+        sendEvent(ListFavUiEvent.ClearFlags)
+      }
+      .onFailure {
+        _sideEffect.emit(ListFavoritesSideEffect.ShowSnackBar(R.string.txt_error_connectivity))
+        sendEvent(ListFavUiEvent.ClearFlags)
+      }
   }
 }

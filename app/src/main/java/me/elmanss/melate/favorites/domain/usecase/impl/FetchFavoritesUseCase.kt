@@ -1,6 +1,8 @@
 package me.elmanss.melate.favorites.domain.usecase.impl
 
 import kotlinx.coroutines.flow.map
+import logcat.LogPriority
+import logcat.logcat
 import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.domain.repository.FavoritosRepository
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
@@ -12,6 +14,22 @@ class FetchFavoritesUseCase @Inject constructor(private val repository: Favorito
       .selectAllFavoritos()
       .map { it.executeAsList() }
       .map {
-        it.map { FavoritoModel(it.id, it.sorteo, FavOrigin.valueOf(it.origin), it.created_at) }
+        it.map {
+          FavoritoModel(
+            id = it.id,
+            sorteo = it.sorteo,
+            origin = mapOrigin(it.origin),
+            createdAt = it.created_at,
+          )
+        }
       }
+
+  private fun mapOrigin(origin: String): FavOrigin {
+    return try {
+      FavOrigin.valueOf(origin)
+    } catch (_: IllegalArgumentException) {
+      logcat(LogPriority.WARN) { "Unknown favorite origin in database: '$origin'" }
+      FavOrigin.Unknown
+    }
+  }
 }

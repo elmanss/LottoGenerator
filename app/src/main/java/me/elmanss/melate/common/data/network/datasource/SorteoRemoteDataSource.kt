@@ -3,8 +3,9 @@ package me.elmanss.melate.common.data.network.datasource
 import logcat.logcat
 import me.elmanss.melate.common.data.network.api.SorteoApi
 import me.elmanss.melate.common.domain.datasource.SorteoDataSource
+import javax.inject.Inject
 
-class SorteoRemoteDataSource(private val api: SorteoApi) : SorteoDataSource {
+class SorteoRemoteDataSource @Inject constructor(private val api: SorteoApi) : SorteoDataSource {
 
   override suspend fun fetchSorteos(): Result<List<Int>> {
     val response =

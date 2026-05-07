@@ -22,7 +22,7 @@ sealed class ListFavUiEvent {
 
   data object TapDeleteMultipleFavs : ListFavUiEvent()
 
-  data object TapMultiDeleteEvent : ListFavUiEvent()
+  data object TapFetchFronNetworkEvent : ListFavUiEvent()
 
   data class ShowConnectivityMessage(val show: Boolean) : ListFavUiEvent()
 }

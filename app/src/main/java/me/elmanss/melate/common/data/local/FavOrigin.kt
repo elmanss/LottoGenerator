@@ -4,4 +4,5 @@ enum class FavOrigin {
   Random,
   Manual,
   Network,
+  Unknown,
 }

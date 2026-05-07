@@ -32,9 +32,7 @@ android {
     }
   }
 
-  buildFeatures {
-    compose = true
-  }
+  buildFeatures { compose = true }
 
   compileOptions {
     sourceCompatibility = JavaVersion.VERSION_21
@@ -47,6 +45,8 @@ android {
       freeCompilerArgs.add("-opt-in=kotlin.RequiresOptIn")
     }
   }
+
+  testOptions { unitTests.all { it.useJUnitPlatform() } }
 
   namespace = "me.elmanss.melate"
 }
@@ -67,7 +67,7 @@ dependencies {
   implementation(libs.ui.tooling.preview)
   implementation(libs.material3)
   implementation(libs.materialIconsExtended)
-  testImplementation(libs.junit)
+  // testImplementation(libs.junit)
   androidTestImplementation(libs.ext.junit)
   androidTestImplementation(libs.espresso.core)
 
@@ -89,6 +89,13 @@ dependencies {
   implementation(libs.retrofit)
   implementation(libs.retrofit.converter.gson)
   implementation(libs.logging.interceptor)
+
+  testImplementation(libs.coroutines.test)
+  testImplementation(libs.junit.jupiter.api)
+  testImplementation(libs.mockk)
+  testImplementation(libs.strikt.core)
+  testImplementation(libs.turbine)
+  testRuntimeOnly(libs.junit.jupiter.engine)
 }
 
 sqldelight {
