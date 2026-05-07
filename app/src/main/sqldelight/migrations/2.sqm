@@ -1,0 +1,18 @@
+-- Recreate table to add UNIQUE constraint and improve timestamping
+
+CREATE TABLE favorito_new (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  sorteo TEXT NOT NULL UNIQUE,
+  origin TEXT NOT NULL,
+  created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+);
+
+-- Copy data, ignoring duplicates if they exist (though unlikely in current state)
+INSERT OR IGNORE INTO favorito_new (id, sorteo, origin, created_at)
+SELECT id, sorteo, origin, created_at FROM favorito;
+
+DROP TABLE favorito;
+
+ALTER TABLE favorito_new RENAME TO favorito;
+
+CREATE INDEX IF NOT EXISTS favorito_sorteo_idx ON favorito(sorteo);

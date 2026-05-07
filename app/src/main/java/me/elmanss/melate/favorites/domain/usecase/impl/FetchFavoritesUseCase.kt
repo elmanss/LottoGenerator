@@ -18,7 +18,7 @@ class FetchFavoritesUseCase @Inject constructor(private val repository: Favorito
           FavoritoModel(
             id = it.id,
             sorteo = it.sorteo,
-            origin = mapOrigin(it.origin),
+            origin = it.origin,
             createdAt = it.created_at,
           )
         }
