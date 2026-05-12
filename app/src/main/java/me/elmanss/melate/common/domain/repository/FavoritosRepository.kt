@@ -16,4 +16,6 @@ interface FavoritosRepository {
   fun selectAllFavoritos(): Flow<Query<Favorito>>
 
   suspend fun deleteFavorito(favoritoId: Long)
+
+  suspend fun updateSubmittedStatus(id: Long, isSubmitted: Boolean)
 }

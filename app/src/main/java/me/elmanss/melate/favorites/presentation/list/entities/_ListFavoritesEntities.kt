@@ -25,6 +25,8 @@ sealed class ListFavUiEvent {
   data object TapFetchFronNetworkEvent : ListFavUiEvent()
 
   data class ShowConnectivityMessage(val show: Boolean) : ListFavUiEvent()
+
+  data class ToggleSubmittedEvent(val fav: FavoritoModel) : ListFavUiEvent()
 }
 
 sealed class ListFavoritesSideEffect {

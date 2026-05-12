@@ -7,5 +7,6 @@ data class FavoritoModel(
   val sorteo: String,
   val origin: FavOrigin,
   val createdAt: Long = 0,
+  val isSubmitted: Boolean = false,
   var selected: Boolean = false,
 )

@@ -1,6 +1,7 @@
 package me.elmanss.melate.common.di
 
 import android.app.Application
+import app.cash.sqldelight.EnumColumnAdapter
 import app.cash.sqldelight.db.SqlDriver
 import app.cash.sqldelight.driver.android.AndroidSqliteDriver
 import com.google.gson.Gson
@@ -12,10 +13,12 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import logcat.logcat
 import me.elmanss.melate.Database
+import me.elmanss.melate.common.data.local.FavOrigin
 import me.elmanss.melate.common.data.network.api.SorteoApi
 import me.elmanss.melate.common.data.repository.FavoritosRepositoryImpl
 import me.elmanss.melate.common.domain.repository.FavoritosRepository
 import me.elmanss.melate.common.util.NetworkConnectivityObserver
+import me.elmanss.melate.data.Favorito
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -39,8 +42,12 @@ object AppModule {
   @Provides
   @Singleton
   fun provideDatabase(driver: SqlDriver): Database {
-    Database.Schema.create(driver)
-    return Database(driver)
+    return Database(
+      driver = driver,
+      favoritoAdapter = Favorito.Adapter(
+        originAdapter = EnumColumnAdapter()
+      )
+    )
   }
 
   @Provides

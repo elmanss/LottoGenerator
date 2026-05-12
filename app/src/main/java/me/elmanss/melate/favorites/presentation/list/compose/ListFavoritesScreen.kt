@@ -180,18 +180,22 @@ fun ListFavoritesScreen(
               favorite = fav,
               formatter = { viewModel.formatDate(fav) },
               onChecked = { f ->
-                viewModel.sendEvent(ListFavUiEvent.ToggleFavCheckEvent(fav, index))
+                viewModel.sendEvent(ListFavUiEvent.ToggleFavCheckEvent(f, index))
               },
               onLongClick = { f ->
                 if (!uiState.multiselectEnabled) {
-                  viewModel.sendEvent(ListFavUiEvent.LongTapFavEvent(fav, index))
+                  viewModel.sendEvent(ListFavUiEvent.LongTapFavEvent(f, index))
                 }
               },
-            ) {
-              if (!uiState.multiselectEnabled) {
-                viewModel.sendEvent(ListFavUiEvent.TapFavEvent(fav))
-              }
-            }
+              onToggleSubmitted = { f ->
+                viewModel.sendEvent(ListFavUiEvent.ToggleSubmittedEvent(f))
+              },
+              onClick = {
+                if (!uiState.multiselectEnabled) {
+                  viewModel.sendEvent(ListFavUiEvent.TapFavEvent(fav))
+                }
+              },
+            )
 
             if (index < favs.lastIndex) {
               HorizontalDivider(thickness = Dp.Hairline)
