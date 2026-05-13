@@ -5,7 +5,6 @@ plugins {
   alias(libs.plugins.android.application)
   alias(libs.plugins.kotlin.android)
   alias(libs.plugins.cash.sqldelight)
-  // alias(libs.plugins.kotlin.kapt)
   alias(libs.plugins.ksp)
   alias(libs.plugins.hilt.plugin)
   alias(libs.plugins.kotlin.compose)
@@ -17,11 +16,10 @@ android {
   defaultConfig {
     applicationId = "me.elmanss.melate"
     minSdk = 28
-    //noinspection EditedTargetSdkVersion
     targetSdk = 36
     versionCode = 1
     versionName = "1.0"
-    testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    testInstrumentationRunner = "me.elmanss.melate.HiltTestRunner"
   }
 
   buildTypes {
@@ -67,21 +65,20 @@ dependencies {
   implementation(libs.ui.tooling.preview)
   implementation(libs.material3)
   implementation(libs.materialIconsExtended)
-  // testImplementation(libs.junit)
+  
   androidTestImplementation(libs.ext.junit)
   androidTestImplementation(libs.espresso.core)
-
-  // Android Jetpack
-  // For Kotlin use navigation-fragment-ktx
-  // For Kotlin use navigation-ui-ktx
-
-  implementation(libs.hilt.android)
   androidTestImplementation(platform(libs.compose.bom))
   androidTestImplementation(libs.ui.test.junit4)
+  androidTestImplementation("com.google.dagger:hilt-android-testing:2.57.2")
+  kspAndroidTest("com.google.dagger:hilt-android-compiler:2.57.2")
+
+  implementation(libs.hilt.android)
+  ksp(libs.hilt.compiler)
+  
   debugImplementation(libs.ui.tooling)
   debugImplementation(libs.ui.test.manifest)
-  ksp(libs.hilt.compiler)
-  // https://mvnrepository.com/artifact/androidx.hilt/hilt-navigation-compose
+  
   implementation(libs.hilt.navigation.compose)
   implementation(libs.constraintlayout.compose)
   implementation(libs.androidx.navigation3.ui)
@@ -101,5 +98,3 @@ dependencies {
 sqldelight {
   databases { create("Database") { packageName.set("me.elmanss.melate") } }
 }
-
-// kapt { correctErrorTypes = true }

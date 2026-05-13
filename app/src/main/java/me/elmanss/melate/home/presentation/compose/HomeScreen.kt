@@ -3,6 +3,7 @@ package me.elmanss.melate.home.presentation.compose
 import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
@@ -49,13 +51,14 @@ import me.elmanss.melate.R
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActionTopBar
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateFab
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
+import me.elmanss.melate.common.util.TestTags
 import me.elmanss.melate.home.domain.model.SorteoModel
 import me.elmanss.melate.home.presentation.HomeScreenViewModel
 import me.elmanss.melate.home.presentation.entities.HomeScreenSideEffect
+import me.elmanss.melate.home.presentation.entities.HomeScreenState
 import me.elmanss.melate.home.presentation.entities.HomeUiEvent
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
   onNavigateToFavs: () -> Unit,
@@ -66,12 +69,7 @@ fun HomeScreen(
   val context = LocalContext.current
 
   val uiState by viewModel.state.collectAsState()
-  val sorteoState = rememberLazyListState()
-  val refreshState = rememberPullToRefreshState()
-  var isRefreshing by remember { mutableStateOf(false) }
   val snackbarState = remember { SnackbarHostState() }
-  val coroutineScope = rememberCoroutineScope()
-  var sorteoToSave by rememberSaveable { mutableStateOf<SorteoModel?>(null) }
 
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -88,7 +86,7 @@ fun HomeScreen(
             }
 
             is HomeScreenSideEffect.ShowSaveFavoriteDialog -> {
-              sorteoToSave = sideEffect.sorteo
+                // Handled in content
             }
           }
         }
@@ -96,15 +94,37 @@ fun HomeScreen(
     }
   }
 
+  HomeScreenContent(
+    uiState = uiState,
+    snackbarHostState = snackbarState,
+    onEvent = viewModel::sendEvent
+  )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun HomeScreenContent(
+  uiState: HomeScreenState,
+  snackbarHostState: SnackbarHostState,
+  onEvent: (HomeUiEvent) -> Unit
+) {
+  val sorteoState = rememberLazyListState()
+  val refreshState = rememberPullToRefreshState()
+  val coroutineScope = rememberCoroutineScope()
+  var sorteoToSave by rememberSaveable { mutableStateOf<SorteoModel?>(null) }
+
   BackHandler(enabled = uiState.multiSelectModeEnabled) {
-    viewModel.sendEvent(HomeUiEvent.ExitMultiSelectEvent)
+    onEvent(HomeUiEvent.ExitMultiSelectEvent)
   }
 
   Scaffold(
     topBar = {
       MelateActionTopBar(title = R.string.app_name) {
         if (uiState.multiSelectModeEnabled) {
-          IconButton(onClick = { viewModel.sendEvent(HomeUiEvent.TapConfirmMultiSelectEvent) }) {
+          IconButton(
+            modifier = Modifier.testTag(TestTags.HOME_SAVE_TOPBAR_ICON),
+            onClick = { onEvent(HomeUiEvent.TapConfirmMultiSelectEvent) }
+          ) {
             Icon(imageVector = Icons.Default.Check, contentDescription = "Save")
           }
         }
@@ -113,54 +133,50 @@ fun HomeScreen(
     floatingActionButton = {
       MelateFab(
         listState = sorteoState,
-        action = { viewModel.sendEvent(HomeUiEvent.TapGoToFavsEvent) },
+        action = { onEvent(HomeUiEvent.TapGoToFavsEvent) },
         text = R.string.txt_button_mis_favs,
       )
     },
-    snackbarHost = { SnackbarHost(snackbarState) },
-  ) {
-    Column(modifier = Modifier.fillMaxWidth().padding(it)) {
+    snackbarHost = { SnackbarHost(snackbarHostState) },
+  ) { padding ->
+    Column(modifier = Modifier.fillMaxSize().padding(padding)) {
       val sorteos = uiState.sorteos
       PullToRefreshBox(
-        isRefreshing = isRefreshing,
+        modifier = Modifier.fillMaxSize().testTag(TestTags.HOME_PULL_REFRESH),
+        isRefreshing = uiState.isRefreshing,
         onRefresh = {
-          isRefreshing = true
-          coroutineScope.launch {
-            delay(1500)
-            viewModel.sendEvent(HomeUiEvent.SwipeToRefreshSorteosEvent)
-            isRefreshing = false
-          }
+          onEvent(HomeUiEvent.SwipeToRefreshSorteosEvent)
         },
         state = refreshState,
         indicator = {
           Indicator(
             modifier = Modifier.align(Alignment.TopCenter),
-            isRefreshing = isRefreshing,
+            isRefreshing = uiState.isRefreshing,
             containerColor = MaterialTheme.colorScheme.primaryContainer,
             color = MaterialTheme.colorScheme.onPrimaryContainer,
             state = refreshState,
           )
         },
       ) {
-        LazyColumn(state = sorteoState) {
-          itemsIndexed(items = sorteos, key = { index, _ -> index.toHexString() }) { index, sorteo
-            ->
+        LazyColumn(modifier = Modifier.fillMaxSize(), state = sorteoState) {
+          itemsIndexed(items = sorteos, key = { _, item -> item.id }) { index, sorteo ->
             HomeListItem(
               selectableMode = uiState.multiSelectModeEnabled,
               sorteo = sorteo,
               onChecked = { s ->
-                viewModel.sendEvent(HomeUiEvent.ToggleSorteoCheckEvent(s, index))
+                onEvent(HomeUiEvent.ToggleSorteoCheckEvent(s))
               },
               onClick = { s ->
                 if (!uiState.multiSelectModeEnabled) {
-                  viewModel.sendEvent(HomeUiEvent.TapSorteoEvent(s))
+                  onEvent(HomeUiEvent.TapSorteoEvent(s))
                 }
               },
-            ) { s ->
-              if (!uiState.multiSelectModeEnabled) {
-                viewModel.sendEvent(HomeUiEvent.LongTapSorteoEvent(s, index))
+              onLongClick = { s ->
+                if (!uiState.multiSelectModeEnabled) {
+                  onEvent(HomeUiEvent.LongTapSorteoEvent(s))
+                }
               }
-            }
+            )
 
             if (index < sorteos.lastIndex) {
               HorizontalDivider(thickness = Dp.Hairline)
@@ -173,7 +189,7 @@ fun HomeScreen(
         MelateSorteoActionDialog(
           { sorteoToSave = null },
           {
-            viewModel.sendEvent(HomeUiEvent.TapAddSorteoEvent(sorteo))
+            onEvent(HomeUiEvent.TapAddSorteoEvent(sorteo))
             sorteoToSave = null
           },
           R.string.txt_title_aviso,

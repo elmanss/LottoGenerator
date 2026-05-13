@@ -36,6 +36,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,13 +60,14 @@ import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateActio
 import me.elmanss.melate.common.presentation.ui.compose.ui.component.MelateSorteoActionDialog
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.Gray
 import me.elmanss.melate.common.util.NetworkStatus
+import me.elmanss.melate.common.util.TestTags
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 import me.elmanss.melate.favorites.presentation.list.ListFavoritesScreenViewModel
 import me.elmanss.melate.favorites.presentation.list.entities.ListFavUiEvent
+import me.elmanss.melate.favorites.presentation.list.entities.ListFavoritesScreenState
 import me.elmanss.melate.favorites.presentation.list.entities.ListFavoritesSideEffect
 
 @SuppressLint("LocalContextGetResourceValueCall")
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ListFavoritesScreen(
   onCreateClicked: () -> Unit,
@@ -75,11 +77,7 @@ fun ListFavoritesScreen(
   val context = LocalContext.current
   val uiState by viewModel.state.collectAsState()
   val connectivityState by viewModel.connectivity.collectAsState(NetworkStatus.Unavailable)
-  val sorteoState = rememberLazyListState()
   val snackbarState = remember { SnackbarHostState() }
-
-  var favToDelete by rememberSaveable { mutableStateOf<FavoritoModel?>(null) }
-  var showMultiDeleteDialog by rememberSaveable { mutableStateOf(false) }
 
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -99,10 +97,10 @@ fun ListFavoritesScreen(
               )
             }
             is ListFavoritesSideEffect.ShowDeleteDialog -> {
-              favToDelete = sideEffect.favorite
+                // Handled in content
             }
             is ListFavoritesSideEffect.ShowMultiDeleteDialog -> {
-              showMultiDeleteDialog = true
+                // Handled in content
             }
           }
         }
@@ -110,8 +108,30 @@ fun ListFavoritesScreen(
     }
   }
 
+  ListFavoritesContent(
+    uiState = uiState,
+    connectivityStatus = connectivityState,
+    snackbarHostState = snackbarState,
+    onEvent = viewModel::sendEvent,
+    formatDate = viewModel::formatDate
+  )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ListFavoritesContent(
+  uiState: ListFavoritesScreenState,
+  connectivityStatus: NetworkStatus,
+  snackbarHostState: SnackbarHostState,
+  onEvent: (ListFavUiEvent) -> Unit,
+  formatDate: (FavoritoModel) -> String
+) {
+  val sorteoState = rememberLazyListState()
+  var favToDelete by rememberSaveable { mutableStateOf<FavoritoModel?>(null) }
+  var showMultiDeleteDialog by rememberSaveable { mutableStateOf(false) }
+
   BackHandler(enabled = uiState.multiselectEnabled) {
-    viewModel.sendEvent(ListFavUiEvent.ExitMultiDelete)
+    onEvent(ListFavUiEvent.ExitMultiDelete)
   }
 
   Scaffold(
@@ -120,7 +140,8 @@ fun ListFavoritesScreen(
         MelateActionTopBar(title = R.string.txt_mis_sorteos) {
           if (uiState.multiselectEnabled) {
             IconButton(
-              onClick = { viewModel.sendEvent(ListFavUiEvent.TapConfirmMultiDeleteEvent) }
+              modifier = Modifier.testTag(TestTags.LIST_MULTI_DELETE_ICON),
+              onClick = { showMultiDeleteDialog = true }
             ) {
               Icon(imageVector = Icons.Filled.Delete, contentDescription = "Delete")
             }
@@ -137,24 +158,23 @@ fun ListFavoritesScreen(
           listState = sorteoState,
           actionOneIcon = ImageVector.vectorResource(R.drawable.cloud),
           onActionOneClicked = {
-            if (connectivityState == NetworkStatus.Available) {
-              viewModel.sendEvent(ListFavUiEvent.TapFetchFronNetworkEvent)
+            if (connectivityStatus == NetworkStatus.Available) {
+              onEvent(ListFavUiEvent.TapFetchFronNetworkEvent)
             } else {
-              viewModel.sendEvent(ListFavUiEvent.ShowConnectivityMessage(true))
+              onEvent(ListFavUiEvent.ShowConnectivityMessage(true))
             }
           },
           actionTwoIcon = ImageVector.vectorResource(R.drawable.human_edit),
-        ) {
-          viewModel.sendEvent(ListFavUiEvent.TapCreateEvent)
-        }
+          onActionTwoClicked = { onEvent(ListFavUiEvent.TapCreateEvent) }
+        )
       }
     },
-    snackbarHost = { SnackbarHost(snackbarState) },
-  ) {
+    snackbarHost = { SnackbarHost(snackbarHostState) },
+  ) { padding ->
     val favs = uiState.favs
     if (favs.isEmpty()) {
       Column(
-        modifier = Modifier.fillMaxSize().padding(it).padding(16F.dp),
+        modifier = Modifier.fillMaxSize().padding(padding).padding(16F.dp).testTag(TestTags.LIST_EMPTY_STATE_CONTAINER),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
       ) {
@@ -172,27 +192,27 @@ fun ListFavoritesScreen(
         )
       }
     } else {
-      Column(modifier = Modifier.fillMaxSize().padding(it)) {
+      Column(modifier = Modifier.fillMaxSize().padding(padding)) {
         LazyColumn(state = sorteoState) {
           itemsIndexed(favs) { index, fav ->
             ListFavoriteItem(
               editableState = uiState.multiselectEnabled,
               favorite = fav,
-              formatter = { viewModel.formatDate(fav) },
+              formatter = { formatDate(fav) },
               onChecked = { f ->
-                viewModel.sendEvent(ListFavUiEvent.ToggleFavCheckEvent(f, index))
+                onEvent(ListFavUiEvent.ToggleFavCheckEvent(f, index))
               },
               onLongClick = { f ->
                 if (!uiState.multiselectEnabled) {
-                  viewModel.sendEvent(ListFavUiEvent.LongTapFavEvent(f, index))
+                  onEvent(ListFavUiEvent.LongTapFavEvent(f, index))
                 }
               },
               onToggleSubmitted = { f ->
-                viewModel.sendEvent(ListFavUiEvent.ToggleSubmittedEvent(f))
+                onEvent(ListFavUiEvent.ToggleSubmittedEvent(f))
               },
               onClick = {
                 if (!uiState.multiselectEnabled) {
-                  viewModel.sendEvent(ListFavUiEvent.TapFavEvent(fav))
+                  favToDelete = fav
                 }
               },
             )
@@ -209,7 +229,7 @@ fun ListFavoritesScreen(
       MelateSorteoActionDialog(
         { favToDelete = null },
         {
-          viewModel.sendEvent(ListFavUiEvent.TapDeleteFavEvent(sorteo))
+          onEvent(ListFavUiEvent.TapDeleteFavEvent(sorteo))
           favToDelete = null
         },
         R.string.txt_title_aviso,
@@ -217,18 +237,18 @@ fun ListFavoritesScreen(
         R.string.txt_action_delete,
       )
     }
-  }
 
-  if (showMultiDeleteDialog) {
-    MelateSorteoActionDialog(
-      { showMultiDeleteDialog = false },
-      {
-        viewModel.sendEvent(ListFavUiEvent.TapDeleteMultipleFavs)
-        showMultiDeleteDialog = false
-      },
-      R.string.txt_title_aviso,
-      R.string.txt_msg_delete_multiple_favs,
-      R.string.txt_action_delete,
-    )
+    if (showMultiDeleteDialog) {
+      MelateSorteoActionDialog(
+        { showMultiDeleteDialog = false },
+        {
+          onEvent(ListFavUiEvent.TapDeleteMultipleFavs)
+          showMultiDeleteDialog = false
+        },
+        R.string.txt_title_aviso,
+        R.string.txt_msg_delete_multiple_favs,
+        R.string.txt_action_delete,
+      )
+    }
   }
 }

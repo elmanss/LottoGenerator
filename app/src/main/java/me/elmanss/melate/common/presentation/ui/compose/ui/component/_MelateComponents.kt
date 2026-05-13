@@ -42,6 +42,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
@@ -52,6 +53,7 @@ import androidx.compose.ui.window.DialogProperties
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.Purple40
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.Purple80
 import me.elmanss.melate.common.presentation.ui.compose.ui.theme.White
+import me.elmanss.melate.common.util.TestTags
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,7 +61,7 @@ fun MelateTopBar(@StringRes title: Int, modifier: Modifier = Modifier) {
   TopAppBar(
     title = { Text(text = stringResource(title)) },
     colors = getTopBarColors(isSystemInDarkTheme()),
-    modifier = modifier,
+    modifier = modifier.testTag(TestTags.SHARED_TOP_BAR),
   )
 }
 
@@ -73,7 +75,7 @@ fun MelateActionTopBar(
   TopAppBar(
     title = { Text(text = stringResource(title)) },
     colors = getTopBarColors(isSystemInDarkTheme()),
-    modifier = modifier,
+    modifier = modifier.testTag(TestTags.SHARED_TOP_BAR),
     actions = actions,
   )
 }
@@ -101,8 +103,9 @@ fun MelateFab(
       containerColor = MaterialTheme.colorScheme.primaryContainer,
       onClick = { action.invoke() },
       contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+      modifier = modifier.testTag(TestTags.SHARED_FAB_MAIN)
     ) {
-      Text(stringResource(text), modifier = modifier.padding(horizontal = 4.dp))
+      Text(stringResource(text), modifier = Modifier.padding(horizontal = 4.dp))
     }
   }
 }
@@ -147,6 +150,7 @@ fun MelateActionExtendedFab(
           },
           containerColor = MaterialTheme.colorScheme.secondaryContainer,
           contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+          modifier = Modifier.testTag(TestTags.SHARED_EXTENDED_FAB_ACTION_1)
         ) {
           Icon(imageVector = actionOneIcon, contentDescription = actionOneText)
         }
@@ -158,6 +162,7 @@ fun MelateActionExtendedFab(
           },
           containerColor = MaterialTheme.colorScheme.secondaryContainer,
           contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+          modifier = Modifier.testTag(TestTags.SHARED_EXTENDED_FAB_ACTION_2)
         ) {
           Icon(imageVector = actionTwoIcon, contentDescription = actionTwoText)
         }
@@ -178,6 +183,7 @@ fun MelateActionExtendedFab(
         },
         text = { Text(text = mainText) },
         expanded = true, // Keep the main FAB text always visible or control with another state
+        modifier = Modifier.testTag(TestTags.SHARED_EXTENDED_FAB_EXPAND)
       )
     }
   }
@@ -238,6 +244,7 @@ fun MelateSorteoActionDialog(
     Column(
       modifier =
         modifier
+          .testTag(TestTags.SHARED_DIALOG_CONTAINER)
           .background(
             color = MaterialTheme.colorScheme.background,
             shape = RoundedCornerShape(4.dp),
@@ -252,7 +259,7 @@ fun MelateSorteoActionDialog(
       )
       Spacer(modifier.height(8.dp))
       Text(text = msg, color = MaterialTheme.colorScheme.onSurface)
-      MelateDialogButton({ action.invoke() }, stringResource(actionTxt))
+      MelateDialogButton({ action.invoke() }, stringResource(actionTxt), Modifier.testTag(TestTags.SHARED_DIALOG_CONFIRM_BTN))
     }
   }
 }

@@ -27,12 +27,14 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.TextUnitType
 import androidx.compose.ui.unit.dp
 import me.elmanss.melate.R
 import me.elmanss.melate.common.data.local.FavOrigin
+import me.elmanss.melate.common.util.TestTags
 import me.elmanss.melate.favorites.domain.model.FavoritoModel
 
 @Composable
@@ -66,6 +68,7 @@ fun ListFavoriteItem(
         )
         .padding(16.dp)
         .alpha(contentAlpha)
+        .testTag(TestTags.FAV_ITEM_ROW)
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Text(
@@ -85,7 +88,7 @@ fun ListFavoriteItem(
         if (!editableState) {
           // Submission toggle button
           IconButton(
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(24.dp).testTag(TestTags.FAV_ITEM_SUBMISSION_TOGGLE),
             onClick = { onToggleSubmitted(favorite) }
           ) {
             Icon(
@@ -98,7 +101,7 @@ fun ListFavoriteItem(
           Spacer(modifier = Modifier.width(12.dp))
           
           Image(
-            modifier = Modifier.size(24.dp),
+            modifier = Modifier.size(24.dp).testTag(TestTags.FAV_ITEM_ORIGIN_ICON),
             painter =
               painterResource(
                 when (favorite.origin) {
@@ -111,7 +114,7 @@ fun ListFavoriteItem(
           )
         } else {
           Checkbox(
-            modifier = Modifier.wrapContentWidth(),
+            modifier = Modifier.wrapContentWidth().testTag(TestTags.FAV_ITEM_CHECKBOX),
             checked = actionState,
             onCheckedChange = {
               actionState = it

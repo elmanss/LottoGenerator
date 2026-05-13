@@ -32,10 +32,8 @@ fun Throwable.getRootCauseWithCycleGuard(): Throwable {
   while (rootCause.cause != null && rootCause.cause != rootCause && !visited.contains(rootCause)) {
     visited.add(rootCause)
     rootCause = rootCause.cause!!
-    println("Current root cause: $rootCause")
   }
-
-  println("Visited: $visited")
-  println("Final root cause: $rootCause")
   return rootCause
 }
+
+fun Int.toHexString(): String = Integer.toHexString(this)

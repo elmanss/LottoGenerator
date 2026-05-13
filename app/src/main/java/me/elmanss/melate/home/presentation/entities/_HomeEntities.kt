@@ -16,9 +16,9 @@ sealed class HomeUiEvent {
 
   data class TapAddSorteoEvent(val sorteo: SorteoModel) : HomeUiEvent()
 
-  data class LongTapSorteoEvent(val sorteo: SorteoModel, val index: Int) : HomeUiEvent()
+  data class LongTapSorteoEvent(val sorteo: SorteoModel) : HomeUiEvent()
 
-  data class ToggleSorteoCheckEvent(val sorteo: SorteoModel, val index: Int) : HomeUiEvent()
+  data class ToggleSorteoCheckEvent(val sorteo: SorteoModel) : HomeUiEvent()
 }
 
 sealed class HomeScreenSideEffect {
@@ -32,4 +32,5 @@ sealed class HomeScreenSideEffect {
 data class HomeScreenState(
   val sorteos: List<SorteoModel> = emptyList(),
   val multiSelectModeEnabled: Boolean = false,
+  val isRefreshing: Boolean = false,
 )

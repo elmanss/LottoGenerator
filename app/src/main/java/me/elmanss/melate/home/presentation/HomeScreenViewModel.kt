@@ -11,6 +11,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -35,14 +36,13 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
     MutableSharedFlow(extraBufferCapacity = 1, onBufferOverflow = BufferOverflow.DROP_OLDEST)
   val sideEffect = _sideEffect.asSharedFlow()
 
-  private var fetchJob: Job? = null
   private var clearJob: Job? = null
 
   fun sendEvent(event: HomeUiEvent) {
     logcat("HomeScreenVm") { event.toString() }
     when (event) {
       HomeUiEvent.SwipeToRefreshSorteosEvent -> {
-        launchFetchSorteos()
+        refreshSorteos()
       }
 
       HomeUiEvent.TapGoToFavsEvent -> {
@@ -69,29 +69,45 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
         launchSaveToFavorites(event.sorteo)
       }
       is HomeUiEvent.LongTapSorteoEvent -> {
-        markItemAsSelected(event.sorteo, event.index)
+        markItemAsSelected(event.sorteo.copy(selected = true))
         _state.update { state -> state.copy(multiSelectModeEnabled = true) }
       }
 
       is HomeUiEvent.ToggleSorteoCheckEvent -> {
-        markItemAsSelected(event.sorteo, event.index)
+        markItemAsSelected(event.sorteo)
       }
     }
   }
 
   init {
-    launchFetchSorteos()
+    observeSorteos()
   }
 
-  private fun launchFetchSorteos() {
-    fetchJob?.cancel()
-    fetchJob = viewModelScope.launch { fetchSorteos() }
+  private fun observeSorteos() {
+    viewModelScope.launch {
+      useCases
+        .fetchSorteos()
+        .catch {
+          logcat { "Refresh failed: ${it.message}" }
+          _state.update { it.copy(isRefreshing = false) }
+        }
+        .collectLatest { data ->
+          logcat("HomeScreenVm") { data.toString() }
+          _state.update { s -> s.copy(sorteos = data, isRefreshing = false) }
+        }
+    }
   }
 
-  private suspend fun fetchSorteos() {
-    useCases.fetchSorteos().collectLatest {
-      logcat("HomeScreenVm") { it.toString() }
-      _state.update { s -> s.copy(sorteos = it) }
+  private fun refreshSorteos() {
+    viewModelScope.launch {
+      _state.update { it.copy(isRefreshing = true) }
+
+      // We re-observe to get the "new" in-memory list
+      // In a real app, useCases.refresh() would update a DB and
+      // the init{} observer would pick it up automatically.
+      useCases.fetchSorteos().collectLatest { data ->
+        _state.update { s -> s.copy(sorteos = data, isRefreshing = false) }
+      }
     }
   }
 
@@ -103,10 +119,11 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
     }
   }
 
-  private fun markItemAsSelected(sorteo: SorteoModel, index: Int) {
-    val currentSorteosMutable = state.value.sorteos.toMutableList()
-    currentSorteosMutable[index] = sorteo
-    _state.update { state -> state.copy(sorteos = currentSorteosMutable) }
+  private fun markItemAsSelected(sorteo: SorteoModel) {
+    _state.update { state ->
+      val updatedSorteos = state.sorteos.map { if (it.id == sorteo.id) sorteo else it }
+      state.copy(sorteos = updatedSorteos)
+    }
   }
 
   private fun saveSelected() {
@@ -135,8 +152,9 @@ class HomeScreenViewModel @Inject constructor(private val useCases: HomeUseCases
   }
 
   private fun clearSelected() {
-    val clearedSorteos = state.value.sorteos.onEach { if (it.selected) it.selected = false }
-    logcat { "Cleared sorteos: $clearedSorteos" }
-    _state.update { state -> state.copy(sorteos = clearedSorteos) }
+    _state.update { state ->
+      val clearedSorteos = state.sorteos.map { it.copy(selected = false) }
+      state.copy(sorteos = clearedSorteos)
+    }
   }
 }
