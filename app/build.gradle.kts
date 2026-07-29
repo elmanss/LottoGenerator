@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinJvmCompile
 
@@ -12,11 +14,11 @@ plugins {
 }
 
 android {
-  compileSdk = 36
+  compileSdk = 37
   defaultConfig {
     applicationId = "me.elmanss.melate"
     minSdk = 28
-    targetSdk = 36
+    targetSdk = 37
     versionCode = 1
     versionName = "1.0"
     testInstrumentationRunner = "me.elmanss.melate.HiltTestRunner"
@@ -65,20 +67,20 @@ dependencies {
   implementation(libs.ui.tooling.preview)
   implementation(libs.material3)
   implementation(libs.materialIconsExtended)
-  
+
   androidTestImplementation(libs.ext.junit)
   androidTestImplementation(libs.espresso.core)
   androidTestImplementation(platform(libs.compose.bom))
   androidTestImplementation(libs.ui.test.junit4)
-  androidTestImplementation("com.google.dagger:hilt-android-testing:2.57.2")
-  kspAndroidTest("com.google.dagger:hilt-android-compiler:2.57.2")
+  androidTestImplementation(libs.hilt.testing)
+  kspAndroidTest(libs.hilt.compiler)
 
   implementation(libs.hilt.android)
   ksp(libs.hilt.compiler)
-  
+
   debugImplementation(libs.ui.tooling)
   debugImplementation(libs.ui.test.manifest)
-  
+
   implementation(libs.hilt.navigation.compose)
   implementation(libs.constraintlayout.compose)
   implementation(libs.androidx.navigation3.ui)

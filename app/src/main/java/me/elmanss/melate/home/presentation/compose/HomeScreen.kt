@@ -4,7 +4,6 @@ import android.annotation.SuppressLint
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -28,8 +27,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,10 +38,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import logcat.logcat
 import me.elmanss.melate.R
@@ -70,6 +65,7 @@ fun HomeScreen(
 
   val uiState by viewModel.state.collectAsState()
   val snackbarState = remember { SnackbarHostState() }
+  var sorteoToSave by remember { mutableStateOf<SorteoModel?>(null) }
 
   LaunchedEffect(key1 = Unit) {
     lifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -86,7 +82,7 @@ fun HomeScreen(
             }
 
             is HomeScreenSideEffect.ShowSaveFavoriteDialog -> {
-                // Handled in content
+              sorteoToSave = sideEffect.sorteo
             }
           }
         }
@@ -97,7 +93,9 @@ fun HomeScreen(
   HomeScreenContent(
     uiState = uiState,
     snackbarHostState = snackbarState,
-    onEvent = viewModel::sendEvent
+    sorteoToSave = sorteoToSave,
+    onDismissSaveDialog = { sorteoToSave = null },
+    onEvent = viewModel::sendEvent,
   )
 }
 
@@ -106,12 +104,12 @@ fun HomeScreen(
 fun HomeScreenContent(
   uiState: HomeScreenState,
   snackbarHostState: SnackbarHostState,
-  onEvent: (HomeUiEvent) -> Unit
+  sorteoToSave: SorteoModel?,
+  onDismissSaveDialog: () -> Unit,
+  onEvent: (HomeUiEvent) -> Unit,
 ) {
   val sorteoState = rememberLazyListState()
   val refreshState = rememberPullToRefreshState()
-  val coroutineScope = rememberCoroutineScope()
-  var sorteoToSave by rememberSaveable { mutableStateOf<SorteoModel?>(null) }
 
   BackHandler(enabled = uiState.multiSelectModeEnabled) {
     onEvent(HomeUiEvent.ExitMultiSelectEvent)
@@ -123,7 +121,7 @@ fun HomeScreenContent(
         if (uiState.multiSelectModeEnabled) {
           IconButton(
             modifier = Modifier.testTag(TestTags.HOME_SAVE_TOPBAR_ICON),
-            onClick = { onEvent(HomeUiEvent.TapConfirmMultiSelectEvent) }
+            onClick = { onEvent(HomeUiEvent.TapConfirmMultiSelectEvent) },
           ) {
             Icon(imageVector = Icons.Default.Check, contentDescription = "Save")
           }
@@ -175,7 +173,7 @@ fun HomeScreenContent(
                 if (!uiState.multiSelectModeEnabled) {
                   onEvent(HomeUiEvent.LongTapSorteoEvent(s))
                 }
-              }
+              },
             )
 
             if (index < sorteos.lastIndex) {
@@ -187,14 +185,14 @@ fun HomeScreenContent(
 
       sorteoToSave?.let { sorteo ->
         MelateSorteoActionDialog(
-          { sorteoToSave = null },
-          {
+          onDismiss = onDismissSaveDialog,
+          action = {
             onEvent(HomeUiEvent.TapAddSorteoEvent(sorteo))
-            sorteoToSave = null
+            onDismissSaveDialog.invoke()
           },
-          R.string.txt_title_aviso,
-          R.string.txt_msg_add_to_fav,
-          R.string.txt_action_add,
+          title = R.string.txt_title_aviso,
+          msg = R.string.txt_msg_add_to_fav,
+          actionTxt = R.string.txt_action_add,
         )
       }
     }
